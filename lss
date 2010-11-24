@@ -1,0 +1,8 @@
+#!/bin/csh -fb
+set args = ""
+while ( $#argv > 0 )
+    set args = "${args} '$1'"
+    shift
+end
+set dir=`dirname $0`
+eval python "$dir/pyseq.py" ${args}
