@@ -1,0 +1,45 @@
+Find sequences of files that can be compressed together
+
+http://code.google.com/p/pyseq/
+
+Sequences are defined as groups of files following a naming convention with:
+
+ - one or less integer match differences belong to the same sequence,
+ - two or more integer match differences belong to different sequences.
+
+For example:
+
+> ls
+alpha.txt        file01_0043.rgb    file02_0047.rgb
+file4.03.rgb     file01_0040.rgb    file02_0044.rgb
+file1.03.rgb     file.info.03.rgb   file01_0041.rgb
+file02_0045.rgb  file2.03.rgb       file01_0042.rgb
+file02_0046.rgb  file3.03.rgb
+
+> lss
+   1 alpha.txt
+   1 file.info.03.rgb
+   4 file01_%04d.rgb    40-43
+   4 file02_%04d.rgb    44-47
+   4 file%d.03.rgb      1-4
+
+However, you could also argue that this one:
+
+   4 file%d.03.rgb      1-4
+
+is actually frame 3 of four unique sequences, which I think is probably a more common use case. So, it's important to establish naming conventions early on, for example PTS #s could potentially be mistaken for frame numbers.
+
+Some more examples:
+
+>>> s = Sequence(['file.0001.jpg', 'file.0002.jpg', 'file.0003.jpg'])
+>>> s
+['file.0001.jpg', 'file.0002.jpg', 'file.0003.jpg']
+>>> print s
+   3 file.%04d.jpg      1-3
+>>> s.append('file.0006.jpg')
+>>> print s
+   4 file.%04d.jpg      1-3 6
+>>> s.contains('file.0009.jpg')
+True
+>>> s.contains('file.0009.pic')
+False
