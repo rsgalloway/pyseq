@@ -50,10 +50,9 @@ class File(object):
     parts = property(_get_parts, _set_readonly)
             
     def isSibling(self, fileObject):
-        """returns True if this file and fileObject are sequential siblings"""
+        """returns True if this file and fileObject are sequence siblings"""
 
         def _diff(fileObject):
-            assert type(fileObject) == File, 'expecting File type, found %s' % type(fileObject)
             l1 = self.digits
             l2 = fileObject.digits
             try:
@@ -116,21 +115,21 @@ class Sequence(list):
         return len(self)
 
     def frames(self):
-        """returns list of frames in sequence"""
+        """returns list of files in sequence"""
         return map(int, self._get_frames())
 
     def missing(self):
-        """returns list of missing frames"""
+        """returns list of missing files"""
         return map(int, self._get_missing())
 
     def head(self):
-        """returns string up to frame number"""
+        """returns string before the seq number"""
         if len(self) > 1:
             return str(self[0]).split(self._get_frames()[0])[0]
         return self[0].name
     
     def tail(self):
-        """returns string after the frame number"""
+        """returns string after the seq number"""
         if len(self) > 1:
             return str(self[0]).split(self._get_frames()[0])[-1]
         return ''
@@ -139,14 +138,14 @@ class Sequence(list):
         super(Sequence, self).append(File(filename))
         
     def contains(self, fileObject):
-        """checks for sequence membership (but not list membership)"""
+        """checks for sequence membership"""
         if len(self) > 0:
             if type(fileObject) is not File:
                 fileObject = File(fileObject)
             return self[0].isSibling(fileObject)
         
     def _get_padding(self):
-        """returns padding as string, e.g. %07d"""
+        """returns padding string, e.g. %07d"""
         if len(self) > 1:
             pad = len(self._get_frames()[0])
             if pad < 2:
@@ -155,7 +154,7 @@ class Sequence(list):
         return ''
     
     def _get_framerange(self):
-        """returns frame range as string, e.g. 1-500"""
+        """returns frame range string, e.g. 1-500"""
         frange = []
         start = ''
         end = ''
@@ -222,14 +221,14 @@ def getSequences(directory):
                 newSequence = True
                 for seq in seqs:
                     if seq.contains(filename):
-                        log.debug('## seq "%s" contains file "%s"' %(seq.head(), filename))
-                        log.debug('='*75)
                         seq.append(filename)
                         newSequence = False
+                        log.debug('Seq "%s" contains File "%s"' %(seq.head(), filename))
+                        log.debug('='*75)
                         break
                 if newSequence:
                     seqs.append(Sequence([filename]))
-    log.debug('done in %s' %(datetime.now() - s))
+    log.debug('Done in %s' %(datetime.now() - s))
     return seqs
     
 # -----------------------------------------------------------------------------
