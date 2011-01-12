@@ -1,52 +1,23 @@
 #!/usr/bin/env python
-"""
-pyseq
 
-Copyright 2010 Ryan Galloway (http://www.rsgalloway.com)
-
-Find sequences of files that can be compressed together.
-
-Sequences are defined as groups of files following a naming convention with:
-    - one or less integer match differences belong to the same sequence,
-    - two or more integer match differences belong to different sequences.
-
-For example:
-
-> ls
-alpha.txt        file01_0043.rgb  file02_0047.rgb  file4.03.rgb
-file01_0040.rgb  file02_0044.rgb  file1.03.rgb     file.info.03.rgb
-file01_0041.rgb  file02_0045.rgb  file2.03.rgb
-file01_0042.rgb  file02_0046.rgb  file3.03.rgb
-
-> lss
-   1 alpha.txt
-   1 file.info.03.rgb
-   4 file01_%04d.rgb    40-43
-   4 file02_%04d.rgb    44-47
-   4 file%d.03.rgb      1-4
-
-However, you could also argue that this one:
-
-   4 file%d.03.rgb              1-4
- 
-is actually frame 3 of four unique sequences, which I think is probably a more
-common use case. So, it's important to establish naming conventions early on,
-for example PTS #s could potentially be mistaken for frame numbers.
-
-"""
 __author__ = "Ryan Galloway <ryan@rsgalloway.com>"
-__version__ = "0.1.0"
-__license__ = "Creative Commons 3.0 BY-SA "
-__docformat__ = 'restructuredtext'
+__version__ = "0.1.1"
 
-import sys
-import re
 import os
+import re
+import sys
+import logging
 
-gFormat = '%(length)04s %(preseq)s%(padding)s%(postseq)s%(spacing)s%(framerange)s'
+from datetime import datetime
+
+gFormat = '%(length)04s %(head)s%(padding)s%(tail)s%(spacing)s%(framerange)s'
 gRegex = re.compile(r'\d+')
 
 __all__ = ['File', 'Sequence', 'getSequences']
+
+log = logging.getLogger('pyseq')
+log.addHandler(logging.StreamHandler())
+log.setLevel(logging.INFO)
 
 # -----------------------------------------------------------------------------
 class File(object):
@@ -77,20 +48,36 @@ class File(object):
     name = property(_get_filename, _set_readonly)
     digits = property(_get_digits, _set_readonly)
     parts = property(_get_parts, _set_readonly)
-    
-    def compare(self, fileObject):
-        """returns a list of file name differences"""
-        assert type(fileObject) == File, 'expecting File type, found %s' % type(fileObject)
-        l1 = self.parts + self.digits
-        l2 = fileObject.parts + fileObject.digits
-        sd = set(l1).difference(set(l2))
-        return list(sd)
             
     def isSibling(self, fileObject):
         """returns True if this file and fileObject are sequential siblings"""
+
+        def _diff(fileObject):
+            assert type(fileObject) == File, 'expecting File type, found %s' % type(fileObject)
+            l1 = self.digits
+            l2 = fileObject.digits
+            try:
+                if len(l1) == len(l2):
+                    d1 = [i for i in l1 if i != l2[l1.index(i)]]
+                    d2 = [i for i in l2 if i != l1[l2.index(i)]]
+                    if len(d1) > 1 or len(d2) > 1:
+                        return {}
+                else:
+                    return {}
+            except IndexError, e:
+                pass
+            r = {}
+            if (d1 and d2) and len(d1) == len(d2):
+                for el in d1:
+                    r[self.name.index(el)] = (el, d2[d1.index(el)])
+            return r
+        
         assert type(fileObject) == File, 'expecting File type, found %s' % type(fileObject)
-        diffs = self.compare(fileObject)
-        return (diffs is not None and len(diffs) == 1 and diffs[0] in self.digits)
+        d = _diff(fileObject)
+        log.debug('files: %s %s' %(self, fileObject))
+        log.debug('diffs: %s' % d)
+        log.debug('-'*75)
+        return (len(d) == 1) and (self.parts == fileObject.parts)
 
 class Sequence(list):
     """
@@ -113,16 +100,41 @@ class Sequence(list):
         super(Sequence, self).__init__(map(File, filenames))
         
     def __str__(self):
-        self.length = len(self)
-        self.frames = map(int, self._get_frames())
-        self.missing = map(int, self._get_missing())
-        self.padding = self._get_padding()
-        self.framerange = self._get_framerange()
-        self.preseq = self._get_preseq()
-        self.postseq = self._get_postseq()
-        self.spacing = '\t'* (1 + (1 * (12 > len(self[0].name))))
-        return gFormat % self.__dict__
+        return gFormat % {
+            'length': self.length(),
+            'frames': self.frames(),
+            'missing': self.missing(),
+            'padding': self._get_padding(),
+            'framerange': self._get_framerange(),
+            'head': self.head(),
+            'tail': self.tail(),
+            'spacing': '\t'* (1 + (1 * (12 > len(self[0].name))))
+            }
+
+    def length(self):
+        """returns the length of the sequence"""
+        return len(self)
+
+    def frames(self):
+        """returns list of frames in sequence"""
+        return map(int, self._get_frames())
+
+    def missing(self):
+        """returns list of missing frames"""
+        return map(int, self._get_missing())
+
+    def head(self):
+        """returns string up to frame number"""
+        if len(self) > 1:
+            return str(self[0]).split(self._get_frames()[0])[0]
+        return self[0].name
     
+    def tail(self):
+        """returns string after the frame number"""
+        if len(self) > 1:
+            return str(self[0]).split(self._get_frames()[0])[-1]
+        return ''
+
     def append(self, filename):
         super(Sequence, self).append(File(filename))
         
@@ -134,6 +146,7 @@ class Sequence(list):
             return self[0].isSibling(fileObject)
         
     def _get_padding(self):
+        """returns padding as string, e.g. %07d"""
         if len(self) > 1:
             pad = len(self._get_frames()[0])
             if pad < 2:
@@ -142,37 +155,28 @@ class Sequence(list):
         return ''
     
     def _get_framerange(self):
+        """returns frame range as string, e.g. 1-500"""
         frange = []
         start = ''
         end = ''
         prev = ''
-        for i in range(len(self.frames)):
-            if int(self.frames[i]) != int(self.frames[i-1])+1 and i != 0:
+        for i in range(len(self.frames())):
+            if int(self.frames()[i]) != int(self.frames()[i-1])+1 and i != 0:
                 if start != end:
                     frange.append('%s-%s' % (str(start), str(end)))
                 elif start == end:
                     frange.append(str(start))
-                start = end = self.frames[i]
+                start = end = self.frames()[i]
                 continue
-            if start is '' or int(start) > int(self.frames[i]):
-                start = self.frames[i]
-            if end is '' or int(end) < int(self.frames[i]):
-                end = self.frames[i]
+            if start is '' or int(start) > int(self.frames()[i]):
+                start = self.frames()[i]
+            if end is '' or int(end) < int(self.frames()[i]):
+                end = self.frames()[i]
         if start == end:
             frange.append(str(start))
         else:
             frange.append('%s-%s' % (str(start), str(end)))
         return ' '.join(frange)
-    
-    def _get_preseq(self):
-        if len(self) > 1:
-            return str(self[0]).split(self._get_frames()[0])[0]
-        return self[0].name
-    
-    def _get_postseq(self):
-        if len(self) > 1:
-            return str(self[0]).split(self._get_frames()[0])[-1]
-        return ''
     
     def _get_frames(self):
         frames = []
@@ -186,8 +190,8 @@ class Sequence(list):
     
     def _get_missing(self):
         if len(self) > 1:
-            frange = xrange(self.frames[0], self.frames[-1])
-            return filter(lambda x: x not in self.frames, frange)
+            frange = xrange(self.frames()[0], self.frames()[-1])
+            return filter(lambda x: x not in self.frames(), frange)
         return ''
         
 def getSequences(directory):
@@ -206,6 +210,7 @@ def getSequences(directory):
        4 file%d.03.rgb      1-4
     """
     seqs = []
+    s = datetime.now()
     if os.path.isdir(directory):
         seqs = []
         files = os.listdir(directory)
@@ -217,18 +222,26 @@ def getSequences(directory):
                 newSequence = True
                 for seq in seqs:
                     if seq.contains(filename):
+                        log.debug('## seq "%s" contains file "%s"' %(seq.head(), filename))
+                        log.debug('='*75)
                         seq.append(filename)
                         newSequence = False
                         break
                 if newSequence:
                     seqs.append(Sequence([filename]))
+    log.debug('done in %s' %(datetime.now() - s))
     return seqs
     
 # -----------------------------------------------------------------------------
 def main():
     import optparse
-    parser = optparse.OptionParser(usage="lss [path]", version="%prog 0.1.0")
+    parser = optparse.OptionParser(usage="lss [path]", version="%prog "+__version__)
+    parser.add_option("-d", "--debug", dest="debug", action="store_true", default=False,
+                      help="set logging level to debug")
     (options, args) = parser.parse_args()
+    
+    if options.debug:
+        log.setLevel(logging.DEBUG)
 
     path = os.path.curdir
     if len(args) > 0:

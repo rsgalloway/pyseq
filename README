@@ -1,35 +1,66 @@
-Find sequences of files that can be compressed together
+pyseq
 
-http://code.google.com/p/pyseq/
+Date: Wed Jan 12 15:30:16 PST 2011
 
-Sequences are defined as groups of files following a naming convention with:
 
- - one or less integer match differences belong to the same sequence,
- - two or more integer match differences belong to different sequences.
+1 Overview
+~~~~~~~~~~
 
-For example:
+Pyseq is a python module to help find sequences of files that can be compressed together, where sequences are defined as a series of files following a naming convention with one or less integer match differences.
 
-> ls
-alpha.txt        file01_0043.rgb    file02_0047.rgb
-file4.03.rgb     file01_0040.rgb    file02_0044.rgb
-file1.03.rgb     file.info.03.rgb   file01_0041.rgb
-file02_0045.rgb  file2.03.rgb       file01_0042.rgb
-file02_0046.rgb  file3.03.rgb
+  * README	this file
+  * TODO	list of improvements planned for pyseq
+  * LICENSE	the license under which pyseq is released
+  * pyseq.py	pyseq python module
+  * /tests	example file sequences
 
-> lss
+
+2 Basic Usage
+~~~~~~~~~~~~~
+
+Alias lss to pyseq.py, e.g.:
+
+  % alias lss /usr/lib/python/site-packages/pyseq/pyseq.py
+
+Using the example file sequences in tests:
+
+> ls tests
+   alpha.txt                        bnc01_TinkSO_tx_1_ty_0.0103.tif  file02_0044.rgb
+   bnc01_TinkSO_tx_0_ty_0.0101.tif  bnc01_TinkSO_tx_1_ty_0.0104.tif  file02_0045.rgb
+   bnc01_TinkSO_tx_0_ty_0.0102.tif  bnc01_TinkSO_tx_1_ty_0.0105.tif  file02_0046.rgb
+   bnc01_TinkSO_tx_0_ty_0.0103.tif  bnc01_TinkSO_tx_1_ty_1.0101.tif  file02_0047.rgb
+   bnc01_TinkSO_tx_0_ty_0.0104.tif  bnc01_TinkSO_tx_1_ty_1.0102.tif  file_02.tif
+   bnc01_TinkSO_tx_0_ty_0.0105.tif  bnc01_TinkSO_tx_1_ty_1.0103.tif  file.02.tif
+   bnc01_TinkSO_tx_0_ty_1.0101.tif  bnc01_TinkSO_tx_1_ty_1.0104.tif  file1.03.rgb
+   bnc01_TinkSO_tx_0_ty_1.0102.tif  bnc01_TinkSO_tx_1_ty_1.0105.tif  file2.03.rgb
+   bnc01_TinkSO_tx_0_ty_1.0103.tif  file01_0040.rgb                  file3.03.rgb
+   bnc01_TinkSO_tx_0_ty_1.0104.tif  file01_0041.rgb                  file4.03.rgb
+   bnc01_TinkSO_tx_0_ty_1.0105.tif  file01_0042.rgb                  file.info.03.rgb
+   bnc01_TinkSO_tx_1_ty_0.0101.tif  file01_0043.rgb                  
+   bnc01_TinkSO_tx_1_ty_0.0102.tif  file.01.tif
+
+> lss tests
    1 alpha.txt
+   5 bnc01_TinkSO_tx_0_ty_0.%04d.tif    101-105
+   5 bnc01_TinkSO_tx_0_ty_1.%04d.tif    101-105
+   5 bnc01_TinkSO_tx_1_ty_0.%04d.tif    101-105
+   5 bnc01_TinkSO_tx_1_ty_1.%04d.tif    101-105
+   2 file.%02d.tif              1-2
    1 file.info.03.rgb
    4 file01_%04d.rgb    40-43
    4 file02_%04d.rgb    44-47
    4 file%d.03.rgb      1-4
+   1 file_02.tif
 
-However, you could also argue that this one:
+However, you could argue that this one:
 
    4 file%d.03.rgb      1-4
 
 is actually frame 3 of four unique sequences, which I think is probably a more common use case. So, it's important to establish naming conventions early on, for example PTS #s could potentially be mistaken for frame numbers.
 
-Some more examples:
+
+2.1 More Examples
+=================
 
 >>> s = Sequence(['file.0001.jpg', 'file.0002.jpg', 'file.0003.jpg'])
 >>> s
