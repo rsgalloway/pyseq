@@ -1,26 +1,28 @@
 pyseq
 
-Date: Wed Jan 12 15:30:16 PST 2011
+Tue Feb 15 19:14:29 PST 2011
 
 
 1 Overview
 ~~~~~~~~~~
 
-Pyseq is a python module to help find sequences of files that can be compressed together, where sequences are defined as a series of files following a naming convention with one or less integer match differences.
+PySeq is a python module to help find sequences of files that can be compressed together, where sequences are defined as a series of files following a naming convention with one or less integer match differences.
 
-  * README	this file
-  * TODO	list of improvements planned for pyseq
-  * LICENSE	the license under which pyseq is released
+  * README	    this file
+  * TODO	    list of improvements planned for pyseq
+  * LICENSE	    the license under which pyseq is released
   * pyseq.py	pyseq python module
-  * /tests	example file sequences
+  * lss         a python script to be installed to /usr/local/bin
+  * /tests   	example file sequences
+
+2 Installation
+~~~~~~~~~~~~~~
+
+  % sudo python setup.py install
 
 
-2 Basic Usage
+3 Basic Usage
 ~~~~~~~~~~~~~
-
-Alias lss to pyseq.py, e.g.:
-
-  % alias lss /usr/lib/python/site-packages/pyseq/pyseq.py
 
 Using the example file sequences in tests:
 
@@ -59,7 +61,7 @@ However, you could argue that this one:
 is actually frame 3 of four unique sequences, which I think is probably a more common use case. So, it's important to establish naming conventions early on, for example PTS #s could potentially be mistaken for frame numbers.
 
 
-2.1 More Examples
+3.1 More Examples
 =================
 
 >>> s = Sequence(['file.0001.jpg', 'file.0002.jpg', 'file.0003.jpg'])
