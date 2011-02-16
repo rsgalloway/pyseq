@@ -1,7 +1,39 @@
 #!/usr/bin/env python
+# ---------------------------------------------------------------------------------------------
+# Copyright (c) 2011-2012, Ryan Galloway (ryan@rsgalloway.com)
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+#  - Redistributions of source code must retain the above copyright notice, this
+#    list of conditions and the following disclaimer.
+#
+#  - Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+#
+#  - Neither the name of the software nor the names of its contributors
+#    may be used to endorse or promote products derived from this software
+#    without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+# ---------------------------------------------------------------------------------------------
+# docs and latest version available for download at
+#   http://pyseq.googlecode.com
+# ---------------------------------------------------------------------------------------------
 
 __author__ = "Ryan Galloway <ryan@rsgalloway.com>"
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 import os
 import re
@@ -20,7 +52,7 @@ log.addHandler(logging.StreamHandler())
 log.setLevel(logging.INFO)
 
 # -----------------------------------------------------------------------------
-class File(object):
+class File(str):
     """sequence member file class"""
     def __init__(self, name):
         self.__filename = name
@@ -31,7 +63,7 @@ class File(object):
         return str(self.name)
     
     def __repr__(self):
-        return repr(self.name)
+        return '<pyseq.File "%s">' % self.name
    
     def _get_filename(self):
         return self.__filename
@@ -83,8 +115,6 @@ class Sequence(list):
     extends list class with methods that handle sequentialness, for example:
     
     >>> s = Sequence(['file.0001.jpg', 'file.0002.jpg', 'file.0003.jpg'])
-    >>> s
-    ['file.0001.jpg', 'file.0002.jpg', 'file.0003.jpg']
     >>> print s
        3 file.%04d.jpg      1-3
     >>> s.append('file.0006.jpg')
@@ -97,9 +127,9 @@ class Sequence(list):
     """
     def __init__(self, filenames):
         super(Sequence, self).__init__(map(File, filenames))
-        
-    def __str__(self):
-        return gFormat % {
+
+    def __attrs__(self):
+        return {
             'length': self.length(),
             'frames': self.frames(),
             'missing': self.missing(),
@@ -109,7 +139,13 @@ class Sequence(list):
             'tail': self.tail(),
             'spacing': '\t'* (1 + (1 * (12 > len(self[0].name))))
             }
+        
+    def __str__(self):
+        return gFormat % self.__attrs__()
 
+    def __repr__(self):
+        return '<pyseq.Sequence "%(head)s%(framerange)s%(tail)s">' % self.__attrs__()
+    
     def length(self):
         """returns the length of the sequence"""
         return len(self)
@@ -193,12 +229,13 @@ class Sequence(list):
             return filter(lambda x: x not in self.frames(), frange)
         return ''
         
-def getSequences(directory):
+def getSequences(source):
     """
-    returns a list of Sequence objects given a directory that contain sequential 
-    members, for example:
+    returns a list of Sequence objects given a directory or list that contain
+    sequential members, for example:
     
-    seqs = getSequences('/directory/path/')
+    seqs = getSequences('/directory/path/'), or
+    seqs = getSequences(['fileA.1.rgb', 'fileA.2.rgb', 'fileB.1.rgb'])
     for s in seqs: print s
     ...
        1 alpha.txt
@@ -210,24 +247,30 @@ def getSequences(directory):
     """
     seqs = []
     s = datetime.now()
-    if os.path.isdir(directory):
-        seqs = []
-        files = os.listdir(directory)
-        files.sort()
-        for filename in files:
-            if len(seqs) == 0:
+    
+    if type(source) == list:
+        files = source
+    elif type(source) == str and os.path.isdir(source):
+        files = os.listdir(source)
+    else:
+        raise TypeError, 'Unsupported format for source argument'
+        
+    files.sort()
+    for filename in files:
+        if len(seqs) == 0:
+            seqs.append(Sequence([filename]))
+        else:
+            newSequence = True
+            for seq in seqs:
+                if seq.contains(filename):
+                    seq.append(filename)
+                    newSequence = False
+                    log.debug('Seq "%s" contains File "%s"' %(seq.head(), filename))
+                    log.debug('='*75)
+                    break
+            if newSequence:
                 seqs.append(Sequence([filename]))
-            else:
-                newSequence = True
-                for seq in seqs:
-                    if seq.contains(filename):
-                        seq.append(filename)
-                        newSequence = False
-                        log.debug('Seq "%s" contains File "%s"' %(seq.head(), filename))
-                        log.debug('='*75)
-                        break
-                if newSequence:
-                    seqs.append(Sequence([filename]))
+                
     log.debug('Done in %s' %(datetime.now() - s))
     return seqs
     
@@ -250,4 +293,3 @@ def main():
 
 if __name__ == '__main__':
     sys.exit(main())
-    
