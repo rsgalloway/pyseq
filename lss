@@ -1,0 +1,25 @@
+#!/usr/bin/env python
+# 
+# Copyright (C) 2011 Ryan Galloway (ryan@rsgalloway.com)
+#
+# This module is part of Shotman and is released under
+# the BSD License: http://www.opensource.org/licenses/bsd-license.php
+
+import os
+import sys
+import optparse
+import pyseq
+
+# -----------------------------------------------------------------------------
+def main():
+    parser = optparse.OptionParser(usage="lss [path]", version="pyseq " + pyseq.__version__)
+    (options, args) = parser.parse_args()
+
+    path = os.path.curdir
+    if len(args) > 0:
+        path = args[0]
+    print '\n'.join([str(seq) for seq in pyseq.getSequences(path)])
+    return (0)
+
+if __name__ == '__main__':
+    sys.exit(main())

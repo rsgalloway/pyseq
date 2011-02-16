@@ -1,2 +1,3 @@
 - memoize function calls
-- improve performance
+- recurse subdirectories
+- multithreaded, progress bar

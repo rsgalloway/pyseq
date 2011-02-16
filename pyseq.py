@@ -252,10 +252,15 @@ def getSequences(source):
         files = source
     elif type(source) == str and os.path.isdir(source):
         files = os.listdir(source)
+    elif not os.path.isdir(source):
+        log.error('Invalid directory: %s' % source)
+        return []
     else:
         raise TypeError, 'Unsupported format for source argument'
         
     files.sort()
+    log.debug('Found %s files' % len(files))
+    
     for filename in files:
         if len(seqs) == 0:
             seqs.append(Sequence([filename]))
