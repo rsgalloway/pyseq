@@ -60,12 +60,23 @@ Using the "z1" file sequence example in the "tests" directory:
 	z1_002_v1.1-4.png
 	z1_002_v2.1-4.png
 
-API
-===
+Some API usage examples
+***********************
 
-Some usage examples:
+**Sequence compression**
 
-*Compression, or serialization, of lists of items*
+*Example using getSequences to compress filesystem sequences starting with "bnc". The getSequences function will return a list of all sequences found using the given input, which can be either a path or a list.*
+
+	>>> from pyseq import *
+	>>> seqs = getSequences('./tests/bnc*')
+	>>> for s in seqs: print s.format('%h%p%t %r')
+	... 
+	bnc01_TinkSO_tx_0_ty_0.%04d.tif 101-105
+	bnc01_TinkSO_tx_0_ty_1.%04d.tif 101-105
+	bnc01_TinkSO_tx_1_ty_0.%04d.tif 101-105
+	bnc01_TinkSO_tx_1_ty_1.%04d.tif 101-105
+
+*Example using the Sequence class with a list as input. The Sequence class constructor will return a single Sequence class instance of sequential items, skipping any items in the list that are not part of the sequence.*
 
 	>>> s = Sequence(['file.0001.jpg', 'file.0002.jpg', 'file.0003.jpg'])
 	>>> print s
@@ -78,7 +89,7 @@ Some usage examples:
 	>>> s.contains('file.0009.pic')
 	False
 	
-*Uncompression, or deserialization, of compressed sequences strings*
+**Sequence expansion**
 	
 	>>> s = uncompress('012_vb_110_v002.1-150.dpx', format="%h%r%t")
 	>>> len(s)
@@ -87,7 +98,19 @@ Some usage examples:
 	>>> print seq.format('%04l %h%p%t %R')
 	  10 012_vb_110_v001.%04d.png 1-10
 	
-The following documentation is automatically generated from the source code pydocs. 
+Source Code
+===========
+
+PySeq's git repo is available on GitHub, which can be browsed at:
+
+ * https://github.com/rsgalloway/pyseq
+
+and cloned using::
+
+	$ git clone git://github.com/rsgalloway/pyseq.git pyseq
+
+API Reference
+=============
 
 .. toctree::
    :maxdepth: 2
