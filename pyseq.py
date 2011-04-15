@@ -33,21 +33,27 @@
 # ---------------------------------------------------------------------------------------------
 
 __author__ = "Ryan Galloway <ryan@rsgalloway.com>"
-__version__ = "0.2.0b"
+__version__ = "0.2.1b"
 
 # ---------------------------------------------------------------------------------------------
 # TODO
 # ---------------------------------------------------------------------------------------------
 """
-  - support additional syntax, e.g. x10 = every tenth frame
+  - add sequence operations that modify members, e.g. rename, reindex
+  - support additional syntax, e.g. x10 for every tenth frame
+  - keyboard interrupt (cntl+c)
   - recurse subdirectories and display trees
-  - add optional format parameter to diff function
+  - add optional explicit format parameter to diff function
 """
 
 # ---------------------------------------------------------------------------------------------
 # CHANGELOG
 # ---------------------------------------------------------------------------------------------
 """
++v0.2.1b - 2011 Mar 23
+  + supports sequences of any serializable, sortable items
+  + fixes bug in lss
+
 +v0.2.0b - 2011 Mar 14
   + Added support for wildcards in getSequence source input and in lss
   + Added format method to Sequence class for formatted string stdout
@@ -103,7 +109,7 @@ class SequenceError(Exception):
     
 class Item(str):
     """Sequence member file class"""
-    def __init__(self, path):
+    def __init__(self, item):
         """
         Create a new Item class object.
         
@@ -111,9 +117,11 @@ class Item(str):
         
         :return: pyseq.Item instance.
         """
-        self.__path = os.path.abspath(path)
-        self.__dirname = os.path.dirname(path)
-        self.__filename = os.path.basename(self.path)
+        log.debug('adding %s item %s' %(repr(item), item))
+        self.item = item
+        self.__path = getattr(item, 'path', os.path.abspath(str(item)))
+        self.__dirname = os.path.dirname(str(item))
+        self.__filename = os.path.basename(str(item))
         self.__digits = gDigitsRE.findall(self.name)
         self.__parts = gDigitsRE.split(self.name)
         
@@ -127,6 +135,9 @@ class Item(str):
     
     def __repr__(self):
         return '<pyseq.Item "%s">' % self.name
+
+    def __getattr__(self, key):
+        return getattr(self.item, key, None)
         
     def _get_path(self):
         return self.__path
@@ -235,6 +246,9 @@ class Sequence(list):
     def __repr__(self):
         return '<pyseq.Sequence "%s">' % str(self)
         
+    def __getattr__(self, key):
+        return getattr(self[0], key, None)
+
     def __contains__(self, item):
         super(Sequence, self).__contains__(Item(item))
     
@@ -566,15 +580,21 @@ def getSequences(source):
         file1-4.03.rgb
         file_02.tif
         
-    Get sequences from a list:
+    Get sequences from a list of file names:
         
         >>> seqs = getSequences(['fileA.1.rgb', 'fileA.2.rgb', 'fileB.1.rgb'])
         >>> for s in seqs: print s
         ... 
         fileA.1-2.rgb
         fileB.1.rgb
+
+    Get sequences from a list of objects, preserving object attrs:
+
+        >>> seqs = getSequences(repo.files())
+        >>> seqs[0].date
+        datetime.datetime(2011, 3, 21, 17, 31, 24)
        
-    :param source: Can be directory path or list of items.  
+    :param source: Can be directory path, list of strings, or sortable list of objects.
       
     :return: List of pyseq.Sequence class objects.
     """
@@ -582,8 +602,7 @@ def getSequences(source):
     s = datetime.now()
     
     if type(source) == list:
-        items = source
-        items.sort()
+        items = sorted(source, key=lambda x: str(x))
     elif type(source) == str and os.path.isdir(source):
         items = glob(os.path.join(source, '*'))
     elif type(source) == str:
