@@ -604,7 +604,7 @@ def getSequences(source):
     if type(source) == list:
         items = sorted(source, key=lambda x: str(x))
     elif type(source) == str and os.path.isdir(source):
-        items = glob(os.path.join(source, '*'))
+        items = sorted(glob(os.path.join(source, '*')))
     elif type(source) == str:
         items = glob(source)
     else:
