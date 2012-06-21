@@ -32,8 +32,11 @@
 #   http://github.com/rsgalloway/pyseq
 # ---------------------------------------------------------------------------------------------
 
-__author__ = "Ryan Galloway <ryan@rsgalloway.com>"
-__version__ = "0.2.1b"
+__author__ = [
+    "Ryan Galloway <ryan@rsgalloway.com>",
+    "Erkan Ozgur Yilmaz <eoyilmaz@gmail.com>"
+]
+__version__ = "0.2.2"
 
 # ---------------------------------------------------------------------------------------------
 # TODO
@@ -50,6 +53,10 @@ __version__ = "0.2.1b"
 # CHANGELOG
 # ---------------------------------------------------------------------------------------------
 """
++v0.2.2 - 2012 Jun 21
+  + fixed %R in uncompress()
+  + fixed minor bug in getSequences() with glob
+
 +v0.2.1b - 2011 Mar 23
   + supports sequences of any serializable, sortable items
   + fixes bug in lss
@@ -82,8 +89,6 @@ __version__ = "0.2.1b"
 
 import os
 import re
-import sys
-import difflib
 import logging
 from glob import glob
 from datetime import datetime
@@ -113,10 +118,11 @@ class Item(str):
         """
         Create a new Item class object.
         
-        :param path: Path to file.
+        :param item: Path to file.
         
         :return: pyseq.Item instance.
         """
+        super(Item, self).__init__()
         log.debug('adding %s item %s' %(repr(item), item))
         self.item = item
         self.__path = getattr(item, 'path', os.path.abspath(str(item)))
@@ -203,6 +209,8 @@ class Sequence(list):
         True
         >>> s.contains('file.0009.pic')
         False
+        >>> print s.format('%h%p%t %r (%R)')
+        file.%04d.jpg 1-6 (1-3 6)
     """
     def __init__(self, items):
         """
@@ -218,9 +226,9 @@ class Sequence(list):
             try:
                 self.append(f)
                 log.debug('+Item belongs to sequence.')
-            except SequenceError, e:
-                continue
+            except SequenceError:
                 log.debug('-Item does not belong to sequence.')
+                continue
             except KeyboardInterrupt:
                 log.info("Stopping.")
                 break
@@ -399,7 +407,6 @@ class Sequence(list):
         frange = []
         start = ''
         end = ''
-        prev = ''
         if not missing:
             if self.frames():
                 return '%s-%s' %(self.start(), self.end())
@@ -485,7 +492,32 @@ def uncompress(seqstring, format=gFormat):
         012_vb_110_v001.1-10.png
         >>> len(seq)
         10
-
+        >>> seq2 = uncompress('./tests/a.%03d.tga 1-3 10 12-14', format='%h%p%t %R')
+        >>> print seq2
+        a.1-14.tga
+        >>> len(seq2)
+        7
+        >>> seq3 = uncompress('a.%03d.tga 1-14 (1-3 10 12-14)', format='%h%p%t %r (%R)')
+        >>> print seq3
+        a.1-14.tga
+        >>> len(seq3)
+        7
+        >>> seq4 = uncompress('a.%03d.tga 1-14 (1-3 10 12-14)', format='%h%p%t %s-%e (%R)')
+        >>> print seq4
+        a.1-14.tga
+        >>> len(seq3)
+        7
+        >>> seq5 = uncompress('a.%03d.tga 1-14 (1 14)', format='%h%p%t %r (%R)')
+        >>> print seq5
+        a.1-14.tga
+        >>> len(seq5)
+        2
+        >>> seq6 = uncompress('a.%03d.tga 1-14 (1-14)', format='%h%p%t %r (%R)')
+        >>> print seq6
+        a.1-14.tga
+        >>> len(seq6)
+        14
+    
     :param seqstring: Compressed sequence string. 
     :param format: Format of sequence string.
     
@@ -495,7 +527,6 @@ def uncompress(seqstring, format=gFormat):
     name = os.path.basename(seqstring)
     log.debug('uncompress: %s' % name)
     
-    #FIXME: RE for directive 'R' is broken
     remap = {
         's': '\d+',
         'e': '\d+',
@@ -503,19 +534,34 @@ def uncompress(seqstring, format=gFormat):
         'h': '\S+',
         't': '\S+',
         'r': '\d+-\d+',
-        'R': '\d+',
+        'R': '[\d\s\-]+',
         'p': '%\d+d',
         'm': '\[.*\]',
         'f': '\[.*\]'
     }
     
+    log.debug('format in: %s' % format)
+    
+    # escape any re chars in format
+    format = re.escape(format)
+    # replace \% with % back again
+    format = format.replace('\\%', '%')
+    
+    log.debug('format escaped: %s' % format)
+    
     for m in gFormatRE.finditer(format):
-        _old = '%%%s%s' %(m.group('pad') or '', m.group('var'))
-        _new = '(?P<%s>%s)' %(m.group('var'), remap.get(m.group('var'), '\w+'))
+        _old = '%%%s%s' % (m.group('pad') or '', m.group('var'))
+        _new = '(?P<%s>%s)' % (m.group('var'), remap.get(m.group('var'), '\w+'))
         format = format.replace(_old, _new)
+    
+    log.debug('format: %s' % format)
     
     regex = re.compile(format)
     match = regex.match(name)
+    
+    missing = []
+    s = None
+    e = None
     
     if not match:
         log.debug('No matches.')
@@ -527,28 +573,62 @@ def uncompress(seqstring, format=gFormat):
         pad = "%d"
     
     try:
-        r = match.group('r')
-        s, e = r.split('-')
-    except IndexError:
-        s = match.group('s')
-        e = match.group('e')
+        R = match.group('R')
+        log.debug("matched R")
+        # 1-10 13 15-20 38
+        # expand all the frames
+        numbers = []
+        number_groups = R.split(' ')
+        for number_group in number_groups:
+            if '-' in number_group:
+                s, e = number_group.split('-')
+                for i in range(int(s), int(e)+1):
+                    numbers.append(i)
+            else:
+                # just append the number
+                numbers.append(int(number_group))
         
+        log.debug("numbers: %s" % numbers)
+        
+        # get the s and e
+        if numbers:
+            s = numbers[0]
+            e = numbers[-1]
+            
+            missing = []
+            # find the missing frames
+            for i in range(s, e+1):
+                if i not in numbers:
+                    missing.append(i)
+    except IndexError:
+        try:
+            r = match.group('r')
+            log.debug('matched r: %s' % r)
+            s, e = r.split('-')
+        except IndexError:
+            s = match.group('s')
+            e = match.group('e')
+    
     try:
-        frames = eval(m.group('f'))
+        frames = eval(match.group('f'))
     except IndexError:
         frames = []
-        
+    
     try:
-        missing = eval(m.group('m'))
+        missing = eval(match.group('m'))
     except IndexError:
-        missing = []
+        if not missing:
+            missing = []
+    
+    log.debug('missing: %s' % missing)
     
     items = []
     for i in range(int(s), int(e)+1):
         if i in missing:
             continue
+        f = ""
         exec('f = "%s" %% i' % pad)
-        name = '%s%s%s' %(match.group('h'), f, match.group('t'))
+        name = '%s%s%s' % (match.group('h'), f, match.group('t'))
         items.append(Item(os.path.join(dirname, name)))
     
     seqs = getSequences(items)
@@ -568,6 +648,7 @@ def getSequences(source):
         ... 
         012_vb_110_v001.1-10.png
         012_vb_110_v002.1-10.png
+        a.1-14.tga
         alpha.txt
         bnc01_TinkSO_tx_0_ty_0.101-105.tif
         bnc01_TinkSO_tx_0_ty_1.101-105.tif
@@ -579,6 +660,9 @@ def getSequences(source):
         file02_44-47.rgb
         file1-4.03.rgb
         file_02.tif
+        z1_001_v1.1-4.png
+        z1_002_v1.1-4.png
+        z1_002_v2.1-4.png
         
     Get sequences from a list of file names:
         
@@ -590,9 +674,9 @@ def getSequences(source):
 
     Get sequences from a list of objects, preserving object attrs:
 
-        >>> seqs = getSequences(repo.files())
-        >>> seqs[0].date
-        datetime.datetime(2011, 3, 21, 17, 31, 24)
+        #>>> seqs = getSequences(repo.files()) # doctest:+ELLIPSIS
+        #>>> seqs[0].date # doctest:+ELLIPSIS
+        #datetime.datetime(2011, 3, 21, 17, 31, 24) # doctest +SKIP
        
     :param source: Can be directory path, list of strings, or sortable list of objects.
       
@@ -606,10 +690,10 @@ def getSequences(source):
     elif type(source) == str and os.path.isdir(source):
         items = sorted(glob(os.path.join(source, '*')))
     elif type(source) == str:
-        items = glob(source)
+        items = sorted(glob(source))
     else:
         raise TypeError, 'Unsupported format for source argument'
-        
+    
     log.debug('Found %s files' % len(items))
     if len(items) > 0:
         seq = Sequence([Item(items.pop(0))])
@@ -619,7 +703,7 @@ def getSequences(source):
             try:
                 seq.append(item)
                 log.debug('+Item belongs to sequence.')
-            except SequenceError, e:
+            except SequenceError:
                 seq = Sequence([item])
                 seqs.append(seq)
                 log.debug('-Item does not belong to sequence.')
@@ -631,7 +715,7 @@ def getSequences(source):
     return seqs
     
 if __name__ == '__main__':
-    """run through some test examples"""
+    #run through some test examples
     seqs = getSequences(['fileA.1.rgb', 'fileA.2.rgb', 'fileB.1.rgb'])
     print seqs
     seqs = getSequences(os.path.join(os.path.dirname(__file__), 'tests'))
