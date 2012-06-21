@@ -108,6 +108,8 @@ log = logging.getLogger('pyseq')
 log.addHandler(logging.StreamHandler())
 log.setLevel(int(os.environ.get('PYSEQ_LOG_LEVEL', logging.INFO)))
 
+#log.setLevel(logging.DEBUG)
+
 # -----------------------------------------------------------------------------
 class SequenceError(Exception):
     """special exception for sequence errors"""
@@ -517,6 +519,16 @@ def uncompress(seqstring, format=gFormat):
         a.1-14.tga
         >>> len(seq6)
         14
+        >>> seq7 = uncompress('a.%03d.tga 1-100000 (1-10 100000)', format='%h%p%t %r (%R)')
+        >>> print seq7
+        a.1-100000.tga
+        >>> len(seq7)
+        11
+        >>> seq8 = uncompress('a.%03d.tga 1-100 ([10, 20, 40, 50])', format='%h%p%t %r (%m)')
+        >>> print seq8
+        a.1-100.tga
+        >>> len(seq8)
+        96
     
     :param seqstring: Compressed sequence string. 
     :param format: Format of sequence string.
@@ -559,6 +571,8 @@ def uncompress(seqstring, format=gFormat):
     regex = re.compile(format)
     match = regex.match(name)
     
+    
+    frames = []
     missing = []
     s = None
     e = None
@@ -577,34 +591,25 @@ def uncompress(seqstring, format=gFormat):
         log.debug("matched R")
         # 1-10 13 15-20 38
         # expand all the frames
-        numbers = []
         number_groups = R.split(' ')
+        
         for number_group in number_groups:
             if '-' in number_group:
-                s, e = number_group.split('-')
-                for i in range(int(s), int(e)+1):
-                    numbers.append(i)
+                splits = number_group.split('-')
+                start = int(splits[0])
+                end = int(splits[1])
+                frames.extend(range(start, end+1))
             else:
                 # just append the number
-                numbers.append(int(number_group))
-        
-        log.debug("numbers: %s" % numbers)
-        
-        # get the s and e
-        if numbers:
-            s = numbers[0]
-            e = numbers[-1]
-            
-            missing = []
-            # find the missing frames
-            for i in range(s, e+1):
-                if i not in numbers:
-                    missing.append(i)
+                end = int(number_group)
+                frames.append(end)
+    
     except IndexError:
         try:
             r = match.group('r')
             log.debug('matched r: %s' % r)
             s, e = r.split('-')
+            frames = range(int(s), int(e)+1)
         except IndexError:
             s = match.group('s')
             e = match.group('e')
@@ -612,24 +617,26 @@ def uncompress(seqstring, format=gFormat):
     try:
         frames = eval(match.group('f'))
     except IndexError:
-        frames = []
+        pass
     
     try:
         missing = eval(match.group('m'))
     except IndexError:
-        if not missing:
-            missing = []
-    
-    log.debug('missing: %s' % missing)
+        pass
     
     items = []
-    for i in range(int(s), int(e)+1):
-        if i in missing:
-            continue
-        f = ""
-        exec('f = "%s" %% i' % pad)
-        name = '%s%s%s' % (match.group('h'), f, match.group('t'))
-        items.append(Item(os.path.join(dirname, name)))
+    if missing:
+        for i in range(int(s), int(e)+1):
+            if i in missing:
+                continue
+            f = pad % i
+            name = '%s%s%s' % (match.group('h'), f, match.group('t'))
+            items.append(Item(os.path.join(dirname, name)))
+    else:
+        for i in frames:
+            f = pad % i
+            name = '%s%s%s' % (match.group('h'), f, match.group('t'))
+            items.append(Item(os.path.join(dirname, name)))
     
     seqs = getSequences(items)
     if seqs:
