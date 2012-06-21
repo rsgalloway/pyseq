@@ -7,12 +7,13 @@
 
 from distutils.core import setup
 from pyseq import __version__
-setup(name='pyseq',
-      version=__version__,
-      description='Compressed Sequence Python Module',
-      author='Ryan Galloway',
-      author_email='ryan@rsgalloway.com',
-      url='http://github.com/rsgalloway/pyseq',
-      py_modules=['pyseq'],
-      scripts = ['lss']
-      )
+setup(
+    name='pyseq',
+    version=__version__,
+    description='Compressed Sequence Python Module',
+    author='Ryan Galloway',
+    author_email='ryan@rsgalloway.com',
+    url='http://github.com/rsgalloway/pyseq',
+    py_modules=['pyseq'],
+    scripts = ['lss']
+)
