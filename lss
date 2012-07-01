@@ -15,7 +15,6 @@ def main():
     """
     Command-line interface.
     """
-    import optparse
     
     usage = """
 lss [path] [-f format] [-d]
@@ -42,7 +41,7 @@ Formatting options:
     Format directives support padding, for example: "%%04l".
     """ % pyseq.gFormat
     
-    parser = optparse.OptionParser(usage=usage, version="%prog "+pyseq.__version__)
+    parser = optparse.OptionParser(usage=usage, version="%prog " + pyseq.__version__)
     parser.add_option("-f", "--format", dest="format", default=pyseq.gFormat,
                       help="format the output string")
     parser.add_option("-d", "--debug", dest="debug", action="store_true", default=False,
@@ -51,15 +50,14 @@ Formatting options:
     
     if options.debug:
         pyseq.log.setLevel(logging.DEBUG)
-
-    path = os.path.curdir
+    
     if len(args) == 0:
         args = os.listdir(os.getcwd())
     elif len(args) == 1 and os.path.isdir(args[0]):
         args = os.listdir(args[0])
     for seq in pyseq.getSequences(args):
         print seq.format(options.format)
-    return (0)
+    return 0
 
 if __name__ == '__main__':
     sys.exit(main())
