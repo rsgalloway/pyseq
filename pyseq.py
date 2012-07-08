@@ -207,7 +207,7 @@ class Sequence(list):
         >>> s.append('file.0006.jpg')
         >>> print s.format('%04l %h%p%t %R')
            4 file.%04d.jpg 1-3 6
-        >>> s.contains('file.0009.jpg')
+        >>> s.contains('file.0006.jpg')
         True
         >>> s.contains('file.0009.pic')
         False
