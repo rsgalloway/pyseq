@@ -12,21 +12,21 @@ Installation
 
 Installation using setuputils: ::
 
-  % sudo easy_install pyseq
+  % easy_install pyseq
 
 
 Basic Usage
 -----------
 
 Using the "z1" file sequence example in the "tests" directory, we start by listing the directory
-contents using 'ls'. ::
+contents using ``ls``. ::
 
     % ls tests/z1*
     tests/z1_001_v1.1.png    tests/z1_001_v1.4.png    tests/z1_002_v1.3.png    tests/z1_002_v2.2.png
     tests/z1_001_v1.2.png    tests/z1_002_v1.1.png    tests/z1_002_v1.4.png    tests/z1_002_v2.3.png
     tests/z1_001_v1.3.png    tests/z1_002_v1.2.png    tests/z1_002_v2.1.png    tests/z1_002_v2.4.png
 
-Now we list the same diretory contents using 'lss', which will find the sequences and display them
+Now we list the same directory contents using `lss`, which will find the sequences and display them
 in the default compressed format. ::
 
     % lss tests/z1*
