@@ -3,11 +3,15 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-===========================
-PySeq v0.2.1b documentation
-===========================
+==========================
+PySeq v0.3.0 documentation
+==========================
 
-PySeq is a python module that finds groups of items that follow a naming convention containing a numerical sequence index (e.g. fileA.001.png, fileA.002.png, fileA.003.png...) and serializes them into a compressed sequence string representing the entire sequence (e.g. fileA.1-3.png). It should work regardless of where the numerical sequence index is embedded in the name. For examples, see basic usage below.
+PySeq is a python module that finds groups of items that follow a naming convention containing a 
+numerical sequence index (e.g. fileA.001.png, fileA.002.png, fileA.003.png...) and serializes them 
+into a compressed sequence string representing the entire sequence (e.g. fileA.1-3.png). It should
+work regardless of where the numerical sequence index is embedded in the name. For examples, see
+basic usage below.
 
 Installation
 ============
@@ -65,7 +69,9 @@ Some API usage examples
 
 **Sequence compression**
 
-*Example using getSequences to compress filesystem sequences starting with "bnc". The getSequences function will return a list of all sequences found using the given input, which can be either a path or a list.*
+*Example using getSequences to compress filesystem sequences starting with "bnc". The getSequences 
+function will return a list of all sequences found using the given input, which can be either a path
+or a list.*
 
   >>> from pyseq import *
   >>> seqs = getSequences('./tests/bnc*')
@@ -76,7 +82,9 @@ Some API usage examples
   bnc01_TinkSO_tx_1_ty_0.%04d.tif 101-105
   bnc01_TinkSO_tx_1_ty_1.%04d.tif 101-105
 
-*Example using the Sequence class with a list as input. The Sequence class constructor will return a single Sequence class instance of sequential items, skipping any items in the list that are not part of the sequence.*
+*Example using the Sequence class with a list as input. The Sequence class constructor will return a 
+single Sequence class instance of sequential items, skipping any items in the list that are not part 
+of the sequence.*
 
   >>> s = Sequence(['file.0001.jpg', 'file.0002.jpg', 'file.0003.jpg'])
   >>> print s

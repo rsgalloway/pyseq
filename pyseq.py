@@ -101,7 +101,7 @@ gDigitsRE = re.compile(r'\d+')
 # regex for matching format directives
 gFormatRE = re.compile(r'%(?P<pad>\d+)?(?P<var>\w+)')
 
-__all__ = ['SequenceError', 'Item', 'Sequence', 'diff', 'uncompress', 
+__all__ = ['SequenceError', 'FormatError', 'Item', 'Sequence', 'diff', 'uncompress', 
            'getSequences', ]
 
 # logging handlers
