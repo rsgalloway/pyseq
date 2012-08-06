@@ -1,28 +1,11 @@
 PySeq
 =====
 
-Sun Aug  5 21:45:48 PDT 2012
-
-Overview
----------
-
 PySeq is a python module that finds groups of items that follow a naming convention containing 
 a numerical sequence index (e.g. fileA.001.png, fileA.002.png, fileA.003.png...) and serializes
 them into a compressed sequence string representing the entire sequence (e.g. fileA.1-3.png). It 
 should work regardless of where the numerical sequence index is embedded in the name. For examples,
-see basic usage below.
-
-  * README      this file
-  * LICENSE     the license under which pyseq is released
-  * pyseq.py    pyseq python module
-  * lss         a python script to be installed to /usr/local/bin
-  * /tests      example file sequences
-  * /doc        html docs
-
-For more complete documentation, visit:
-
-http://rsgalloway.github.com/pyseq
-
+see basic usage below or http://rsgalloway.github.com/pyseq
 
 Installation
 ------------
