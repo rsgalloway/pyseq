@@ -3,26 +3,29 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
+
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>PySeq v0.2.0b documentation &mdash; PySeq v0.2.0b documentation</title>
-    <link rel="stylesheet" href="http://rsgalloway.github.com/pyseq/static/default.css" type="text/css" />
-    <link rel="stylesheet" href="http://rsgalloway.github.com/pyseq/static/pygments.css" type="text/css" />
+    <title>PySeq v0.3.0 documentation &mdash; PySeq 0.3.0 documentation</title>
+    
+    <link rel="stylesheet" href="static/default.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.2.0b',
+        VERSION:     '0.3.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="http://rsgalloway.github.com/pyseq/static/jquery.js"></script>
-    <script type="text/javascript" src="http://rsgalloway.github.com/pyseq/static/underscore.js"></script>
-    <script type="text/javascript" src="http://rsgalloway.github.com/pyseq/static/doctools.js"></script>
-    <link rel="top" title="PySeq v0.2.0b documentation" href="#" /> 
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
+    <link rel="top" title="PySeq 0.3.0 documentation" href="#" /> 
   </head>
   <body>
     <div class="related">
@@ -34,7 +37,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="#">PySeq v0.2.0b documentation</a> &raquo;</li> 
+        <li><a href="#">PySeq 0.3.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -43,9 +46,13 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="pyseq-v0-2-0b-documentation">
-<h1>PySeq v0.2.0b documentation<a class="headerlink" href="#pyseq-v0-2-0b-documentation" title="Permalink to this headline">¶</a></h1>
-<p>PySeq is a python module that finds groups of items that follow a naming convention containing a numerical sequence index (e.g. fileA.001.png, fileA.002.png, fileA.003.png...) and serializes them into a compressed sequence string representing the entire sequence (e.g. fileA.1-3.png). It should work regardless of where the numerical sequence index is embedded in the name. For examples, see basic usage below.</p>
+  <div class="section" id="pyseq-v0-3-0-documentation">
+<h1>PySeq v0.3.0 documentation<a class="headerlink" href="#pyseq-v0-3-0-documentation" title="Permalink to this headline">¶</a></h1>
+<p>PySeq is a python module that finds groups of items that follow a naming convention containing a
+numerical sequence index (e.g. fileA.001.png, fileA.002.png, fileA.003.png...) and serializes them
+into a compressed sequence string representing the entire sequence (e.g. fileA.1-3.png). It should
+work regardless of where the numerical sequence index is embedded in the name. For examples, see
+basic usage below.</p>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
 <p>Installing PySeq is easily done using
@@ -72,9 +79,9 @@ script:</p>
 </div>
 <p>Using the &#8220;z1&#8221; file sequence example in the &#8220;tests&#8221; directory:</p>
 <div class="highlight-python"><pre>% ls tests/z1*
-tests/z1_001_v1.1.png   tests/z1_001_v1.4.png   tests/z1_002_v1.3.png   tests/z1_002_v2.2.png
-tests/z1_001_v1.2.png   tests/z1_002_v1.1.png   tests/z1_002_v1.4.png   tests/z1_002_v2.3.png
-tests/z1_001_v1.3.png   tests/z1_002_v1.2.png   tests/z1_002_v2.1.png   tests/z1_002_v2.4.png
+tests/z1_001_v1.1.png tests/z1_001_v1.4.png   tests/z1_002_v1.3.png   tests/z1_002_v2.2.png
+tests/z1_001_v1.2.png tests/z1_002_v1.1.png   tests/z1_002_v1.4.png   tests/z1_002_v2.3.png
+tests/z1_001_v1.3.png tests/z1_002_v1.2.png   tests/z1_002_v2.1.png   tests/z1_002_v2.4.png
 
 % lss tests/z1*
    4 z1_001_v1.%d.png 1-4
@@ -89,7 +96,9 @@ z1_002_v2.1-4.png</pre>
 <div class="section" id="some-api-usage-examples">
 <h3>Some API usage examples<a class="headerlink" href="#some-api-usage-examples" title="Permalink to this headline">¶</a></h3>
 <p><strong>Sequence compression</strong></p>
-<p><em>Example using getSequences to compress filesystem sequences starting with &#8220;bnc&#8221;. The getSequences function will return a list of all sequences found using the given input, which can be either a path or a list.</em></p>
+<p><em>Example using getSequences to compress filesystem sequences starting with &#8220;bnc&#8221;. The getSequences
+function will return a list of all sequences found using the given input, which can be either a path
+or a list.</em></p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyseq</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">seqs</span> <span class="o">=</span> <span class="n">getSequences</span><span class="p">(</span><span class="s">&#39;./tests/bnc*&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">seqs</span><span class="p">:</span> <span class="k">print</span> <span class="n">s</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%h%</span><span class="s">p%t </span><span class="si">%r</span><span class="s">&#39;</span><span class="p">)</span>
@@ -100,7 +109,9 @@ z1_002_v2.1-4.png</pre>
 <span class="go">bnc01_TinkSO_tx_1_ty_1.%04d.tif 101-105</span>
 </pre></div>
 </div>
-<p><em>Example using the Sequence class with a list as input. The Sequence class constructor will return a single Sequence class instance of sequential items, skipping any items in the list that are not part of the sequence.</em></p>
+<p><em>Example using the Sequence class with a list as input. The Sequence class constructor will return a
+single Sequence class instance of sequential items, skipping any items in the list that are not part
+of the sequence.</em></p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">Sequence</span><span class="p">([</span><span class="s">&#39;file.0001.jpg&#39;</span><span class="p">,</span> <span class="s">&#39;file.0002.jpg&#39;</span><span class="p">,</span> <span class="s">&#39;file.0003.jpg&#39;</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">s</span>
 <span class="go">file.1-3.jpg</span>
@@ -148,9 +159,15 @@ z1_002_v2.1-4.png</pre>
 <dd><p>special exception for sequence errors</p>
 </dd></dl>
 
+<dl class="exception">
+<dt id="pyseq.FormatError">
+<em class="property">exception </em><tt class="descclassname">pyseq.</tt><tt class="descname">FormatError</tt><a class="headerlink" href="#pyseq.FormatError" title="Permalink to this definition">¶</a></dt>
+<dd><p>special exception for seq format errors</p>
+</dd></dl>
+
 <dl class="class">
 <dt id="pyseq.Item">
-<em class="property">class </em><tt class="descclassname">pyseq.</tt><tt class="descname">Item</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#pyseq.Item" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pyseq.</tt><tt class="descname">Item</tt><big>(</big><em>item</em><big>)</big><a class="headerlink" href="#pyseq.Item" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sequence member file class</p>
 <dl class="attribute">
 <dt id="pyseq.Item.digits">
@@ -172,9 +189,9 @@ z1_002_v2.1-4.png</pre>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>item</strong> &#8211; A pyseq.Item class object.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>item</strong> &#8211; A pyseq.Item class object.</td>
 </tr>
-<tr class="field"><th class="field-name">Returns:</th><td class="field-body">True if this and item are sequential siblings.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True if this and item are sequential siblings.</td>
 </tr>
 </tbody>
 </table>
@@ -198,6 +215,12 @@ z1_002_v2.1-4.png</pre>
 <dd><p>Item absolute path, if a filesystem item.</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="pyseq.Item.signature">
+<tt class="descname">signature</tt><a class="headerlink" href="#pyseq.Item.signature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Non-numerical unique item signature.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">
@@ -211,10 +234,12 @@ z1_002_v2.1-4.png</pre>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;file.0006.jpg&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">s</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s">&#39;%04l </span><span class="si">%h%</span><span class="s">p%t %R&#39;</span><span class="p">)</span>
 <span class="go">   4 file.%04d.jpg 1-3 6</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="s">&#39;file.0009.jpg&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="s">&#39;file.0006.jpg&#39;</span><span class="p">)</span>
 <span class="go">True</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="s">&#39;file.0009.pic&#39;</span><span class="p">)</span>
 <span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">s</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%h%</span><span class="s">p%t </span><span class="si">%r</span><span class="s"> (%R)&#39;</span><span class="p">)</span>
+<span class="go">file.%04d.jpg 1-6 (1-3 6)</span>
 </pre></div>
 </div>
 <dl class="method">
@@ -225,7 +250,7 @@ z1_002_v2.1-4.png</pre>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>item</strong> &#8211; pyseq.Item object.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>item</strong> &#8211; pyseq.Item object.</td>
 </tr>
 </tbody>
 </table>
@@ -251,9 +276,9 @@ True if item is part of the sequence.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>item</strong> &#8211; pyseq.Item class object.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>item</strong> &#8211; pyseq.Item class object.</td>
 </tr>
-<tr class="field"><th class="field-name">Returns:</th><td class="field-body">True if item is a sequence member.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True if item is a sequence member.</td>
 </tr>
 </tbody>
 </table>
@@ -266,7 +291,7 @@ True if item is part of the sequence.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Returns:</th><td class="field-body">Last index number in sequence.</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Last index number in sequence.</td>
 </tr>
 </tbody>
 </table>
@@ -284,39 +309,39 @@ Format directives support padding, for example: &#8220;%%04l&#8221;.</p>
 <col width="77%" />
 </colgroup>
 <thead valign="bottom">
-<tr><th class="head">Directive</th>
+<tr class="row-odd"><th class="head">Directive</th>
 <th class="head">Meaning</th>
 </tr>
 </thead>
 <tbody valign="top">
-<tr><td><tt class="docutils literal"><span class="pre">%s</span></tt></td>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">%s</span></tt></td>
 <td>sequence start</td>
 </tr>
-<tr><td><tt class="docutils literal"><span class="pre">%e</span></tt></td>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">%e</span></tt></td>
 <td>sequence end</td>
 </tr>
-<tr><td><tt class="docutils literal"><span class="pre">%l</span></tt></td>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">%l</span></tt></td>
 <td>sequence length</td>
 </tr>
-<tr><td><tt class="docutils literal"><span class="pre">%f</span></tt></td>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">%f</span></tt></td>
 <td>list of found files</td>
 </tr>
-<tr><td><tt class="docutils literal"><span class="pre">%m</span></tt></td>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">%m</span></tt></td>
 <td>list of missing files</td>
 </tr>
-<tr><td><tt class="docutils literal"><span class="pre">%p</span></tt></td>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">%p</span></tt></td>
 <td>padding, e.g. %06d</td>
 </tr>
-<tr><td><tt class="docutils literal"><span class="pre">%r</span></tt></td>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">%r</span></tt></td>
 <td>implied range, start-end</td>
 </tr>
-<tr><td><tt class="docutils literal"><span class="pre">%R</span></tt></td>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">%R</span></tt></td>
 <td>explicit range, start-end [missing]</td>
 </tr>
-<tr><td><tt class="docutils literal"><span class="pre">%h</span></tt></td>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">%h</span></tt></td>
 <td>string preceding sequence number</td>
 </tr>
-<tr><td><tt class="docutils literal"><span class="pre">%t</span></tt></td>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">%t</span></tt></td>
 <td>string after the sequence number</td>
 </tr>
 </tbody>
@@ -325,9 +350,9 @@ Format directives support padding, for example: &#8220;%%04l&#8221;.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>format</strong> &#8211; Format string. Default is &#8216;%04l %h%p%t %R&#8217;.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>format</strong> &#8211; Format string. Default is &#8216;%04l %h%p%t %R&#8217;.</td>
 </tr>
-<tr class="field"><th class="field-name">Returns:</th><td class="field-body">Formatted string.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Formatted string.</td>
 </tr>
 </tbody>
 </table>
@@ -340,7 +365,7 @@ Format directives support padding, for example: &#8220;%%04l&#8221;.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Returns:</th><td class="field-body">List of files in sequence.</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">List of files in sequence.</td>
 </tr>
 </tbody>
 </table>
@@ -353,7 +378,7 @@ Format directives support padding, for example: &#8220;%%04l&#8221;.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Returns:</th><td class="field-body">String before the sequence index number.</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">String before the sequence index number.</td>
 </tr>
 </tbody>
 </table>
@@ -366,7 +391,7 @@ Format directives support padding, for example: &#8220;%%04l&#8221;.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Returns:</th><td class="field-body">The length of the sequence.</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The length of the sequence.</td>
 </tr>
 </tbody>
 </table>
@@ -379,7 +404,7 @@ Format directives support padding, for example: &#8220;%%04l&#8221;.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Returns:</th><td class="field-body">List of missing files.</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">List of missing files.</td>
 </tr>
 </tbody>
 </table>
@@ -392,7 +417,7 @@ Format directives support padding, for example: &#8220;%%04l&#8221;.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Returns:</th><td class="field-body">Absolute path to sequence.</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Absolute path to sequence.</td>
 </tr>
 </tbody>
 </table>
@@ -405,7 +430,7 @@ Format directives support padding, for example: &#8220;%%04l&#8221;.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Returns:</th><td class="field-body">First index number in sequence.</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">First index number in sequence.</td>
 </tr>
 </tbody>
 </table>
@@ -418,7 +443,7 @@ Format directives support padding, for example: &#8220;%%04l&#8221;.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Returns:</th><td class="field-body">String after the sequence index number.</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">String after the sequence index number.</td>
 </tr>
 </tbody>
 </table>
@@ -443,13 +468,13 @@ Format directives support padding, for example: &#8220;%%04l&#8221;.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>f1</strong> &#8211; pyseq.Item object.</li>
 <li><strong>f2</strong> &#8211; pyseq.Item object, for comparison.</li>
 </ul>
 </td>
 </tr>
-<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Dictionary with keys: frames, start, end.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Dictionary with keys: frames, start, end.</p>
 </td>
 </tr>
 </tbody>
@@ -466,19 +491,54 @@ Format directives support padding, for example: &#8220;%%04l&#8221;.</p>
 <span class="go">012_vb_110_v001.1-10.png</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span>
 <span class="go">10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">seq2</span> <span class="o">=</span> <span class="n">uncompress</span><span class="p">(</span><span class="s">&#39;./tests/a.</span><span class="si">%03d</span><span class="s">.tga 1-3 10 12-14&#39;</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s">&#39;</span><span class="si">%h%</span><span class="s">p%t %R&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">seq2</span>
+<span class="go">a.1-14.tga</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">seq2</span><span class="p">)</span>
+<span class="go">7</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">seq3</span> <span class="o">=</span> <span class="n">uncompress</span><span class="p">(</span><span class="s">&#39;a.</span><span class="si">%03d</span><span class="s">.tga 1-14 (1-3 10 12-14)&#39;</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s">&#39;</span><span class="si">%h%</span><span class="s">p%t </span><span class="si">%r</span><span class="s"> (%R)&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">seq3</span>
+<span class="go">a.1-14.tga</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">seq3</span><span class="p">)</span>
+<span class="go">7</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">seq4</span> <span class="o">=</span> <span class="n">uncompress</span><span class="p">(</span><span class="s">&#39;a.</span><span class="si">%03d</span><span class="s">.tga 1-14 (1-3 10 12-14)&#39;</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s">&#39;</span><span class="si">%h%</span><span class="s">p%t </span><span class="si">%s</span><span class="s">-</span><span class="si">%e</span><span class="s"> (%R)&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">seq4</span>
+<span class="go">a.1-14.tga</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">seq3</span><span class="p">)</span>
+<span class="go">7</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">seq5</span> <span class="o">=</span> <span class="n">uncompress</span><span class="p">(</span><span class="s">&#39;a.</span><span class="si">%03d</span><span class="s">.tga 1-14 (1 14)&#39;</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s">&#39;</span><span class="si">%h%</span><span class="s">p%t </span><span class="si">%r</span><span class="s"> (%R)&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">seq5</span>
+<span class="go">a.1-14.tga</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">seq5</span><span class="p">)</span>
+<span class="go">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">seq6</span> <span class="o">=</span> <span class="n">uncompress</span><span class="p">(</span><span class="s">&#39;a.</span><span class="si">%03d</span><span class="s">.tga 1-14 (1-14)&#39;</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s">&#39;</span><span class="si">%h%</span><span class="s">p%t </span><span class="si">%r</span><span class="s"> (%R)&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">seq6</span>
+<span class="go">a.1-14.tga</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">seq6</span><span class="p">)</span>
+<span class="go">14</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">seq7</span> <span class="o">=</span> <span class="n">uncompress</span><span class="p">(</span><span class="s">&#39;a.</span><span class="si">%03d</span><span class="s">.tga 1-100000 (1-10 100000)&#39;</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s">&#39;</span><span class="si">%h%</span><span class="s">p%t </span><span class="si">%r</span><span class="s"> (%R)&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">seq7</span>
+<span class="go">a.1-100000.tga</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">seq7</span><span class="p">)</span>
+<span class="go">11</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">seq8</span> <span class="o">=</span> <span class="n">uncompress</span><span class="p">(</span><span class="s">&#39;a.</span><span class="si">%03d</span><span class="s">.tga 1-100 ([10, 20, 40, 50])&#39;</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s">&#39;</span><span class="si">%h%</span><span class="s">p%t </span><span class="si">%r</span><span class="s"> (%m)&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">seq8</span>
+<span class="go">a.1-100.tga</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">seq8</span><span class="p">)</span>
+<span class="go">96</span>
 </pre></div>
 </div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>seqstring</strong> &#8211; Compressed sequence string.</li>
 <li><strong>format</strong> &#8211; Format of sequence string.</li>
 </ul>
 </td>
 </tr>
-<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">pyseq.Sequence instance.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">pyseq.Sequence instance.</p>
 </td>
 </tr>
 </tbody>
@@ -496,6 +556,7 @@ sequential members.</p>
 <span class="gp">... </span>
 <span class="go">012_vb_110_v001.1-10.png</span>
 <span class="go">012_vb_110_v002.1-10.png</span>
+<span class="go">a.1-14.tga</span>
 <span class="go">alpha.txt</span>
 <span class="go">bnc01_TinkSO_tx_0_ty_0.101-105.tif</span>
 <span class="go">bnc01_TinkSO_tx_0_ty_1.101-105.tif</span>
@@ -507,9 +568,12 @@ sequential members.</p>
 <span class="go">file02_44-47.rgb</span>
 <span class="go">file1-4.03.rgb</span>
 <span class="go">file_02.tif</span>
+<span class="go">z1_001_v1.1-4.png</span>
+<span class="go">z1_002_v1.1-4.png</span>
+<span class="go">z1_002_v2.1-4.png</span>
 </pre></div>
 </div>
-<p>Get sequences from a list:</p>
+<p>Get sequences from a list of file names:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">seqs</span> <span class="o">=</span> <span class="n">getSequences</span><span class="p">([</span><span class="s">&#39;fileA.1.rgb&#39;</span><span class="p">,</span> <span class="s">&#39;fileA.2.rgb&#39;</span><span class="p">,</span> <span class="s">&#39;fileB.1.rgb&#39;</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">seqs</span><span class="p">:</span> <span class="k">print</span> <span class="n">s</span>
 <span class="gp">... </span>
@@ -517,13 +581,19 @@ sequential members.</p>
 <span class="go">fileB.1.rgb</span>
 </pre></div>
 </div>
+<p>Get sequences from a list of objects, preserving object attrs:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">seqs</span> <span class="o">=</span> <span class="n">getSequences</span><span class="p">(</span><span class="n">repo</span><span class="o">.</span><span class="n">files</span><span class="p">())</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">seqs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">date</span>
+<span class="go">datetime.datetime(2011, 3, 21, 17, 31, 24)</span>
+</pre></div>
+</div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>source</strong> &#8211; Can be directory path or list of items.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>source</strong> &#8211; Can be directory path, list of strings, or sortable list of objects.</td>
 </tr>
-<tr class="field"><th class="field-name">Returns:</th><td class="field-body">List of pyseq.Sequence class objects.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">List of pyseq.Sequence class objects.</td>
 </tr>
 </tbody>
 </table>
@@ -547,7 +617,7 @@ sequential members.</p>
         <div class="sphinxsidebarwrapper">
   <h3><a href="#">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">PySeq v0.2.0b documentation</a><ul>
+<li><a class="reference internal" href="#">PySeq v0.3.0 documentation</a><ul>
 <li><a class="reference internal" href="#installation">Installation</a></li>
 <li><a class="reference internal" href="#overview">Overview</a><ul>
 <li><a class="reference internal" href="#some-api-usage-examples">Some API usage examples</a></li>
@@ -570,7 +640,7 @@ sequential members.</p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" size="18" />
+      <input type="text" name="q" />
       <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
@@ -593,12 +663,12 @@ sequential members.</p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="#">PySeq v0.2.0b documentation</a> &raquo;</li> 
+        <li><a href="#">PySeq 0.3.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2011, Ryan Galloway.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+        &copy; Copyright 2011-2012, Ryan Galloway.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>
