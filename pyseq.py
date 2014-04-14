@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # ---------------------------------------------------------------------------------------------
-# Copyright (c) 2011-2012, Ryan Galloway (ryan@rsgalloway.com)
+# Copyright (c) 2011-2014, Ryan Galloway (ryan@rsgalloway.com)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -34,57 +34,6 @@
 
 __author__ = "Ryan Galloway <ryan@rsgalloway.com>"
 __version__ = "0.3.0"
-
-# ---------------------------------------------------------------------------------------------
-# TODO
-# ---------------------------------------------------------------------------------------------
-"""
-  - add sequence operations that modify members, e.g. rename, reindex
-  - support additional syntax, e.g. x10 for every tenth frame
-  - keyboard interrupt (cntl+c)
-  - recurse subdirectories and display trees
-  - add optional explicit format parameter to diff function
-"""
-
-# ---------------------------------------------------------------------------------------------
-# CHANGELOG
-# ---------------------------------------------------------------------------------------------
-"""
-+v0.3.0 - 2012 Aug 05
-  + fixed %R in uncompress()
-  + fixed minor bug in getSequences() with glob
-  + fixed issue #1: same seqs with different extensions don't compress
-  + added some simple inline unit tests
-
-+v0.2.1b - 2011 Mar 23
-  + supports sequences of any serializable, sortable items
-  + fixes bug in lss
-
-+v0.2.0b - 2011 Mar 14
-  + Added support for wildcards in getSequence source input and in lss
-  + Added format method to Sequence class for formatted string stdout
-  + Sequence __str__ method now returns simplified compressed sequence string
-  + Added SequenceError exception
-  + Sequence qppend method raises SequenceError if file is non-sequence-member
-  + Export diff function to get numeric differences between two sequential files
-  + Alpha version of uncompress func for deserialization of compressed sequence strings
-  + Added additional attributes to Item class: path, frame, head, tail
-  + Item name attribute is now base name, fixes bug where contains method didn't work on file paths
-  + Moved function 'main' to lss permanently
-  + Added --format and --debug options to lss
-  + Ability to set log level with environment variable $PYSEQ_LOG_LEVEL
-  + Simplified format directives, e.g. from %(head)s to %h, with support for padding, e.g. %04l
-  + Fixed duplicate sequence index number bug
-  + Set logging level with PYSEQ_LOG_LEVEL environment variable
-  + Added 32 additional test cases
-  * Performance improvements
-  + Added html docs
-
-+v0.1.2 - 2011 Feb 15
-  + getSequences now takes either a directory path or a python list of files
-  + added setup.py
-  + added lss script
-"""
 
 import os
 import re
