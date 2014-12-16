@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # ---------------------------------------------------------------------------------------------
-# Copyright (c) 2011-2014, Ryan Galloway (ryan@rsgalloway.com)
+# Copyright (c) 2011-2012, Ryan Galloway (ryan@rsgalloway.com)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -35,6 +35,57 @@
 __author__ = "Ryan Galloway <ryan@rsgalloway.com>"
 __version__ = "0.3.0"
 
+# ---------------------------------------------------------------------------------------------
+# TODO
+# ---------------------------------------------------------------------------------------------
+"""
+  - add sequence operations that modify members, e.g. rename, reindex
+  - support additional syntax, e.g. x10 for every tenth frame
+  - keyboard interrupt (cntl+c)
+  - recurse subdirectories and display trees
+  - add optional explicit format parameter to diff function
+"""
+
+# ---------------------------------------------------------------------------------------------
+# CHANGELOG
+# ---------------------------------------------------------------------------------------------
+"""
++v0.3.0 - 2012 Aug 05
+  + fixed %R in uncompress()
+  + fixed minor bug in getSequences() with glob
+  + fixed issue #1: same seqs with different extensions don't compress
+  + added some simple inline unit tests
+
++v0.2.1b - 2011 Mar 23
+  + supports sequences of any serializable, sortable items
+  + fixes bug in lss
+
++v0.2.0b - 2011 Mar 14
+  + Added support for wildcards in getSequence source input and in lss
+  + Added format method to Sequence class for formatted string stdout
+  + Sequence __str__ method now returns simplified compressed sequence string
+  + Added SequenceError exception
+  + Sequence qppend method raises SequenceError if file is non-sequence-member
+  + Export diff function to get numeric differences between two sequential files
+  + Alpha version of uncompress func for deserialization of compressed sequence strings
+  + Added additional attributes to Item class: path, frame, head, tail
+  + Item name attribute is now base name, fixes bug where contains method didn't work on file paths
+  + Moved function 'main' to lss permanently
+  + Added --format and --debug options to lss
+  + Ability to set log level with environment variable $PYSEQ_LOG_LEVEL
+  + Simplified format directives, e.g. from %(head)s to %h, with support for padding, e.g. %04l
+  + Fixed duplicate sequence index number bug
+  + Set logging level with PYSEQ_LOG_LEVEL environment variable
+  + Added 32 additional test cases
+  * Performance improvements
+  + Added html docs
+
++v0.1.2 - 2011 Feb 15
+  + getSequences now takes either a directory path or a python list of files
+  + added setup.py
+  + added lss script
+"""
+
 import os
 import re
 import logging
@@ -47,6 +98,10 @@ gFormat = '%04l %h%p%t %R'
 # regex for matching numerical characters
 gDigitsRE = re.compile(r'\d+')
 
+gStereoRE = re.compile(r'\_left\_|\_right\_|\_l\.|\_r\.')
+#testPattern = re.compile(r'\_left\_|\_right\_|\_l\.|\_r\.')
+gStereoREFilter = re.compile(r'.*\_left\_.*|.*\_right\_.*|.*\_l\..*|.*\_r\..*')
+
 # regex for matching format directives
 gFormatRE = re.compile(r'%(?P<pad>\d+)?(?P<var>\w+)')
 
@@ -55,8 +110,6 @@ __all__ = ['SequenceError', 'FormatError', 'Item', 'Sequence', 'diff', 'uncompre
 
 # logging handlers
 log = logging.getLogger('pyseq')
-log.addHandler(logging.StreamHandler())
-log.setLevel(int(os.environ.get('PYSEQ_LOG_LEVEL', logging.INFO)))
 
 class SequenceError(Exception):
     """special exception for sequence errors"""
@@ -82,6 +135,8 @@ class Item(str):
         self.__filename = os.path.basename(str(item))
         self.__digits = gDigitsRE.findall(self.name)
         self.__parts = gDigitsRE.split(self.name)
+        self.__size = os.path.getsize(self.__path)
+        self.__mtime = os.path.getmtime(self.__path)
 
         # modified by self.isSibling()
         self.frame = ''
@@ -108,6 +163,12 @@ class Item(str):
 
     def _get_digits(self):
         return self.__digits
+    
+    def _get_size(self):
+        return self.__size
+    
+    def _get_mtime(self):
+        return self.__mtime
 
     def _get_parts(self):
         return self.__parts
@@ -123,6 +184,7 @@ class Item(str):
     name = property(_get_filename, _set_readonly, doc="Item base name attribute.")
     dirname = property(_get_dirname, _set_readonly, doc="Item directory name, if a filesystem item.")
     digits = property(_get_digits, _set_readonly, doc="Numerical components of item name.")
+    size = property(_get_size, _set_readonly, doc="Item Size")
     parts = property(_get_parts, _set_readonly, doc="Non-numerical components of item name.")
     signature = property(_get_sig, _set_readonly, doc="Non-numerical unique item signature.")
 
@@ -177,6 +239,7 @@ class Sequence(list):
         :return: pyseq.Sequence class instance.
         """
         super(Sequence, self).__init__([Item(items.pop(0))])
+        self.isStereo = False
         while items:
             f = Item(items.pop(0))
             try:
@@ -205,7 +268,7 @@ class Sequence(list):
             }
 
     def __str__(self):
-        return self.format('%h%r%t')
+        return self.format('%h%p%t')
 
     def __repr__(self):
         return '<pyseq.Sequence "%s">' % str(self)
@@ -276,15 +339,23 @@ class Sequence(list):
         try:
             return self.frames()[0]
         except IndexError:
-            return 0
+            if self.length() == 1:
+                '''fishy workaround we tend to have the last digit pack as frame numbers'''
+                return int(self[0]._get_digits()[-1])
+            else:
+                return 0
 
     def end(self):
         """:return: Last index number in sequence."""
         try:
             return self.frames()[-1]
         except IndexError:
-            return 0
-
+            if self.length() == 1:
+                '''fishy workaround we tend to have the last digit pack as frame numbers'''
+                return int(self[0]._get_digits()[-1])
+            else:
+                return 0
+            
     def missing(self):
         """:return: List of missing files."""
         if not hasattr(self, '__missing') or not self.__missing:
@@ -303,6 +374,9 @@ class Sequence(list):
         """:return: Absolute path to sequence."""
         _dirname = str(os.path.dirname(os.path.abspath(self[0].path)))
         return os.path.join(_dirname, str(self))
+    
+    def dirname(self):
+        return str(os.path.dirname(os.path.abspath(self[0].path)))
 
     def contains(self, item):
         """
@@ -402,6 +476,173 @@ class Sequence(list):
             frange = xrange(self.start(), self.end())
             return filter(lambda x: x not in self.frames(), frange)
         return ''
+    
+    def _calc_average_size(self, low = None, high= None):
+        '''
+        returns the average size of items if low and high are indicated
+        it calculates the average between those
+        '''
+        self._sizes = list()
+        if not low and not high:
+            for i in self:
+                self._sizes.append(i._get_size())
+        else:
+            for i in self[low:high]:
+                self._sizes.append(i._get_size())
+        self._sizes.remove(min(self._sizes))
+        self._sizes.remove(max(self._sizes))
+        self._average_size =  (sum(self._sizes)/len(self._sizes))
+        return self._average_size
+    
+    def _get_fishy_sizes(self,threshold = 5):
+        '''
+        returns items which differ from the average in percent 
+        '''
+        self._calc_average_size()
+        percent = self._average_size * (threshold/100.0) 
+        minV = self._average_size - percent
+        maxV = self._average_size + percent
+        self._fishy_files = list()
+        for i in self:
+            if i._get_size() < minV or i._get_size() > maxV:
+                 self._fishy_files.append(i)
+                 
+        return self._fishy_files
+    
+    def _get_size_jumps(self, threshold = 5, frameRange = 10):
+        '''
+        returns a list of dicts 
+        per item a dict is created with the item under the key item and the average filesize
+        '''
+        
+        self._fishy_jump = list()
+        
+        for e, i in enumerate(self):
+            tempDict = dict()
+            if e <= frameRange/2.0:
+                high = e + frameRange/2
+                low = 0
+            elif frameRange/2.0 < e < len(self)-frameRange/2.0:
+                high = e + frameRange/2
+                low = e - frameRange/2
+            elif e >= len(self)-frameRange/2.0:
+                high = len(self)-1
+                low = e - frameRange/2
+            tempAvg = self._calc_average_size(low=low,high=high)
+            percent = tempAvg * (threshold/100.0) 
+            minV = tempAvg - percent
+            maxV = tempAvg + percent
+            if i._get_size() < minV or i._get_size() > maxV:
+                 tempDict['item'] = i
+                 tempDict['avgSize'] = tempAvg
+                 self._fishy_jump.append(tempDict)
+            
+        if self._fishy_jump:
+            log.info('found %s items %s that vary in size by %s percent in an average range of %s frames' % (len(self._fishy_jump),self._fishy_jump,threshold,frameRange))
+        return self._fishy_jump
+    
+    def _create_mov(self, resX = 1724, resY = 936, soundFile = None, **kwargs):
+        '''
+        little wrapper to create an mov from a sequence object
+        '''
+        oldExt = self.format("%t").split('.')[-1]
+        newDirname = self.dirname().replace(oldExt, 'mov')
+        mjpgName = os.path.join(newDirname, self.format("%h.mov"))
+        mjpgName =mjpgName.replace('..','.')
+        from helper import srConverter
+        convert = srConverter.srConverter()
+        convert.generateMjpgAFromImageSequence(self.path(),self.start(), self.end(),mjpgName, resX = resX, resY = resY, soundFile = soundFile, **kwargs)
+        return mjpgName
+    
+    def _create_mp4(self,resX = 1724, resY = 936, soundFile = None, **kwargs):
+        '''
+        little wrapper to create an mov from a sequence object
+        '''
+        oldExt = self.format("%t").split('.')[-1]
+        newDirname = self.dirname().replace(oldExt, 'mp4')
+        mp4Name = os.path.join(newDirname, self.format("%h.mp4"))
+        mp4Name =mp4Name.replace('..','.')
+        from helper import srConverter
+        convert = srConverter.srConverter()
+        convert.generateMp4FromImageSequence(self.path(),self.start(), self.end(),mp4Name, resX = resX, resY = resY, soundFile = soundFile, **kwargs)
+        return mp4Name
+    
+    def _get_max_mtime(self):
+        '''
+        returns the latest mtime of all items
+        '''
+        maxDate = list()
+        for i in self:
+            maxDate.append(i._get_mtime())
+        log.info('returning max time from mono object')
+        return max(maxDate)
+        
+    def _get_size(self):
+        '''
+        returns the size all items 
+        divide the result by 1024/1024 to get megabytes
+        '''
+        tempSize = list() 
+        for i in self:
+            tempSize.append(i._get_size())
+        return sum(tempSize)
+    
+class stereoSequence(Sequence):
+
+
+    def __init__(self, items, left, right):
+        
+        super(Sequence, self).__init__([Item(items.pop(0))])
+        self.isStereo = False
+        while items:
+            f = Item(items.pop(0))
+            try:
+                self.append(f)
+                log.debug('+Item belongs to sequence.')
+            except SequenceError:
+                log.debug('-Item does not belong to sequence.')
+                continue
+            except KeyboardInterrupt:
+                log.info("Stopping.")
+                break    
+        
+        self.left = left
+        self.right = right
+        self.isStereo = True
+
+    def __str__(self):
+        lPattern = re.compile(r'\_l\.|\_r\.')
+        leftPattern = re.compile(r'\_left\_|\_right\_')
+        lFilter = re.compile(r'.*\_l\..*|.*\_r\..*')
+        leftFilter = re.compile(r'.*\_left\_.*|.*\_right\_.*')
+        if re.match(lFilter,self.left.format('%h%p%t')):
+            return re.sub(lPattern,'_%v.',self.left.format('%h%p%t'))
+        elif re.match(leftFilter,self.left.format('%h%p%t')):
+            return re.sub(leftPattern,'_%V_',self.left.format('%h%p%t'))
+
+    def _get_max_mtime(self):
+        '''
+        returns the latest mtime of all items left and right
+        '''
+        maxDate = list()
+        for i in self.left:
+            maxDate.append(i._get_mtime())
+        for i in self.right:
+            maxDate.append(i._get_mtime())
+        log.info('returning max time from s3d object')
+        return max(maxDate)
+    
+    def _get_size(self):
+        '''
+        returns the size all items left and right in bytes
+        divide the result by 1024/1024 to get megabytes
+        '''
+        tempSize = list() 
+        for i in self.left:
+            tempSize.append(i._get_size())
+        for i in self.right:
+            tempSize.append(i._get_size())
+        return sum(tempSize)
 
 def diff(f1, f2):
     """
@@ -604,7 +845,7 @@ def uncompress(seqstring, format=gFormat):
         return seqs[0]
     return seqs
 
-def getSequences(source):
+def getSequences(source,stereo=False,folders=True):
     """
     Returns a list of Sequence objects given a directory or list that contain
     sequential members.
@@ -658,8 +899,10 @@ def getSequences(source):
     # glob the source items and sort them
     if type(source) == list:
         items = sorted(source, key=lambda x: str(x))
-    elif type(source) == str and os.path.isdir(source):
+    elif type(source) == str and os.path.isdir(source) and folders:
         items = sorted(glob(os.path.join(source, '*')))
+    elif type(source) == str and os.path.isdir(source) and not folders:
+        items = sorted(glob(os.path.join(source, '*.*')))
     elif type(source) == str:
         items = sorted(glob(source))
     else:
@@ -680,7 +923,68 @@ def getSequences(source):
             seqs.append(seq)
 
     log.debug("time: %s" %(datetime.now() - start))
-    return seqs
+    if not stereo:
+        log.info("added sequences: %s" %(seqs))
+        return seqs
+    else:
+
+        listName = []
+        left = []
+        right = []
+        newSeqs = []
+        seqs.sort()
+        
+        ### this is super unsexy but a fair assumption but it needs to be extended...
+        ### checking for pairs somehow or rewrite the entire s3d thingy
+        if len(seqs) == 1:
+            newSeqs = seqs
+        else:
+            for i in seqs:
+                if re.match(gStereoREFilter,str(i)):
+                    log.info("stereo detected for %s" % i)
+                    listName.append((gStereoRE.finditer(str(i)),i))
+                else:
+                    newSeqs.append(i)
+                    
+        for d in listName:
+            for x in d[0]:
+                eye = re.sub(r'[^A-Za-z]','', x.group())
+                log.debug('found eye %s' % eye)
+                if eye == 'left' or eye == 'l' :
+                    left.append({'index':x.span(),'file':d[1],'start':d[1].format('%h%p%t')[:x.start()],'end':d[1].format('%h%p%t')[x.end():]})
+                elif eye == 'right' or eye == 'r' :
+                    right.append({'index':x.span(),'file':d[1],'start':d[1].format('%h%p%t')[:x.start()],'end':d[1].format('%h%p%t')[x.end():]})
+
+        
+        for l,r in zip(left,right):
+            ## assuming that the order dictates that the stereo pairs reside at the same index..
+            if l['start'] == r['start'] and l['end'] == r['end']:
+                newSeqs.append(stereoSequence(l['file'][:],l['file'],r['file']))
+        
+        log.debug("time: %s" %(datetime.now() - start))
+        log.info("added sequences: %s" %(newSeqs))
+        return newSeqs
+
+def img2pyseq(path,stereo=True):
+    '''
+    path string can be either an evaluated path 
+    like prj_SQ0010_SH0010_matte_base_v001_l.1001.exr
+    or prj_SQ0010_SH0010_matte_base_v001_%v.%04d.exr
+    '''
+    stereoRe = re.compile(r'\_left\.|\_right\.|\_l\.|\_r\.|\_\%v\.')
+    padding = re.compile(r'[0-9]{4}\.|\%04d\.|\%d\.|\%02d\.|\%03d\.|\%05d\.|\#\.|\#\#\.|\#\#\#\.|\#\#\#\#\.|[0-9]*\-[0-9]*\#\.')
+    path = re.sub(padding, '*.' , path)
+    path = re.sub(stereoRe, '_*.',path)
+    seq = getSequences(path,stereo=stereo,folders=False)
+    if not seq:
+        return None
+    else:
+        for i in seq:
+            if not str(i).__contains__('_c.'):
+                return i
+
+
+
 
 if __name__ == '__main__':
     """
