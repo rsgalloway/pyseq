@@ -1,1 +1,2 @@
-from pyseq import *
+from .pyseq import *
+print("coucou")

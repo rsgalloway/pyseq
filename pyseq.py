@@ -34,7 +34,7 @@
 
 __author__ = "Ryan Galloway <ryan@rsgalloway.com>"
 __version__ = "0.3.0"
-
+import sys
 import os
 import re
 import logging
@@ -116,7 +116,7 @@ class Item(str):
         return "".join(self.parts)
 
     def _set_readonly(self, value):
-        raise TypeError, 'Read-only attribute'
+        raise TypeError('Read-only attribute')
 
     # immutable properties
     path = property(_get_path, _set_readonly, doc="Item absolute path, if a filesystem item.")
@@ -257,8 +257,8 @@ class Sequence(list):
             format = format.replace(_old, _new)
         try:
             return format % self.__attrs__()
-        except KeyError, e:
-            raise 
+        except KeyError as e:
+            raise Exception(e)
 
     def length(self):
         """:return: The length of the sequence."""
@@ -267,8 +267,8 @@ class Sequence(list):
     def frames(self):
         """:return: List of files in sequence."""
         if not hasattr(self, '__frames') or not self.__frames:
-            self.__frames = map(int, self._get_frames())
-            self.__frames.sort()
+            self.__frames = [int(e) for e in self._get_frames()]
+            self.__frames = sorted(self.__frames)
         return self.__frames
 
     def start(self):
@@ -288,7 +288,7 @@ class Sequence(list):
     def missing(self):
         """:return: List of missing files."""
         if not hasattr(self, '__missing') or not self.__missing:
-            self.__missing = map(int, self._get_missing())
+            self.__missing = [int(e) for e in self._get_missing()]
         return self.__missing
 
     def head(self):
@@ -346,7 +346,7 @@ class Sequence(list):
             self.__frames = None
             self.__missing = None
         else:
-            raise SequenceError, 'Item is not a member of this sequence'
+            raise SequenceError('Item is not a member of this sequence')
 
     def _get_padding(self):
         """:return: padding string, e.g. %07d"""
@@ -399,7 +399,11 @@ class Sequence(list):
     def _get_missing(self):
         """looks for missing sequence indexes in sequence"""
         if len(self) > 1:
-            frange = xrange(self.start(), self.end())
+            frange=None
+            try:
+                frange = xrange(self.start(), self.end())
+            except:
+                frange = range(self.start(), self.end())
             return filter(lambda x: x not in self.frames(), frange)
         return ''
 
@@ -663,7 +667,7 @@ def getSequences(source):
     elif type(source) == str:
         items = sorted(glob(source))
     else:
-        raise TypeError, 'Unsupported format for source argument'
+        raise TypeError('Unsupported format for source argument')
     log.debug('Found %s files' % len(items))
 
     # organize the items into sequences
@@ -720,5 +724,5 @@ if __name__ == '__main__':
     # grab all the seqs in the tests dir
     seqs = getSequences(os.path.join(os.path.dirname(__file__), 'tests'))
     for s in seqs:
-        print s.format('%h%p%t %r')
+        print(s.format('%h%p%t %r'))
 
