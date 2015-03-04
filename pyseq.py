@@ -268,7 +268,7 @@ class Sequence(list):
             'e': 'i',
             'l': 'i',
             'f': 's',
-            'm': 'm',
+            'm': 's',
             'p': 's',
             'r': 's',
             'R': 's',
