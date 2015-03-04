@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# 
+#
 # Copyright (C) 2011-2012 Ryan Galloway (ryan@rsgalloway.com)
 #
 # This module is part of Shotman and is released under
