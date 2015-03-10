@@ -343,8 +343,11 @@ class Sequence(list):
             return self.frames()[0]
         except IndexError:
             if self.length() == 1:
-                '''fishy workaround we tend to have the last digit pack as frame numbers'''
-                return int(self[0]._get_digits()[-1])
+                try:
+                    '''fishy workaround we tend to have the last digit pack as frame numbers'''
+                    return int(self[0]._get_digits()[-1])
+                except:
+                    return 0
             else:
                 return 0
 
@@ -1073,12 +1076,13 @@ if __name__ == '__main__':
     seqs = getSequences(s3dTestRoot, stereo = True)
     for s in seqs:
         print s.format('%h%p%t %r')
+        print s.path()
         if s.isStereo:
             print s.left.format('%h%p%t %r')
             print s.right.format('%h%p%t %r')
             
     seq = img2pyseq(os.path.join(s3dTestRoot,'012_vb_110_v001_%v.%04d.png'))
-    print seq
+    print seq.format('%h%p%t %r')
     print seq.path()
         #print s._get_size()
         #print s._get_max_mtime()

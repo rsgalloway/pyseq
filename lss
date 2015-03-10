@@ -55,7 +55,7 @@ Formatting options:
         args = os.listdir(os.getcwd())
     elif len(args) == 1 and os.path.isdir(args[0]):
         args = os.listdir(args[0])
-    for seq in pyseq.getSequences(args):
+    for seq in pyseq.getSequences(args,stereo=True):
         print seq.format(options.format)
     return 0
 
