@@ -98,9 +98,7 @@ gFormat = '%04l %h%p%t %R'
 # regex for matching numerical characters
 gDigitsRE = re.compile(r'\d+')
 
-gStereoRE = re.compile(r'\_left\_|\_right\_|\_l\.|\_r\.')
-#testPattern = re.compile(r'\_left\_|\_right\_|\_l\.|\_r\.')
-gStereoREFilter = re.compile(r'.*\_left\_.*|.*\_right\_.*|.*\_l\..*|.*\_r\..*')
+gStereoRE = re.compile(r'(\_|\.)(left|right|l|r|%v|%V)(\_|\.)')
 
 # regex for matching format directives
 gFormatRE = re.compile(r'%(?P<pad>\d+)?(?P<var>\w+)')
@@ -239,7 +237,7 @@ class Sequence(list):
         :return: pyseq.Sequence class instance.
         """
         super(Sequence, self).__init__([Item(items.pop(0))])
-        self.isStereo = False
+        self.__isStereo = False
         while items:
             f = Item(items.pop(0))
             try:
@@ -251,6 +249,11 @@ class Sequence(list):
             except KeyboardInterrupt:
                 log.info("Stopping.")
                 break
+        self.foundS3d = re.search(gStereoRE,self[0])
+    
+    @property
+    def isStereo(self):
+        return self.__isStereo
 
     def __attrs__(self):
         """Replaces format directives with values"""
@@ -352,7 +355,10 @@ class Sequence(list):
         except IndexError:
             if self.length() == 1:
                 '''fishy workaround we tend to have the last digit pack as frame numbers'''
-                return int(self[0]._get_digits()[-1])
+                try:
+                    return int(self[0]._get_digits()[-1])
+                except:
+                    return 0
             else:
                 return 0
             
@@ -541,32 +547,6 @@ class Sequence(list):
             log.info('found %s items %s that vary in size by %s percent in an average range of %s frames' % (len(self._fishy_jump),self._fishy_jump,threshold,frameRange))
         return self._fishy_jump
     
-    def _create_mov(self, resX = 1724, resY = 936, soundFile = None, **kwargs):
-        '''
-        little wrapper to create an mov from a sequence object
-        '''
-        oldExt = self.format("%t").split('.')[-1]
-        newDirname = self.dirname().replace(oldExt, 'mov')
-        mjpgName = os.path.join(newDirname, self.format("%h.mov"))
-        mjpgName =mjpgName.replace('..','.')
-        from helper import srConverter
-        convert = srConverter.srConverter()
-        convert.generateMjpgAFromImageSequence(self.path(),self.start(), self.end(),mjpgName, resX = resX, resY = resY, soundFile = soundFile, **kwargs)
-        return mjpgName
-    
-    def _create_mp4(self,resX = 1724, resY = 936, soundFile = None, **kwargs):
-        '''
-        little wrapper to create an mov from a sequence object
-        '''
-        oldExt = self.format("%t").split('.')[-1]
-        newDirname = self.dirname().replace(oldExt, 'mp4')
-        mp4Name = os.path.join(newDirname, self.format("%h.mp4"))
-        mp4Name =mp4Name.replace('..','.')
-        from helper import srConverter
-        convert = srConverter.srConverter()
-        convert.generateMp4FromImageSequence(self.path(),self.start(), self.end(),mp4Name, resX = resX, resY = resY, soundFile = soundFile, **kwargs)
-        return mp4Name
-    
     def _get_max_mtime(self):
         '''
         returns the latest mtime of all items
@@ -592,8 +572,8 @@ class stereoSequence(Sequence):
 
     def __init__(self, items, left, right):
         
-        super(Sequence, self).__init__([Item(items.pop(0))])
-        self.isStereo = False
+        super(stereoSequence, self).__init__([Item(items.pop(0))])
+
         while items:
             f = Item(items.pop(0))
             try:
@@ -608,18 +588,18 @@ class stereoSequence(Sequence):
         
         self.left = left
         self.right = right
-        self.isStereo = True
+        self.__isStereo = True
+        if 'left' in self.left.foundS3d.groups():
+            pattern = ''.join([ self.left.foundS3d.groups()[0], '%V' , self.left.foundS3d.groups()[-1] ])
+        elif'l' in self.left.foundS3d.groups():
+            pattern = ''.join([ self.left.foundS3d.groups()[0], '%v' , self.left.foundS3d.groups()[-1] ])
+        searchPath = re.sub(gStereoRE,pattern, self[0])
+        self.foundS3d = re.search( gStereoRE, searchPath)
 
-    def __str__(self):
-        lPattern = re.compile(r'\_l\.|\_r\.')
-        leftPattern = re.compile(r'\_left\_|\_right\_')
-        lFilter = re.compile(r'.*\_l\..*|.*\_r\..*')
-        leftFilter = re.compile(r'.*\_left\_.*|.*\_right\_.*')
-        if re.match(lFilter,self.left.format('%h%p%t')):
-            return re.sub(lPattern,'_%v.',self.left.format('%h%p%t'))
-        elif re.match(leftFilter,self.left.format('%h%p%t')):
-            return re.sub(leftPattern,'_%V_',self.left.format('%h%p%t'))
-
+    @property
+    def isStereo(self):
+        return self.__isStereo
+    
     def _get_max_mtime(self):
         '''
         returns the latest mtime of all items left and right
@@ -631,6 +611,30 @@ class stereoSequence(Sequence):
             maxDate.append(i._get_mtime())
         log.info('returning max time from s3d object')
         return max(maxDate)
+    
+    def head(self):
+        """:return: String before the sequence index number."""
+        s3d = re.search(gStereoRE, self[0].head)
+        if s3d:
+            if 'l' in s3d.groups():
+                return re.sub(gStereoRE, '%s%s%s' %(s3d.groups()[0],'%v', s3d.groups()[-1]), self[0].head)
+            elif 'left' in s3d.groups():
+                return re.sub(gStereoRE, '%s%s%s' %(s3d.groups()[0],'%V', s3d.groups()[-1]), self[0].head)
+            else:
+                return self[0].head
+        return self[0].head
+
+    def tail(self):
+        """:return: String after the sequence index number."""
+        s3d = re.search(gStereoRE, self[0].tail)
+        if s3d:
+            if 'l' in s3d.groups():
+                return re.sub(gStereoRE, '%s%s%s' %(s3d.groups()[0],'%v', s3d.groups()[-1]), self[0].tail)
+            elif 'left' in s3d.groups():
+                return re.sub(gStereoRE, '%s%s%s' %(s3d.groups()[0],'%V', s3d.groups()[-1]), self[0].tail)
+            else:
+                return self[0].tail
+        return self[0].tail
     
     def _get_size(self):
         '''
@@ -845,6 +849,14 @@ def uncompress(seqstring, format=gFormat):
         return seqs[0]
     return seqs
 
+def stereoPairs(left,right):
+    if left == 'left' and right == 'right':
+        return True
+    elif left == 'l' and right == 'r':
+        return True
+    else:
+        return False
+
 def getSequences(source,stereo=False,folders=True):
     """
     Returns a list of Sequence objects given a directory or list that contain
@@ -940,27 +952,46 @@ def getSequences(source,stereo=False,folders=True):
             newSeqs = seqs
         else:
             for i in seqs:
-                if re.match(gStereoREFilter,str(i)):
+                found = re.search(gStereoRE,str(i))
+                if found:
                     log.info("stereo detected for %s" % i)
-                    listName.append((gStereoRE.finditer(str(i)),i))
+                    listName.append((found,i))
                 else:
                     newSeqs.append(i)
                     
         for d in listName:
-            for x in d[0]:
-                eye = re.sub(r'[^A-Za-z]','', x.group())
-                log.debug('found eye %s' % eye)
-                if eye == 'left' or eye == 'l' :
-                    left.append({'index':x.span(),'file':d[1],'start':d[1].format('%h%p%t')[:x.start()],'end':d[1].format('%h%p%t')[x.end():]})
-                elif eye == 'right' or eye == 'r' :
-                    right.append({'index':x.span(),'file':d[1],'start':d[1].format('%h%p%t')[:x.start()],'end':d[1].format('%h%p%t')[x.end():]})
-
+            x = d[0]
+            eye = x.groups()[1]
+            log.debug('found eye %s' % eye)
+            if eye == 'left' or eye == 'l' :
+                left.append({'index':x.span(),
+                             'file':d[1],
+                             'start':d[1].format('%h%p%t')[:x.start()],
+                             'end':d[1].format('%h%p%t')[x.end():],
+                             'eye': eye})
+            elif eye == 'right' or eye == 'r':
+                right.append({'index':x.span(),
+                              'file':d[1],
+                              'start':d[1].format('%h%p%t')[:x.start()],
+                              'end':d[1].format('%h%p%t')[x.end():],
+                              'eye': eye})
+        
         
         for l,r in zip(left,right):
-            ## assuming that the order dictates that the stereo pairs reside at the same index..
-            if l['start'] == r['start'] and l['end'] == r['end']:
+            if l in left:
+                left.remove(l)
+            if r  in right:
+                right.remove(r)
+            ## assuming that the order dictates that the stereo pairs reside at the same index.. from the lists
+            if l['start'] == r['start'] and l['end'] == r['end'] and stereoPairs(l['eye'] , r['eye']) :
                 newSeqs.append(stereoSequence(l['file'][:],l['file'],r['file']))
-        
+            else:
+                newSeqs += [l['file'],r['file']]
+
+        if left:
+            newSeqs += [f.get('file') for f in left ]
+        if right:
+            newSeqs += [f.get('file') for f in right ]
         log.debug("time: %s" %(datetime.now() - start))
         log.info("added sequences: %s" %(newSeqs))
         return newSeqs
@@ -971,17 +1002,24 @@ def img2pyseq(path,stereo=True):
     like prj_SQ0010_SH0010_matte_base_v001_l.1001.exr
     or prj_SQ0010_SH0010_matte_base_v001_%v.%04d.exr
     '''
-    stereoRe = re.compile(r'\_left\.|\_right\.|\_l\.|\_r\.|\_\%v\.')
-    padding = re.compile(r'[0-9]{4}\.|\%04d\.|\%d\.|\%02d\.|\%03d\.|\%05d\.|\#\.|\#\#\.|\#\#\#\.|\#\#\#\#\.|[0-9]*\-[0-9]*\#\.')
-    path = re.sub(padding, '*.' , path)
-    path = re.sub(stereoRe, '_*.',path)
+    padding = re.compile(r'(\_|\.)([0-9]{4}|\%04d|\%d|\%02d|\%03d|\%05d|\#|\#\#|\#\#\#|\#\#\#\#|[0-9]*\-[0-9]*\#)(\_|\.)')
+    found = re.search(padding, path)
+    if found:
+        path = re.sub(padding, '%s*%s' % (path[found.start()],path[found.end()-1]), path)
+    found = re.search(gStereoRE, path)
+    if found:
+        path = re.sub(gStereoRE,'%s*%s' % (path[found.start()],path[found.end()-1]), path)
     seq = getSequences(path,stereo=stereo,folders=False)
     if not seq:
         return None
     else:
         for i in seq:
             if not str(i).__contains__('_c.'):
-                return i
+                if not found:
+                    return i
+                else:
+                    if i.foundS3d.groups() == found.groups() or i.left.foundS3d.groups() == found.groups() or i.right.foundS3d.groups() == found.groups(): 
+                        return i
 
 
 
@@ -992,37 +1030,56 @@ if __name__ == '__main__':
     dummy files that live in pyseq/tests. Changing or modifying these
     files may break the assertions in the tests below.
     """
-
+    logging.basicConfig(level=logging.INFO)
+#===============================================================================
     # test passing in a list of files
-    seqs = getSequences(['fileA.1.rgb', 'fileA.2.rgb', 'fileB.1.rgb'])
+    testRoot = os.path.join(os.path.dirname(__file__), 'tests')
+    s3dTestRoot = os.path.join(os.path.dirname(__file__), 's3dTests')
+    seqs = getSequences([os.path.join(testRoot,'fileA.0001.jpg'), 
+                         os.path.join(testRoot,'fileA.0002.jpg'), 
+                         os.path.join(testRoot,'fileB.0001.jpg')])
     assert len(seqs) == 2
-
+ 
     # get a diff of two files in the same seq
-    d = diff('fileA.0001.dpx', 'fileA.0002.dpx')
+    d = diff(os.path.join(testRoot,'fileA.0001.jpg'), os.path.join(testRoot, 'fileA.0002.jpg'))
     assert d[0]['frames'] == ('0001', '0002')
-
+ 
     # get a diff of two files in the same seq
-    d = diff('012_vb_110_v002.1.dpx', '012_vb_110_v002.2.dpx')
-    assert d[0]['frames'] == ('1', '2')
-
+    d = diff(os.path.join(testRoot,'012_vb_110_v002.0001.png'), os.path.join(testRoot,'012_vb_110_v002.0002.png'))
+    assert d[0]['frames'] == ('0001', '0002')
+ 
     # glob some files from the tests dir
-    seqs = getSequences('tests/fileA.*')
+    seqs = getSequences('./tests/fileA.*')
     assert len(seqs) == 2
-
+ 
     # uncompress a few files, test the format matching
     seq = uncompress('./tests/012_vb_110_v001.%04d.png 1-10', format='%h%p%t %r')
     assert len(seq) == 10
     assert seq.head() == '012_vb_110_v001.' and seq.tail() == '.png'
     assert seq.frames() == range(1, 11)
-
+ 
     # ... with slightly different format matching
-    seq = uncompress('./tests/012_vb_110_v001.1-10.png', format='%h%r%t')
-    assert len(seq) == 10
-    assert seq.head() == '012_vb_110_v001.' and seq.tail() == '.png'
-    assert seq.frames() == range(1, 11)
+    #seq = uncompress('./tests/012_vb_110_v001.1-10.png', format='%h%r%t')
+    #assert len(seq) == 10
+    #assert seq.head() == '012_vb_110_v001.' and seq.tail() == '.png'
+    #assert seq.frames() == range(1, 11)
+#===============================================================================
 
     # grab all the seqs in the tests dir
-    seqs = getSequences(os.path.join(os.path.dirname(__file__), 'tests'))
+    seqs = getSequences(testRoot, stereo = True)
     for s in seqs:
         print s.format('%h%p%t %r')
+        
+    seqs = getSequences(s3dTestRoot, stereo = True)
+    for s in seqs:
+        print s.format('%h%p%t %r')
+        if s.isStereo:
+            print s.left.format('%h%p%t %r')
+            print s.right.format('%h%p%t %r')
+            
+    seq = img2pyseq(os.path.join(s3dTestRoot,'012_vb_110_v001_%v.%04d.png'))
+    print seq
+    print seq.path()
+        #print s._get_size()
+        #print s._get_max_mtime()
 
