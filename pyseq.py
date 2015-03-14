@@ -55,7 +55,7 @@ gDigitsRE = re.compile(r'\d+')
 gFormatRE = re.compile(r'%(?P<pad>\d+)?(?P<var>\w+)')
 
 __all__ = [
-    'SequenceError', 'Item', 'Sequence', 'diff', 'uncompress', 'get_sequences'
+    'SequenceError', 'Item', 'Sequence', 'diff', 'uncompress', 'getSequences'
 ]
 
 log = logging.getLogger('pyseq')
@@ -133,7 +133,7 @@ class Item(str):
         """
         return self.__parts
 
-    def is_sibling(self, item):
+    def isSibling(self, item):
         """Determines if this and item are part of the same sequence.
 
         :param item: An :class:`.Item` instance.
@@ -204,16 +204,16 @@ class Sequence(list):
     def __attrs__(self):
         """Replaces format directives with values"""
         return {
-            'l': self.length,
-            's': self.start,
-            'e': self.end,
-            'f': self.frames,
+            'l': self.length(),
+            's': self.start(),
+            'e': self.end(),
+            'f': self.frames(),
             'm': self.missing(),
             'p': self._get_padding(),
             'r': self._get_framerange(missing=False),
             'R': self._get_framerange(missing=True),
-            'h': self.head,
-            't': self.tail
+            'h': self.head(),
+            't': self.tail()
         }
 
     def __str__(self):
@@ -285,12 +285,10 @@ class Sequence(list):
             fmt = fmt.replace(_old, _new)
         return fmt % self.__attrs__()
 
-    @property
     def length(self):
         """:return: The length of the sequence."""
         return len(self)
 
-    @property
     def frames(self):
         """:return: List of files in sequence."""
         if not hasattr(self, '__frames') or not self.__frames:
@@ -298,21 +296,19 @@ class Sequence(list):
             self.__frames.sort()
         return self.__frames
 
-    @property
     def start(self):
         """:return: First index number in sequence
         """
         try:
-            return self.frames[0]
+            return self.frames()[0]
         except IndexError:
             return 0
 
-    @property
     def end(self):
         """:return: Last index number in sequence
         """
         try:
-            return self.frames[-1]
+            return self.frames()[-1]
         except IndexError:
             return 0
 
@@ -322,17 +318,14 @@ class Sequence(list):
             self.__missing = list(map(int, self._get_missing()))
         return self.__missing
 
-    @property
     def head(self):
         """:return: String before the sequence index number."""
         return self[0].head
 
-    @property
     def tail(self):
         """:return: String after the sequence index number."""
         return self[0].tail
 
-    @property
     def path(self):
         """:return: Absolute path to sequence."""
         _dirname = str(os.path.dirname(os.path.abspath(self[0].path)))
@@ -356,9 +349,9 @@ class Sequence(list):
             if not isinstance(item, Item):
                 item = Item(item)
             if self[-1] != item:
-                return self[-1].is_sibling(item)
+                return self[-1].isSibling(item)
             elif self[0] != item:
-                return self[0].is_sibling(item)
+                return self[0].isSibling(item)
             else:
                 # it should be the only item in the list
                 if self[0] == item:
@@ -367,7 +360,7 @@ class Sequence(list):
         return True
 
     def contains(self, item):
-        """Checks for sequence membership. Calls Item.is_sibling() and returns
+        """Checks for sequence membership. Calls Item.isSibling() and returns
         True if item is part of the sequence.
 
         For example:
@@ -387,8 +380,8 @@ class Sequence(list):
         if len(self) > 0:
             if not isinstance(item, Item):
                 item = Item(item)
-            return self.can_contain(item) and int(item.frame) <= self.end and \
-                int(item.frame) >= self.start
+            return self.can_contain(item)\
+                and self.end() >= int(item.frame) >= self.start()
 
         return False
 
@@ -433,24 +426,24 @@ class Sequence(list):
         end = ''
 
         if not missing:
-            if self.frames:
-                return '%s-%s' % (self.start, self.end)
+            if self.frames():
+                return '%s-%s' % (self.start(), self.end())
             else:
                 return ''
 
-        for i in range(0, len(self.frames)):
-            if int(self.frames[i]) != int(
-                    self.frames[i - 1]) + 1 and i != 0:
+        for i in range(0, len(self.frames())):
+            if int(self.frames()[i]) != int(
+                    self.frames()[i - 1]) + 1 and i != 0:
                 if start != end:
                     frange.append('%s-%s' % (str(start), str(end)))
                 elif start == end:
                     frange.append(str(start))
-                start = end = self.frames[i]
+                start = end = self.frames()[i]
                 continue
-            if start is '' or int(start) > int(self.frames[i]):
-                start = self.frames[i]
-            if end is '' or int(end) < int(self.frames[i]):
-                end = self.frames[i]
+            if start is '' or int(start) > int(self.frames()[i]):
+                start = self.frames()[i]
+            if end is '' or int(end) < int(self.frames()[i]):
+                end = self.frames()[i]
         if start == end:
             frange.append(str(start))
         else:
@@ -466,8 +459,8 @@ class Sequence(list):
         """looks for missing sequence indexes in sequence
         """
         if len(self) > 1:
-            frange = range(self.start, self.end)
-            return filter(lambda x: x not in self.frames, frange)
+            frange = range(self.start(), self.end())
+            return filter(lambda x: x not in self.frames(), frange)
         return ''
 
 
@@ -638,6 +631,7 @@ def uncompress(seq_string, fmt=gFormat):
                 # just append the number
                 end = int(number_group)
                 frames.append(end)
+
     except IndexError:
         try:
             r = match.group('r')
@@ -672,20 +666,20 @@ def uncompress(seq_string, fmt=gFormat):
             name = '%s%s%s' % (match.group('h'), f, match.group('t'))
             items.append(Item(os.path.join(dirname, name)))
 
-    seqs = get_sequences(items)
+    seqs = getSequences(items)
     if seqs:
         return seqs[0]
     return seqs
 
 
-def get_sequences(source):
+def getSequences(source):
     """
     Returns a list of Sequence objects given a directory or list that contain
     sequential members.
 
     Get sequences in a directory:
 
-        >>> seqs = get_sequences('./tests/files/')
+        >>> seqs = getSequences('./tests/files/')
         >>> for s in seqs: print(s)
         ...
         012_vb_110_v001.1-10.png
@@ -708,7 +702,7 @@ def get_sequences(source):
 
     Get sequences from a list of file names:
 
-        >>> seqs = get_sequences(['fileA.1.rgb', 'fileA.2.rgb', 'fileB.1.rgb'])
+        >>> seqs = getSequences(['fileA.1.rgb', 'fileA.2.rgb', 'fileB.1.rgb'])
         >>> for s in seqs: print(s)
         ...
         fileA.1-2.rgb
@@ -716,7 +710,7 @@ def get_sequences(source):
 
     Get sequences from a list of objects, preserving object attrs:
 
-        #>>> seqs = get_sequences(repo.files()) # doctest:+ELLIPSIS
+        #>>> seqs = getSequences(repo.files()) # doctest:+ELLIPSIS
         #>>> seqs[0].date # doctest:+ELLIPSIS
         #datetime.datetime(2011, 3, 21, 17, 31, 24) # doctest +SKIP
 
@@ -725,50 +719,34 @@ def get_sequences(source):
 
     :return: List of :class:`.Sequence` class objects.
     """
-    seqs = []
-    s = datetime.now()
+    start = datetime.now()
 
-    if type(source) == list:
+    # list for storing sequences to be returned later
+    seqs = []
+
+    if isinstance(source, list):
         items = sorted(source, key=lambda x: str(x))
-    elif type(source) == str and os.path.isdir(source):
-        items = sorted(glob(os.path.join(source, '*')))
-    elif type(source) == str:
-        items = sorted(glob(source))
+    elif isinstance(source, str):
+        if os.path.isdir(source):
+            items = sorted(glob(os.path.join(source, '*')))
+        else:
+            items = sorted(glob(source))
     else:
         raise TypeError('Unsupported format for source argument')
-
     log.debug('Found %s files' % len(items))
-    if len(items) > 0:
-        seq = Sequence([Item(items.pop(0))])
-        seqs.append(seq)
-        while items:
-            item = Item(items.pop(0))
-            try:
+
+    # organize the items into sequences
+    while items:
+        item = Item(items.pop(0))
+        found = False
+        for seq in seqs[::-1]:
+            if seq.can_contain(item):
                 seq.append(item)
-                log.debug('+Item belongs to sequence.')
-            except SequenceError:
-                seq = Sequence([item])
-                seqs.append(seq)
-                log.debug('-Item does not belong to sequence.')
-            except KeyboardInterrupt:
-                log.info("Stopping.")
+                found = True
                 break
+        if not found:
+            seq = Sequence([item])
+            seqs.append(seq)
 
-        log.debug('Done in %s.' % (datetime.now() - s))
+    log.debug('time: %s' % (datetime.now() - start))
     return list(seqs)
-
-
-# if __name__ == '__main__':
-#     # run through some test examples
-#     seqs = get_sequences(['fileA.1.rgb', 'fileA.2.rgb', 'fileB.1.rgb'])
-#     print seqs
-#     seqs = get_sequences(os.path.join(os.path.dirname(__file__), 'tests'))
-#     for s in seqs:
-#         print s.format('%h%p%t %r')
-#     print diff('fileA.0001.dpx', 'fileA.0002.dpx')
-#     print diff('012_vb_110_v002.1.dpx', '012_vb_110_v002.2.dpx')
-#     seq = uncompress('./tests/files/012_vb_110_v001.%04d.png 1-10',
-#                      format='%h%p%t %r')
-#     print seq.format()
-#     seq = uncompress('./tests/files/012_vb_110_v001.1-10.png', format='%h%r%t')
-#     print seq.format()

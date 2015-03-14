@@ -7,21 +7,10 @@ v0.3.0
 
 * **New:** Updated the code to support Python 3+
 
-* **Update:** ``Sequence.length``, ``Sequence.frames``, ``Sequence.tail``,
-  ``Sequence.head``, ``Sequence.start`` and ``Sequence.end`` are all read-only
-  properties now instead of methods. So calling them will raise a
-  ``TypeError``.
-
 * **New:** Added *unittests* for the whole library.
 
 * **Update:** The ``format`` parameter is renamed to ``fmt`` in
   ``uncompress()`` to not to shadow the **Python built-in**.
-
-* **Update:** ``Item.isSibling()`` is renamed to ``Item.is_sibling`` to comply
-  with PEP8.
-
-* **Update:** Renamed ``getSequences()`` has been renamed to
-  ``get_sequences()`` to comply with **PEP8**.
 
 * **New:** Added a new method called ``can_contain()`` to ``Sequence`` class
   which does what the ``contains()`` method was doing in previous
