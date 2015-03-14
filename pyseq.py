@@ -40,7 +40,6 @@ __author__ = [
 __version__ = "0.3.0"
 
 
-import sys
 import os
 import re
 import logging
