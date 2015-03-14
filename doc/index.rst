@@ -3,11 +3,15 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-===========================
-PySeq v0.2.1b documentation
-===========================
+==========================
+PySeq v0.3.0 documentation
+==========================
 
-PySeq is a python module that finds groups of items that follow a naming convention containing a numerical sequence index (e.g. fileA.001.png, fileA.002.png, fileA.003.png...) and serializes them into a compressed sequence string representing the entire sequence (e.g. fileA.1-3.png). It should work regardless of where the numerical sequence index is embedded in the name. For examples, see basic usage below.
+PySeq is a python module that finds groups of items that follow a naming convention containing a 
+numerical sequence index (e.g. fileA.001.png, fileA.002.png, fileA.003.png...) and serializes them 
+into a compressed sequence string representing the entire sequence (e.g. fileA.1-3.png). It should
+work regardless of where the numerical sequence index is embedded in the name. For examples, see
+basic usage below.
 
 Installation
 ============
@@ -46,9 +50,9 @@ Using the "z1" file sequence example in the "tests" directory:
 ::
 
   % ls tests/files/z1*
-  tests/files/z1_001_v1.1.png	tests/files/z1_001_v1.4.png	tests/files/z1_002_v1.3.png	tests/files/z1_002_v2.2.png
-  tests/files/z1_001_v1.2.png	tests/files/z1_002_v1.1.png	tests/files/z1_002_v1.4.png	tests/files/z1_002_v2.3.png
-  tests/files/z1_001_v1.3.png	tests/files/z1_002_v1.2.png	tests/files/z1_002_v2.1.png	tests/files/z1_002_v2.4.png
+  tests/files/z1_001_v1.1.png	tests/files/z1_001_v1.4.png	tests/files/z1_002_v1.3.png	tests/z1_002_v2.2.png
+  tests/files/z1_001_v1.2.png	tests/files/z1_002_v1.1.png	tests/files/z1_002_v1.4.png	tests/z1_002_v2.3.png
+  tests/files/z1_001_v1.3.png	tests/files/z1_002_v1.2.png	tests/files/z1_002_v2.1.png	tests/z1_002_v2.4.png
 
   % lss tests/files/z1*
      4 z1_001_v1.%d.png 1-4
@@ -65,10 +69,12 @@ Some API usage examples
 
 **Sequence compression**
 
-*Example using get_sequences to compress filesystem sequences starting with "bnc". The get_sequences function will return a list of all sequences found using the given input, which can be either a path or a list.*
+*Example using getSequences to compress filesystem sequences starting with "bnc". The getSequences 
+function will return a list of all sequences found using the given input, which can be either a path
+or a list.*
 
   >>> from pyseq import *
-  >>> seqs = get_sequences('./tests/files/bnc*')
+  >>> seqs = getSequences('./tests/bnc*')
   >>> for s in seqs: print(s.format('%h%p%t %r'))
   ... 
   bnc01_TinkSO_tx_0_ty_0.%04d.tif 101-105
@@ -76,7 +82,9 @@ Some API usage examples
   bnc01_TinkSO_tx_1_ty_0.%04d.tif 101-105
   bnc01_TinkSO_tx_1_ty_1.%04d.tif 101-105
 
-*Example using the Sequence class with a list as input. The Sequence class constructor will return a single Sequence class instance of sequential items, skipping any items in the list that are not part of the sequence.*
+*Example using the Sequence class with a list as input. The Sequence class constructor will return a 
+single Sequence class instance of sequential items, skipping any items in the list that are not part 
+of the sequence.*
 
   >>> s = Sequence(['file.0001.jpg', 'file.0002.jpg', 'file.0003.jpg'])
   >>> print(s)
@@ -84,8 +92,12 @@ Some API usage examples
   >>> s.append('file.0006.jpg')
   >>> print(s.format("%h%p%t %R"))
   file.%04d.jpg 1-3 6
-  >>> s.contains('file.0009.jpg')
+  >>> s.can_contain('file.0009.jpg')
   True
+  >>> s.contains('file.0009.jpg')
+  False
+  >>> s.can_contain('file.0009.pic')
+  False
   >>> s.contains('file.0009.pic')
   False
   
@@ -94,8 +106,8 @@ Some API usage examples
   >>> s = uncompress('012_vb_110_v002.1-150.dpx', format="%h%r%t")
   >>> len(s)
   150
-  >>> seq = uncompress('./tests/files/012_vb_110_v001.%04d.png 1-10', format='%h%p%t %r')
-  >>> print(seq.format('%4l %h%p%t %R'))
+  >>> seq = uncompress('./tests/012_vb_110_v001.%04d.png 1-10', format='%h%p%t %r')
+  >>> print(seq.format('%04l %h%p%t %R'))
     10 012_vb_110_v001.%04d.png 1-10
   
 Source Code

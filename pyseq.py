@@ -1,12 +1,13 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# -----------------------------------------------------------------------------
-# Copyright (c) 2011-2012, Ryan Galloway (ryan@rsgalloway.com)
+# ---------------------------------------------------------------------------------------------
+# Copyright (c) 2011-2014, Ryan Galloway (ryan@rsgalloway.com)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
 #
-# - Redistributions of source code must retain the above copyright notice, this
-#    list of conditions and the following disclaimer.
+#  - Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
 #
 #  - Redistributions in binary form must reproduce the above copyright notice,
 #    this list of conditions and the following disclaimer in the documentation
@@ -39,6 +40,7 @@ __author__ = [
 __version__ = "0.3.0"
 
 
+import sys
 import os
 import re
 import logging
@@ -58,6 +60,7 @@ __all__ = [
     'SequenceError', 'Item', 'Sequence', 'diff', 'uncompress', 'getSequences'
 ]
 
+# logging handlers
 log = logging.getLogger('pyseq')
 log.addHandler(logging.StreamHandler())
 log.setLevel(int(os.environ.get('PYSEQ_LOG_LEVEL', logging.INFO)))
@@ -71,17 +74,21 @@ class SequenceError(Exception):
     pass
 
 
+class FormatError(Exception):
+    """special exception for seq format errors
+    """
+    pass
+
+
 class Item(str):
     """Sequence member file class
-
-    Create a new Item class object.
 
     :param item: Path to file.
     """
 
     def __init__(self, item):
         super(Item, self).__init__()
-        log.debug('adding %s item %s' % (repr(item), item))
+        log.debug('adding %s' % item)
         self.item = item
         self.__path = getattr(item, 'path', os.path.abspath(str(item)))
         self.__dirname = os.path.dirname(str(item))
@@ -108,6 +115,7 @@ class Item(str):
         """Item absolute path, if a filesystem item.
         """
         return self.__path
+
 
     @property
     def name(self):
@@ -169,11 +177,13 @@ class Sequence(list):
         >>> print(s)
         file.1-3.jpg
         >>> s.append('file.0006.jpg')
-        >>> print(s.format('%04l %h%p%t %R'))
+        >>> print(s.format('%4l %h%p%t %R'))
            4 file.%04d.jpg 1-3 6
         >>> s.can_contain('file.0009.jpg')
         True
         >>> s.can_contain('file.0009.pic')
+        False
+        >>> s.contains('file.0006.jpg')
         False
         >>> print(s.format('%h%p%t %r (%R)'))
         file.%04d.jpg 1-6 (1-3 6)
@@ -258,10 +268,23 @@ class Sequence(list):
         | ``%t``    | string after the sequence number    |
         +-----------+-------------------------------------+
 
-        :param fmt: Format string. Default is '%04l %h%p%t %R'.
+        :param fmt: Format string. Default is '%4l %h%p%t %R'.
 
         :return: Formatted string.
         """
+        format_char_types = {
+            's': 'i',
+            'e': 'i',
+            'l': 'i',
+            'f': 's',
+            'm': 's',
+            'p': 's',
+            'r': 's',
+            'R': 's',
+            'h': 's',
+            't': 's'
+        }
+
 
         format_char_types = {
             's': 'i',
@@ -459,7 +482,11 @@ class Sequence(list):
         """looks for missing sequence indexes in sequence
         """
         if len(self) > 1:
-            frange = range(self.start(), self.end())
+            frange=None
+            try:
+                frange = range(self.start(), self.end())
+            except:
+                frange = range(self.start(), self.end())
             return filter(lambda x: x not in self.frames(), frange)
         return ''
 
@@ -556,15 +583,12 @@ def uncompress(seq_string, fmt=gFormat):
 
     :return: :class:`.Sequence` instance.
     """
-    # TODO: There should be a kind of precedence among the tags:
-    #   For example:
-    #   %f > %R > %r > %s/%e > %m
-    #
-
     dirname = os.path.dirname(seq_string)
     name = os.path.basename(seq_string)
     log.debug('uncompress: %s' % name)
 
+
+    # map of directives to regex
     remap = {
         's': '\d+',
         'e': '\d+',
@@ -710,14 +734,13 @@ def getSequences(source):
 
     Get sequences from a list of objects, preserving object attrs:
 
-        #>>> seqs = getSequences(repo.files()) # doctest:+ELLIPSIS
-        #>>> seqs[0].date # doctest:+ELLIPSIS
-        #datetime.datetime(2011, 3, 21, 17, 31, 24) # doctest +SKIP
+        >>> seqs = getSequences(repo.files())
+        >>> seqs[0].date
+        datetime.datetime(2011, 3, 21, 17, 31, 24)
 
-    :param source: Can be directory path, list of strings, or sortable list of
-      objects.
+    :param source: Can be directory path, list of strings, or sortable list of objects.
 
-    :return: List of :class:`.Sequence` class objects.
+    :return: List of pyseq.Sequence class objects.
     """
     start = datetime.now()
 

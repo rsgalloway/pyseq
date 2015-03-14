@@ -1,1 +1,1 @@
-from pyseq import *
+from .pyseq import *
