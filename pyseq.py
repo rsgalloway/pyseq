@@ -133,8 +133,12 @@ class Item(str):
         self.__filename = os.path.basename(str(item))
         self.__digits = gDigitsRE.findall(self.name)
         self.__parts = gDigitsRE.split(self.name)
-        self.__size = os.path.getsize(self.__path)
-        self.__mtime = os.path.getmtime(self.__path)
+        if os.path.isfile(self.__path):
+            self.__size = os.path.getsize(self.__path)
+            self.__mtime = os.path.getmtime(self.__path)
+        else:
+            self.__size = 0
+            self.__mtime = 0
 
         # modified by self.isSibling()
         self.frame = ''
@@ -250,6 +254,7 @@ class Sequence(list):
                 log.info("Stopping.")
                 break
         self.foundS3d = re.search(gStereoRE,self[0])
+        self.NEEDREINDEX = False
     
     @property
     def isStereo(self):
@@ -332,7 +337,7 @@ class Sequence(list):
 
     def frames(self):
         """:return: List of files in sequence."""
-        if not hasattr(self, '__frames') or not self.__frames:
+        if not hasattr(self, '__frames') or not self.__frames or self.NEEDREINDEX == True:
             self.__frames = map(int, self._get_frames())
             self.__frames.sort()
         return self.__frames
@@ -570,6 +575,36 @@ class Sequence(list):
             tempSize.append(i._get_size())
         return sum(tempSize)
     
+    def reIndex(self, addSub, padding=None, run=False):
+        '''
+        renames the files on disk
+        reIndex the items in the sequence object egg
+        1001 + 100 = 1101
+        can change the padding too
+        '''
+        if not padding:
+            padding = self.format("%p")
+
+        for image,frame in zip(self,self.frames()):
+            oldName = image._get_path()
+            newFrame = padding % (frame + addSub)
+            newFileName ="%s%s%s" % (self.format("%h"), newFrame , self.format("%t") )
+            newName = os.path.join(self.dirname(), newFileName)
+            try:
+                import shutil
+                if run:
+                    shutil.move(oldName,newName)
+            except Exception,e:
+                log.error(e)
+            else:
+                log.info('renaming %s -->' % oldName)
+                log.info('         %s' % newName)
+                self.NEEDREINDEX = True
+                image.frame = newFrame
+        else:
+            self.frames()
+
+
 class stereoSequence(Sequence):
 
 
@@ -650,6 +685,48 @@ class stereoSequence(Sequence):
         for i in self.right:
             tempSize.append(i._get_size())
         return sum(tempSize)
+    
+    def reIndex(self, addSub, padding=None, run=False):
+        '''
+        renames the files on disk
+        reIndex the items in the sequence object egg
+        1001 + 100 = 1101
+        can change the padding too
+        '''
+        if not padding:
+            padding = self.format("%p")
+
+        for image ,imageL, imageR ,frame in zip(self, self.left, self.right, self.frames()):
+            oldNameL = imageL._get_path()
+            oldNameR = imageR._get_path()
+            newFrame = padding % (frame + addSub)
+            newFileNameL ="%s%s%s" % (self.left.format("%h"), newFrame , self.left.format("%t") )
+            newFileNameR = "%s%s%s" % (self.right.format("%h"), newFrame , self.right.format("%t") )
+            newNameL = os.path.join(self.dirname(), newFileNameL)
+            newNameR = os.path.join(self.dirname(), newFileNameR)
+            try:
+                import shutil
+                if run:
+                    shutil.move(oldNameL,newNameL)
+                    shutil.move(oldNameR,newNameR)
+            except Exception,e:
+                log.error(e)
+            else:
+                log.info('renaming %s -->' % oldNameL)
+                log.info('         %s' % newNameL)
+                log.info('renaming %s -->' % oldNameR)
+                log.info('         %s' % newNameR)
+                self.NEEDREINDEX = True
+                self.left.NEEDREINDEX = True
+                self.right.NEEDREINDEX = True
+                image.frame = newFrame
+                imageL.frame = newFrame
+                imageR.frame = newFrame
+        else:
+            self.frames()
+            self.left.frames()
+            self.right.frames()
+
 
 def diff(f1, f2):
     """
@@ -1033,7 +1110,7 @@ if __name__ == '__main__':
     dummy files that live in pyseq/tests. Changing or modifying these
     files may break the assertions in the tests below.
     """
-    logging.basicConfig(level=logging.INFO)
+    #logging.basicConfig(level=logging.INFO)
 #===============================================================================
     # test passing in a list of files
     testRoot = os.path.join(os.path.dirname(__file__), 'tests')
@@ -1062,24 +1139,33 @@ if __name__ == '__main__':
     assert seq.frames() == range(1, 11)
  
     # ... with slightly different format matching
-    #seq = uncompress('./tests/012_vb_110_v001.1-10.png', format='%h%r%t')
-    #assert len(seq) == 10
-    #assert seq.head() == '012_vb_110_v001.' and seq.tail() == '.png'
-    #assert seq.frames() == range(1, 11)
+    seq = uncompress('./tests/012_vb_110_v001.1-10.png', format='%h%r%t')
+    assert len(seq) == 10
+    assert seq.head() == '012_vb_110_v001.' and seq.tail() == '.png'
+    assert seq.frames() == range(1, 11)
 #===============================================================================
 
     # grab all the seqs in the tests dir
     seqs = getSequences(testRoot, stereo = True)
     for s in seqs:
         print s.format('%h%p%t %r')
+        s.reIndex(1000,padding= "%07d")
         
     seqs = getSequences(s3dTestRoot, stereo = True)
     for s in seqs:
         print s.format('%h%p%t %r')
         print s.path()
         if s.isStereo:
-            print s.left.format('%h%p%t %r')
+            #print s.left.format('%h%p%t %r')
+            print s.left.frames()
+            s.reIndex(150,padding = "%05d")
+            print s.frames()
+            print s.left.frames()
+            print s.right.frames()
+            #print s.left.format("%p")
+            print s.left.path()
             print s.right.format('%h%p%t %r')
+            print s.format('%h%p%t %r')
             
     seq = img2pyseq(os.path.join(s3dTestRoot,'012_vb_110_v001_%v.%04d.png'))
     print seq.format('%h%p%t %r')
