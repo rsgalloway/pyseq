@@ -66,3 +66,4 @@ Uncompression, or deserialization, of compressed sequences strings ::
     >>> seq = uncompress('./tests/012_vb_110_v001.%04d.png 1-10', format='%h%p%t %r')
     >>> print(seq.format('%04l %h%p%t %R'))
       10 012_vb_110_v001.%04d.png 1-10
+

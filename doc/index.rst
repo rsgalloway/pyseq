@@ -49,17 +49,17 @@ Using the "z1" file sequence example in the "tests" directory:
 
 ::
 
-  % ls tests/z1*
-  tests/z1_001_v1.1.png	tests/z1_001_v1.4.png	tests/z1_002_v1.3.png	tests/z1_002_v2.2.png
-  tests/z1_001_v1.2.png	tests/z1_002_v1.1.png	tests/z1_002_v1.4.png	tests/z1_002_v2.3.png
-  tests/z1_001_v1.3.png	tests/z1_002_v1.2.png	tests/z1_002_v2.1.png	tests/z1_002_v2.4.png
+  % ls tests/files/z1*
+  tests/files/z1_001_v1.1.png	tests/files/z1_001_v1.4.png	tests/files/z1_002_v1.3.png	tests/z1_002_v2.2.png
+  tests/files/z1_001_v1.2.png	tests/files/z1_002_v1.1.png	tests/files/z1_002_v1.4.png	tests/z1_002_v2.3.png
+  tests/files/z1_001_v1.3.png	tests/files/z1_002_v1.2.png	tests/files/z1_002_v2.1.png	tests/z1_002_v2.4.png
 
-  % lss tests/z1*
+  % lss tests/files/z1*
      4 z1_001_v1.%d.png 1-4
      4 z1_002_v1.%d.png 1-4
      4 z1_002_v2.%d.png 1-4
 
-  % lss tests/z1* -f "%h%r%t"
+  % lss tests/files/z1* -f "%h%r%t"
   z1_001_v1.1-4.png
   z1_002_v1.1-4.png
   z1_002_v2.1-4.png
@@ -75,7 +75,7 @@ or a list.*
 
   >>> from pyseq import *
   >>> seqs = getSequences('./tests/bnc*')
-  >>> for s in seqs: print s.format('%h%p%t %r')
+  >>> for s in seqs: print(s.format('%h%p%t %r'))
   ... 
   bnc01_TinkSO_tx_0_ty_0.%04d.tif 101-105
   bnc01_TinkSO_tx_0_ty_1.%04d.tif 101-105
@@ -87,13 +87,17 @@ single Sequence class instance of sequential items, skipping any items in the li
 of the sequence.*
 
   >>> s = Sequence(['file.0001.jpg', 'file.0002.jpg', 'file.0003.jpg'])
-  >>> print s
+  >>> print(s)
   file.1-3.jpg
   >>> s.append('file.0006.jpg')
-  >>> print s.format("%h%p%t %R")
+  >>> print(s.format("%h%p%t %R"))
   file.%04d.jpg 1-3 6
-  >>> s.contains('file.0009.jpg')
+  >>> s.includes('file.0009.jpg')
   True
+  >>> s.contains('file.0009.jpg')
+  False
+  >>> s.includes('file.0009.pic')
+  False
   >>> s.contains('file.0009.pic')
   False
   
@@ -103,7 +107,7 @@ of the sequence.*
   >>> len(s)
   150
   >>> seq = uncompress('./tests/012_vb_110_v001.%04d.png 1-10', format='%h%p%t %r')
-  >>> print seq.format('%04l %h%p%t %R')
+  >>> print(seq.format('%04l %h%p%t %R'))
     10 012_vb_110_v001.%04d.png 1-10
   
 Source Code

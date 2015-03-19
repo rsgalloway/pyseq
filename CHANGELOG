@@ -1,0 +1,102 @@
+=========
+CHANGELOG
+=========
+
+v0.4.0
+======
+
+* **New:** Some PEP8 and Python 3+ updates.
+
+* **New:** Added *unittests* for the whole library (requires python 2.7+).
+
+* **Update:** The ``format`` parameter is renamed to ``fmt`` in
+  ``uncompress()`` and ``Sequence.format()`` to not to shadow the 
+  **Python built-in**.
+
+* **New:** Added a method called ``includes()`` to the ``Sequence`` class
+  that does what the ``contains()`` method was doing in previous versions, 
+  that is, it now checks if the given Item could be contained in that 
+  particular Sequence.
+
+* **Update:** Updated ``Sequence.contains()`` method behavior updated to
+  better match its name, that is, it now checks if the Item is contained inside 
+  the boundaries of the Sequence.
+
+* **Fix:** The padding characters are now properly interpreted, as shown
+  below::
+
+    seq = Sequence([
+        'file.0001.jpg',
+        'file.0002.jpg',
+        'file.0003.jpg',
+        'file.0006.jpg'
+    ])
+
+    print(seq.format('%h%04s-%04e%t'))
+    # will print 'file.0001-0006.jpg'
+
+    print(seq.format('%h%4s-%4e%t'))
+    # will print 'file.   1-   6.jpg'
+
+v0.2.2 - 2012 Jun 21
+====================
+
+* Fixed %R in uncompress()
+
+* Fixed minor bug in getSequences() with glob
+
+v0.2.1b - 2011 Mar 23
+=====================
+
+* supports sequences of any serializable, sortable items
+
+* fixes bug in lss
+
+v0.2.0b - 2011 Mar 14
+=====================
+
+* Added support for wildcards in getSequence source input and in lss
+
+* Added format method to Sequence class for formatted string stdout
+
+* Sequence __str__ method now returns simplified compressed sequence string
+
+* Added SequenceError exception
+
+* Sequence qppend method raises SequenceError if file is non-sequence-member
+
+* Export diff function to get numeric differences between two sequential files
+
+* Alpha version of uncompress func for deserialization of compressed sequence
+  strings.
+
+* Added additional attributes to Item class: path, frame, head, tail
+
+* Item name attribute is now base name, fixes bug where contains method didn't
+  work on file paths.
+
+* Moved function 'main' to lss permanently.
+
+* Added --format and --debug options to lss
+
+* Ability to set log level with environment variable $PYSEQ_LOG_LEVEL
+
+* Simplified format directives, e.g. from %(head)s to %h, with support for
+  padding, e.g. %04l.
+
+* Fixed duplicate sequence index number bug
+
+* Set logging level with PYSEQ_LOG_LEVEL environment variable.
+
+* Added 32 additional test cases.
+
+* Performance improvements.
+
+* Added html docs.
+
+v0.1.2 - 2011 Feb 15
+====================
+
+* ``getSequences`` now takes either a directory path or a Python list of files.
+* Added setup.py
+* Added lss script

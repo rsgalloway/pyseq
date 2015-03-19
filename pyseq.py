@@ -1,12 +1,13 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 # ---------------------------------------------------------------------------------------------
-# Copyright (c) 2011-2014, Ryan Galloway (ryan@rsgalloway.com)
+# Copyright (c) 2011-2015, Ryan Galloway (ryan@rsgalloway.com)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
 #
-#  - Redistributions of source code must retain the above copyright notice, this
-#    list of conditions and the following disclaimer.
+#  - Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
 #
 #  - Redistributions in binary form must reproduce the above copyright notice,
 #    this list of conditions and the following disclaimer in the documentation
@@ -18,23 +19,23 @@
 #
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#
-# ---------------------------------------------------------------------------------------------
-# docs and latest version available for download at
-#   http://github.com/rsgalloway/pyseq
-# ---------------------------------------------------------------------------------------------
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+# -----------------------------------------------------------------------------
+"""docs and latest version available for download at
+   http://github.com/rsgalloway/pyseq
+"""
 
-__author__ = "Ryan Galloway <ryan@rsgalloway.com>"
-__version__ = "0.3.0"
-import sys
+__version__ = "0.4.0"
+
+
 import os
 import re
 import logging
@@ -42,7 +43,7 @@ from glob import glob
 from datetime import datetime
 
 # default serialization format string
-gFormat = '%04l %h%p%t %R'
+gFormat = '%4l %h%p%t %R'
 
 # regex for matching numerical characters
 gDigitsRE = re.compile(r'\d+')
@@ -50,30 +51,37 @@ gDigitsRE = re.compile(r'\d+')
 # regex for matching format directives
 gFormatRE = re.compile(r'%(?P<pad>\d+)?(?P<var>\w+)')
 
-__all__ = ['SequenceError', 'FormatError', 'Item', 'Sequence', 'diff', 'uncompress', 
-           'getSequences', ]
+__all__ = [
+    'SequenceError', 'Item', 'Sequence', 'diff', 'uncompress', 'getSequences'
+]
 
 # logging handlers
 log = logging.getLogger('pyseq')
 log.addHandler(logging.StreamHandler())
 log.setLevel(int(os.environ.get('PYSEQ_LOG_LEVEL', logging.INFO)))
 
+# log.setLevel(logging.DEBUG)
+
+
 class SequenceError(Exception):
-    """special exception for sequence errors"""
+    """special exception for sequence errors
+    """
+    pass
+
 
 class FormatError(Exception):
-    """special exception for seq format errors"""
+    """special exception for seq format errors
+    """
+    pass
+
 
 class Item(str):
-    """Sequence member file class"""
+    """Sequence member file class
+
+    :param item: Path to file.
+    """
+
     def __init__(self, item):
-        """
-        Create a new Item class object.
-
-        :param item: Path to file.
-
-        :return: pyseq.Item instance.
-        """
         super(Item, self).__init__()
         log.debug('adding %s' % item)
         self.item = item
@@ -83,7 +91,7 @@ class Item(str):
         self.__digits = gDigitsRE.findall(self.name)
         self.__parts = gDigitsRE.split(self.name)
 
-        # modified by self.isSibling()
+        # modified by self.is_sibling()
         self.frame = ''
         self.head = self.name
         self.tail = ''
@@ -97,49 +105,53 @@ class Item(str):
     def __getattr__(self, key):
         return getattr(self.item, key, None)
 
-    def _get_path(self):
+    @property
+    def path(self):
+        """Item absolute path, if a filesystem item.
+        """
         return self.__path
 
-    def _get_filename(self):
+
+    @property
+    def name(self):
+        """Item base name attribute
+        """
         return self.__filename
 
-    def _get_dirname(self):
+    @property
+    def dirname(self):
+        """"Item directory name, if a filesystem item."
+        """
         return self.__dirname
 
-    def _get_digits(self):
+    @property
+    def digits(self):
+        """Numerical components of item name.
+        """
         return self.__digits
 
-    def _get_parts(self):
+    @property
+    def parts(self):
+        """Non-numerical components of item name
+        """
         return self.__parts
 
-    def _get_sig(self):
-        return "".join(self.parts)
-
-    def _set_readonly(self, value):
-        raise TypeError('Read-only attribute')
-
-    # immutable properties
-    path = property(_get_path, _set_readonly, doc="Item absolute path, if a filesystem item.")
-    name = property(_get_filename, _set_readonly, doc="Item base name attribute.")
-    dirname = property(_get_dirname, _set_readonly, doc="Item directory name, if a filesystem item.")
-    digits = property(_get_digits, _set_readonly, doc="Numerical components of item name.")
-    parts = property(_get_parts, _set_readonly, doc="Non-numerical components of item name.")
-    signature = property(_get_sig, _set_readonly, doc="Non-numerical unique item signature.")
-
     def isSibling(self, item):
-        """
-        Determines if this and item are part of the same sequence.
+        """Determines if this and item are part of the same sequence.
 
-        :param item: A pyseq.Item class object.
+        :param item: An :class:`.Item` instance.
 
         :return: True if this and item are sequential siblings.
         """
-        if not type(item) == Item:
+        if not isinstance(item, Item):
             item = Item(item)
-        d = diff(self, item)
-        _isSibling = (len(d) == 1) and (self.parts == item.parts)
 
-        if _isSibling:
+        d = diff(self, item)
+        is_sibling = (len(d) == 1) and (self.parts == item.parts)
+
+        # I do not understand why we are updating information
+        # while this is a predicate method
+        if is_sibling:
             self.frame = d[0]['frames'][0]
             self.head = self.name[:d[0]['start']]
             self.tail = self.name[d[0]['end']:]
@@ -147,7 +159,8 @@ class Item(str):
             item.head = item.name[:d[0]['start']]
             item.tail = item.name[d[0]['end']:]
 
-        return _isSibling
+        return is_sibling
+
 
 class Sequence(list):
     """
@@ -156,18 +169,21 @@ class Sequence(list):
     For example:
 
         >>> s = Sequence(['file.0001.jpg', 'file.0002.jpg', 'file.0003.jpg'])
-        >>> print s
+        >>> print(s)
         file.1-3.jpg
         >>> s.append('file.0006.jpg')
-        >>> print s.format('%04l %h%p%t %R')
+        >>> print(s.format('%4l %h%p%t %R'))
            4 file.%04d.jpg 1-3 6
-        >>> s.contains('file.0006.jpg')
+        >>> s.includes('file.0009.jpg')
         True
-        >>> s.contains('file.0009.pic')
+        >>> s.includes('file.0009.pic')
         False
-        >>> print s.format('%h%p%t %r (%R)')
+        >>> s.contains('file.0006.jpg')
+        False
+        >>> print(s.format('%h%p%t %r (%R)'))
         file.%04d.jpg 1-6 (1-3 6)
     """
+
     def __init__(self, items):
         """
         Create a new Sequence class object.
@@ -177,6 +193,7 @@ class Sequence(list):
         :return: pyseq.Sequence class instance.
         """
         super(Sequence, self).__init__([Item(items.pop(0))])
+        self.__missing = []
         while items:
             f = Item(items.pop(0))
             try:
@@ -202,7 +219,7 @@ class Sequence(list):
             'R': self._get_framerange(missing=True),
             'h': self.head(),
             't': self.tail()
-            }
+        }
 
     def __str__(self):
         return self.format('%h%r%t')
@@ -216,12 +233,11 @@ class Sequence(list):
     def __contains__(self, item):
         super(Sequence, self).__contains__(Item(item))
 
-    def format(self, format=gFormat):
-        """
-        Format the stdout string.
+    def format(self, fmt=gFormat):
+        """Format the stdout string.
 
         The following directives can be embedded in the format string.
-        Format directives support padding, for example: "%%04l".
+        Format directives support padding, for example: "%04l".
 
         +-----------+-------------------------------------+
         | Directive | Meaning                             |
@@ -247,18 +263,32 @@ class Sequence(list):
         | ``%t``    | string after the sequence number    |
         +-----------+-------------------------------------+
 
-        :param format: Format string. Default is '%04l %h%p%t %R'.
+        :param fmt: Format string. Default is '%4l %h%p%t %R'.
 
         :return: Formatted string.
         """
-        for m in gFormatRE.finditer(format):
-            _old = '%s%s' %(m.group('pad') or '', m.group('var'))
-            _new = '(%s)%ss' %(m.group('var'), m.group('pad') or '')
-            format = format.replace(_old, _new)
-        try:
-            return format % self.__attrs__()
-        except KeyError as e:
-            raise Exception(e)
+        
+        format_char_types = {
+            's': 'i',
+            'e': 'i',
+            'l': 'i',
+            'f': 's',
+            'm': 's',
+            'p': 's',
+            'r': 's',
+            'R': 's',
+            'h': 's',
+            't': 's'
+        }
+
+        for m in gFormatRE.finditer(fmt):
+            var = m.group('var')
+            pad = m.group('pad')
+            fmt_char = format_char_types[var]
+            _old = '%s%s' % (pad or '', var)
+            _new = '(%s)%s%s' % (var, pad or '', fmt_char)
+            fmt = fmt.replace(_old, _new)
+        return fmt % self.__attrs__()
 
     def length(self):
         """:return: The length of the sequence."""
@@ -267,19 +297,21 @@ class Sequence(list):
     def frames(self):
         """:return: List of files in sequence."""
         if not hasattr(self, '__frames') or not self.__frames:
-            self.__frames = [int(e) for e in self._get_frames()]
-            self.__frames = sorted(self.__frames)
+            self.__frames = list(map(int, self._get_frames()))
+            self.__frames.sort()
         return self.__frames
 
     def start(self):
-        """:return: First index number in sequence."""
+        """:return: First index number in sequence
+        """
         try:
             return self.frames()[0]
         except IndexError:
             return 0
 
     def end(self):
-        """:return: Last index number in sequence."""
+        """:return: Last index number in sequence
+        """
         try:
             return self.frames()[-1]
         except IndexError:
@@ -288,7 +320,7 @@ class Sequence(list):
     def missing(self):
         """:return: List of missing files."""
         if not hasattr(self, '__missing') or not self.__missing:
-            self.__missing = [int(e) for e in self._get_missing()]
+            self.__missing = list(map(int, self._get_missing()))
         return self.__missing
 
     def head(self):
@@ -304,44 +336,72 @@ class Sequence(list):
         _dirname = str(os.path.dirname(os.path.abspath(self[0].path)))
         return os.path.join(_dirname, str(self))
 
-    def contains(self, item):
+    def includes(self, item):
+        """Checks if the item can be contained in this sequence that is if it
+        is a sibling of any of the items in the list
+
+        For example:
+
+            >>> s = Sequence(['fileA.0001.jpg', 'fileA.0002.jpg'])
+            >>> print(s)
+            fileA.1-2.jpg
+            >>> s.includes('fileA.0003.jpg')
+            True
+            >>> s.includes('fileB.0003.jpg')
+            False
         """
-        Checks for sequence membership. Calls Item.isSibling() and returns
+        if len(self) > 0:
+            if not isinstance(item, Item):
+                item = Item(item)
+            if self[-1] != item:
+                return self[-1].isSibling(item)
+            elif self[0] != item:
+                return self[0].isSibling(item)
+            else:
+                # it should be the only item in the list
+                if self[0] == item:
+                    return True
+
+        return True
+
+    def contains(self, item):
+        """Checks for sequence membership. Calls Item.isSibling() and returns
         True if item is part of the sequence.
 
         For example:
 
             >>> s = Sequence(['fileA.0001.jpg', 'fileA.0002.jpg'])
-            >>> print s
+            >>> print(s)
             fileA.1-2.jpg
             >>> s.contains('fileA.0003.jpg')
-            True
+            False
             >>> s.contains('fileB.0003.jpg')
             False
 
-        :param item: pyseq.Item class object. 
+        :param item: pyseq.Item class object.
 
         :return: True if item is a sequence member.
         """
         if len(self) > 0:
-            if type(item) is not Item:
+            if not isinstance(item, Item):
                 item = Item(item)
-            comp = self[-1]
-            if comp.isSibling(item) and comp.parts == item.parts:
-                return True
+            return self.includes(item)\
+                and self.end() >= int(item.frame) >= self.start()
+
         return False
 
     def append(self, item):
         """
         Adds another member to the sequence.
 
-        :param item: pyseq.Item object. 
+        :param item: pyseq.Item object.
 
         :exc:`SequenceError` raised if item is not a sequence member.
         """
         if type(item) is not Item:
             item = Item(item)
-        if self.contains(item):
+
+        if self.includes(item):
             super(Sequence, self).append(item)
             self.__frames = None
             self.__missing = None
@@ -360,22 +420,25 @@ class Sequence(list):
 
     def _get_framerange(self, missing=True):
         """
-        Returns frame range string, e.g. 1-500. 
+        Returns frame range string, e.g. 1-500.
 
-        :param missing: Expand sequence to exlude missing sequence indices.
+        :param missing: Expand sequence to exclude missing sequence indices.
 
         :return: formatted frame range string.
         """
         frange = []
         start = ''
         end = ''
+
         if not missing:
             if self.frames():
-                return '%s-%s' %(self.start(), self.end())
+                return '%s-%s' % (self.start(), self.end())
             else:
                 return ''
+
         for i in range(0, len(self.frames())):
-            if int(self.frames()[i]) != int(self.frames()[i-1])+1 and i != 0:
+            if int(self.frames()[i]) != int(
+                    self.frames()[i - 1]) + 1 and i != 0:
                 if start != end:
                     frange.append('%s-%s' % (str(start), str(end)))
                 elif start == end:
@@ -393,19 +456,22 @@ class Sequence(list):
         return ' '.join(frange)
 
     def _get_frames(self):
-        """finds the sequence indexes from item names"""
+        """finds the sequence indexes from item names
+        """
         return [f.frame for f in self if f.frame is not '']
 
     def _get_missing(self):
-        """looks for missing sequence indexes in sequence"""
+        """looks for missing sequence indexes in sequence
+        """
         if len(self) > 1:
             frange=None
             try:
-                frange = xrange(self.start(), self.end())
+                frange = range(self.start(), self.end())
             except:
                 frange = range(self.start(), self.end())
             return filter(lambda x: x not in self.frames(), frange)
         return ''
+
 
 def diff(f1, f2):
     """
@@ -424,7 +490,7 @@ def diff(f1, f2):
 
     :return: Dictionary with keys: frames, start, end.
     """
-    log.debug('diff: %s %s' %(f1, f2))
+    log.debug('diff: %s %s' % (f1, f2))
     if not type(f1) == Item:
         f1 = Item(f1)
     if not type(f2) == Item:
@@ -439,69 +505,70 @@ def diff(f1, f2):
             m1 = l1.pop(0)
             m2 = l2.pop(0)
             if m1.start() == m2.start() and m1.group() != m2.group():
-                d.append({'start': m1.start(), 
-                          'end': m1.end(), 
-                          'frames': (m1.group(), m2.group())}
-                )
+                d.append({
+                    'start': m1.start(),
+                    'end': m1.end(),
+                    'frames': (m1.group(), m2.group())
+                })
 
     log.debug(d)
     return d
 
-def uncompress(seqstring, format=gFormat):
+
+def uncompress(seq_string, fmt=gFormat):
     """
     Basic uncompression or deserialization of a compressed sequence string.
 
-    For example: 
+    For example:
 
-        >>> seq = uncompress('./tests/012_vb_110_v001.%04d.png 1-10', format='%h%p%t %r')
-        >>> print seq
+        >>> seq = uncompress('./tests/files/012_vb_110_v001.%04d.png 1-10', fmt='%h%p%t %r')
+        >>> print(seq)
         012_vb_110_v001.1-10.png
         >>> len(seq)
         10
-        >>> seq2 = uncompress('./tests/a.%03d.tga 1-3 10 12-14', format='%h%p%t %R')
-        >>> print seq2
+        >>> seq2 = uncompress('./tests/files/a.%03d.tga 1-3 10 12-14', fmt='%h%p%t %R')
+        >>> print(seq2)
         a.1-14.tga
         >>> len(seq2)
         7
-        >>> seq3 = uncompress('a.%03d.tga 1-14 (1-3 10 12-14)', format='%h%p%t %r (%R)')
-        >>> print seq3
+        >>> seq3 = uncompress('a.%03d.tga 1-14 (1-3 10 12-14)', fmt='%h%p%t %r (%R)')
+        >>> print(seq3)
         a.1-14.tga
         >>> len(seq3)
         7
-        >>> seq4 = uncompress('a.%03d.tga 1-14 (1-3 10 12-14)', format='%h%p%t %s-%e (%R)')
-        >>> print seq4
+        >>> seq4 = uncompress('a.%03d.tga 1-14 (1-3 10 12-14)', fmt='%h%p%t %s-%e (%R)')
+        >>> print(seq4)
         a.1-14.tga
-        >>> len(seq3)
-        7
-        >>> seq5 = uncompress('a.%03d.tga 1-14 (1 14)', format='%h%p%t %r (%R)')
-        >>> print seq5
+        >>> seq5 = uncompress('a.%03d.tga 1-14 (1 14)', fmt='%h%p%t %r (%R)')
+        >>> print(seq5)
         a.1-14.tga
         >>> len(seq5)
         2
-        >>> seq6 = uncompress('a.%03d.tga 1-14 (1-14)', format='%h%p%t %r (%R)')
-        >>> print seq6
+        >>> seq6 = uncompress('a.%03d.tga 1-14 (1-14)', fmt='%h%p%t %r (%R)')
+        >>> print(seq6)
         a.1-14.tga
         >>> len(seq6)
         14
-        >>> seq7 = uncompress('a.%03d.tga 1-100000 (1-10 100000)', format='%h%p%t %r (%R)')
-        >>> print seq7
+        >>> seq7 = uncompress('a.%03d.tga 1-100000 (1-10 100000)', fmt='%h%p%t %r (%R)')
+        >>> print(seq7)
         a.1-100000.tga
         >>> len(seq7)
         11
-        >>> seq8 = uncompress('a.%03d.tga 1-100 ([10, 20, 40, 50])', format='%h%p%t %r (%m)')
-        >>> print seq8
+        >>> seq8 = uncompress('a.%03d.tga 1-100 ([10, 20, 40, 50])', fmt='%h%p%t %r (%m)')
+        >>> print(seq8)
         a.1-100.tga
         >>> len(seq8)
         96
 
-    :param seqstring: Compressed sequence string. 
-    :param format: Format of sequence string.
+    :param seq_string: Compressed sequence string.
+    :param fmt: Format of sequence string.
 
-    :return: pyseq.Sequence instance.
+    :return: :class:`.Sequence` instance.
     """
-    dirname = os.path.dirname(seqstring)
-    name = os.path.basename(seqstring)
+    dirname = os.path.dirname(seq_string)
+    name = os.path.basename(seq_string)
     log.debug('uncompress: %s' % name)
+
 
     # map of directives to regex
     remap = {
@@ -517,24 +584,26 @@ def uncompress(seqstring, format=gFormat):
         'f': '\[.*\]'
     }
 
-    log.debug('format in: %s' % format)
+    log.debug('fmt in: %s' % fmt)
 
     # escape any re chars in format
-    format = re.escape(format)
-
+    fmt = re.escape(fmt)
     # replace \% with % back again
-    format = format.replace('\\%', '%')
+    fmt = fmt.replace('\\%', '%')
 
-    log.debug('format escaped: %s' % format)
+    log.debug('fmt escaped: %s' % fmt)
 
-    for m in gFormatRE.finditer(format):
+    for m in gFormatRE.finditer(fmt):
         _old = '%%%s%s' % (m.group('pad') or '', m.group('var'))
-        _new = '(?P<%s>%s)' % (m.group('var'), remap.get(m.group('var'), '\w+'))
-        format = format.replace(_old, _new)
+        _new = '(?P<%s>%s)' % (
+            m.group('var'),
+            remap.get(m.group('var'), '\w+')
+        )
+        fmt = fmt.replace(_old, _new)
 
-    log.debug('format: %s' % format)
+    log.debug('fmt: %s' % fmt)
 
-    regex = re.compile(format)
+    regex = re.compile(fmt)
     match = regex.match(name)
 
     frames = []
@@ -563,7 +632,7 @@ def uncompress(seqstring, format=gFormat):
                 splits = number_group.split('-')
                 start = int(splits[0])
                 end = int(splits[1])
-                frames.extend(range(start, end+1))
+                frames.extend(range(start, end + 1))
             else:
                 # just append the number
                 end = int(number_group)
@@ -574,7 +643,7 @@ def uncompress(seqstring, format=gFormat):
             r = match.group('r')
             log.debug('matched r: %s' % r)
             s, e = r.split('-')
-            frames = range(int(s), int(e)+1)
+            frames = range(int(s), int(e) + 1)
         except IndexError:
             s = match.group('s')
             e = match.group('e')
@@ -591,7 +660,7 @@ def uncompress(seqstring, format=gFormat):
 
     items = []
     if missing:
-        for i in range(int(s), int(e)+1):
+        for i in range(int(s), int(e) + 1):
             if i in missing:
                 continue
             f = pad % i
@@ -608,6 +677,7 @@ def uncompress(seqstring, format=gFormat):
         return seqs[0]
     return seqs
 
+
 def getSequences(source):
     """
     Returns a list of Sequence objects given a directory or list that contain
@@ -615,9 +685,9 @@ def getSequences(source):
 
     Get sequences in a directory:
 
-        >>> seqs = getSequences('./tests/')
-        >>> for s in seqs: print s
-        ... 
+        >>> seqs = getSequences('./tests/files/')
+        >>> for s in seqs: print(s)
+        ...
         012_vb_110_v001.1-10.png
         012_vb_110_v002.1-10.png
         a.1-14.tga
@@ -639,8 +709,8 @@ def getSequences(source):
     Get sequences from a list of file names:
 
         >>> seqs = getSequences(['fileA.1.rgb', 'fileA.2.rgb', 'fileB.1.rgb'])
-        >>> for s in seqs: print s
-        ... 
+        >>> for s in seqs: print(s)
+        ...
         fileA.1-2.rgb
         fileB.1.rgb
 
@@ -656,16 +726,16 @@ def getSequences(source):
     """
     start = datetime.now()
 
-    # list for storing sequences to be returnd later
+    # list for storing sequences to be returned later
     seqs = []
 
-    # glob the source items and sort them
-    if type(source) == list:
+    if isinstance(source, list):
         items = sorted(source, key=lambda x: str(x))
-    elif type(source) == str and os.path.isdir(source):
-        items = sorted(glob(os.path.join(source, '*')))
-    elif type(source) == str:
-        items = sorted(glob(source))
+    elif isinstance(source, str):
+        if os.path.isdir(source):
+            items = sorted(glob(os.path.join(source, '*')))
+        else:
+            items = sorted(glob(source))
     else:
         raise TypeError('Unsupported format for source argument')
     log.debug('Found %s files' % len(items))
@@ -675,7 +745,7 @@ def getSequences(source):
         item = Item(items.pop(0))
         found = False
         for seq in seqs[::-1]:
-            if seq.contains(item):
+            if seq.includes(item):
                 seq.append(item)
                 found = True
                 break
@@ -683,46 +753,5 @@ def getSequences(source):
             seq = Sequence([item])
             seqs.append(seq)
 
-    log.debug("time: %s" %(datetime.now() - start))
-    return seqs
-
-if __name__ == '__main__':
-    """
-    Run some simple unit tests. Currently, these tests depend on the
-    dummy files that live in pyseq/tests. Changing or modifying these
-    files may break the assertions in the tests below.
-    """
-
-    # test passing in a list of files
-    seqs = getSequences(['fileA.1.rgb', 'fileA.2.rgb', 'fileB.1.rgb'])
-    assert len(seqs) == 2
-
-    # get a diff of two files in the same seq
-    d = diff('fileA.0001.dpx', 'fileA.0002.dpx')
-    assert d[0]['frames'] == ('0001', '0002')
-
-    # get a diff of two files in the same seq
-    d = diff('012_vb_110_v002.1.dpx', '012_vb_110_v002.2.dpx')
-    assert d[0]['frames'] == ('1', '2')
-
-    # glob some files from the tests dir
-    seqs = getSequences('tests/fileA.*')
-    assert len(seqs) == 2
-
-    # uncompress a few files, test the format matching
-    seq = uncompress('./tests/012_vb_110_v001.%04d.png 1-10', format='%h%p%t %r')
-    assert len(seq) == 10
-    assert seq.head() == '012_vb_110_v001.' and seq.tail() == '.png'
-    assert seq.frames() == range(1, 11)
-
-    # ... with slightly different format matching
-    seq = uncompress('./tests/012_vb_110_v001.1-10.png', format='%h%r%t')
-    assert len(seq) == 10
-    assert seq.head() == '012_vb_110_v001.' and seq.tail() == '.png'
-    assert seq.frames() == range(1, 11)
-
-    # grab all the seqs in the tests dir
-    seqs = getSequences(os.path.join(os.path.dirname(__file__), 'tests'))
-    for s in seqs:
-        print(s.format('%h%p%t %r'))
-
+    log.debug('time: %s' % (datetime.now() - start))
+    return list(seqs)
