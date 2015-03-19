@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # ---------------------------------------------------------------------------------------------
-# Copyright (c) 2011-2014, Ryan Galloway (ryan@rsgalloway.com)
+# Copyright (c) 2011-2015, Ryan Galloway (ryan@rsgalloway.com)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -33,11 +33,7 @@
    http://github.com/rsgalloway/pyseq
 """
 
-__author__ = [
-    "Ryan Galloway <ryan@rsgalloway.com>",
-    "Erkan Ozgur Yilmaz <eoyilmaz@gmail.com>"
-]
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 
 import os
@@ -178,9 +174,9 @@ class Sequence(list):
         >>> s.append('file.0006.jpg')
         >>> print(s.format('%4l %h%p%t %R'))
            4 file.%04d.jpg 1-3 6
-        >>> s.can_contain('file.0009.jpg')
+        >>> s.includes('file.0009.jpg')
         True
-        >>> s.can_contain('file.0009.pic')
+        >>> s.includes('file.0009.pic')
         False
         >>> s.contains('file.0006.jpg')
         False
@@ -271,20 +267,7 @@ class Sequence(list):
 
         :return: Formatted string.
         """
-        format_char_types = {
-            's': 'i',
-            'e': 'i',
-            'l': 'i',
-            'f': 's',
-            'm': 's',
-            'p': 's',
-            'r': 's',
-            'R': 's',
-            'h': 's',
-            't': 's'
-        }
-
-
+        
         format_char_types = {
             's': 'i',
             'e': 'i',
@@ -353,7 +336,7 @@ class Sequence(list):
         _dirname = str(os.path.dirname(os.path.abspath(self[0].path)))
         return os.path.join(_dirname, str(self))
 
-    def can_contain(self, item):
+    def includes(self, item):
         """Checks if the item can be contained in this sequence that is if it
         is a sibling of any of the items in the list
 
@@ -362,9 +345,9 @@ class Sequence(list):
             >>> s = Sequence(['fileA.0001.jpg', 'fileA.0002.jpg'])
             >>> print(s)
             fileA.1-2.jpg
-            >>> s.can_contain('fileA.0003.jpg')
+            >>> s.includes('fileA.0003.jpg')
             True
-            >>> s.can_contain('fileB.0003.jpg')
+            >>> s.includes('fileB.0003.jpg')
             False
         """
         if len(self) > 0:
@@ -402,7 +385,7 @@ class Sequence(list):
         if len(self) > 0:
             if not isinstance(item, Item):
                 item = Item(item)
-            return self.can_contain(item)\
+            return self.includes(item)\
                 and self.end() >= int(item.frame) >= self.start()
 
         return False
@@ -418,7 +401,7 @@ class Sequence(list):
         if type(item) is not Item:
             item = Item(item)
 
-        if self.can_contain(item):
+        if self.includes(item):
             super(Sequence, self).append(item)
             self.__frames = None
             self.__missing = None
@@ -762,7 +745,7 @@ def getSequences(source):
         item = Item(items.pop(0))
         found = False
         for seq in seqs[::-1]:
-            if seq.can_contain(item):
+            if seq.includes(item):
                 seq.append(item)
                 found = True
                 break

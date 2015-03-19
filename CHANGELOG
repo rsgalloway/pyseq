@@ -2,24 +2,25 @@
 CHANGELOG
 =========
 
-v0.3.0
+v0.4.0
 ======
 
-* **New:** Updated the code to support Python 3+
+* **New:** Some PEP8 and Python 3+ updates.
 
-* **New:** Added *unittests* for the whole library.
+* **New:** Added *unittests* for the whole library (requires python 2.7+).
 
 * **Update:** The ``format`` parameter is renamed to ``fmt`` in
-  ``uncompress()`` to not to shadow the **Python built-in**.
+  ``uncompress()`` and ``Sequence.format()`` to not to shadow the 
+  **Python built-in**.
 
-* **New:** Added a new method called ``can_contain()`` to ``Sequence`` class
-  which does what the ``contains()`` method was doing in previous
-  implementations, that is, it checks if the given item can be contained in
-  one particular Sequence.
+* **New:** Added a method called ``includes()`` to the ``Sequence`` class
+  that does what the ``contains()`` method was doing in previous versions, 
+  that is, it now checks if the given Item could be contained in that 
+  particular Sequence.
 
-* **Update:** Updated ``Sequence.contains()`` method to do what it implies to
-  to do, that is, it now checks if the item is inside the boundaries of the
-  Sequence.
+* **Update:** Updated ``Sequence.contains()`` method behavior updated to
+  better match its name, that is, it now checks if the Item is contained inside 
+  the boundaries of the Sequence.
 
 * **Fix:** The padding characters are now properly interpreted, as shown
   below::

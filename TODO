@@ -1,8 +1,0 @@
-TODO
-====
-
-* Add sequence operations that modify members, e.g. rename, reindex
-* Support additional syntax, e.g. x10 for every tenth frame
-* Keyboard interrupt (cntl+c)
-* Recurse subdirectories and display trees
-* Add optional explicit format parameter to diff function

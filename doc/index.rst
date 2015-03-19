@@ -92,11 +92,11 @@ of the sequence.*
   >>> s.append('file.0006.jpg')
   >>> print(s.format("%h%p%t %R"))
   file.%04d.jpg 1-3 6
-  >>> s.can_contain('file.0009.jpg')
+  >>> s.includes('file.0009.jpg')
   True
   >>> s.contains('file.0009.jpg')
   False
-  >>> s.can_contain('file.0009.pic')
+  >>> s.includes('file.0009.pic')
   False
   >>> s.contains('file.0009.pic')
   False

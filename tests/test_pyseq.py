@@ -1,9 +1,34 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# ---------------------------------------------------------------------------------------------
+# Copyright (c) 2011-2015, Ryan Galloway (ryan@rsgalloway.com)
 #
-# Copyright (C) 2011 Ryan Galloway (ryan@rsgalloway.com)
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
 #
-# This module is part of Shotman and is released under
-# the BSD License: http://www.opensource.org/licenses/bsd-license.php
+#  - Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+#
+#  - Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+#
+#  - Neither the name of the software nor the names of its contributors
+#    may be used to endorse or promote products derived from this software
+#    without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+# -----------------------------------------------------------------------------
 
 import os
 import unittest
@@ -179,12 +204,12 @@ class SequenceTestCase(unittest.TestCase):
             seq.contains('file.0015.jpg')
         )
 
-    def test_can_contain_is_working_properly(self):
-        """testing if Sequence.can_contains() method is working properly
+    def test_includes_is_working_properly(self):
+        """testing if Sequence.includes() method is working properly
         """
         seq = Sequence(self.files)
-        self.assertTrue(seq.can_contain('file.0009.jpg'))
-        self.assertFalse(seq.can_contain('file.0009.pic'))
+        self.assertTrue(seq.includes('file.0009.jpg'))
+        self.assertFalse(seq.includes('file.0009.pic'))
 
     def test_contains_is_working_properly(self):
         """testing if Sequence.contains() method is working properly
@@ -458,53 +483,40 @@ class LSSTestCase(unittest.TestCase):
     def test_lss_is_working_properly_1(self):
         """testing if the lss command is working properly
         """
-        print(self.lss)
-        result = self.run_command(
-            self.lss,
-            './files'
+        test_files = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            "files"
         )
 
-        print(result)
+        result = self.run_command(
+            self.lss,
+            test_files
+        )
 
         self.assertEqual(
             """  10 012_vb_110_v001.%04d.png 1-10
-  10 012_vb_110_v001.%04d.png 1-10
-  10 012_vb_110_v002.%04d.png 1-10
   10 012_vb_110_v002.%04d.png 1-10
    7 a.%03d.tga 1-3 10 12-14
-   7 a.%03d.tga 1-3 10 12-14
-   1 alpha.txt 
    1 alpha.txt 
    5 bnc01_TinkSO_tx_0_ty_0.%04d.tif 101-105
-   5 bnc01_TinkSO_tx_0_ty_0.%04d.tif 101-105
-   5 bnc01_TinkSO_tx_0_ty_1.%04d.tif 101-105
    5 bnc01_TinkSO_tx_0_ty_1.%04d.tif 101-105
    5 bnc01_TinkSO_tx_1_ty_0.%04d.tif 101-105
-   5 bnc01_TinkSO_tx_1_ty_0.%04d.tif 101-105
-   5 bnc01_TinkSO_tx_1_ty_1.%04d.tif 101-105
    5 bnc01_TinkSO_tx_1_ty_1.%04d.tif 101-105
    2 file.%02d.tif 1-2
-   2 file.%02d.tif 1-2
-   1 file.info.03.rgb 
    1 file.info.03.rgb 
    4 file01_%04d.rgb 40-43
-   4 file01_%04d.rgb 40-43
-   4 file02_%04d.rgb 44-47
    4 file02_%04d.rgb 44-47
    4 file%d.03.rgb 1-4
-   4 file%d.03.rgb 1-4
-   3 fileA.%04d.jpg 1-3
    3 fileA.%04d.jpg 1-3
    3 fileA.%04d.png 1-3
-   3 fileA.%04d.png 1-3
-   1 file_02.tif 
    1 file_02.tif 
    4 z1_001_v1.%d.png 1-4
-   4 z1_001_v1.%d.png 1-4
    4 z1_002_v1.%d.png 1-4
-   4 z1_002_v1.%d.png 1-4
-   4 z1_002_v2.%d.png 1-4
    4 z1_002_v2.%d.png 1-4
 """,
             result
         )
+
+
+if __name__ == '__main__':
+    unittest.main()
