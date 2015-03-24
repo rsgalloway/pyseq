@@ -90,7 +90,13 @@ class Item(str):
         self.__filename = os.path.basename(str(item))
         self.__digits = gDigitsRE.findall(self.name)
         self.__parts = gDigitsRE.split(self.name)
-
+        
+        if os.path.isfile(self.__path):
+            self.__size = os.path.getsize(self.__path)
+            self.__mtime = os.path.getmtime(self.__path)
+        else:
+            self.__size = 0
+            self.__mtime = 0
         # modified by self.is_sibling()
         self.frame = ''
         self.head = self.name
@@ -135,6 +141,18 @@ class Item(str):
         """Non-numerical components of item name
         """
         return self.__parts
+
+    @property
+    def size(self):
+        """Non-numerical components of item name
+        """
+        return self.__size
+
+    @property
+    def mtime(self):
+        """Non-numerical components of item name
+        """
+        return self.__mtime
 
     def isSibling(self, item):
         """Determines if this and item are part of the same sequence.
@@ -194,6 +212,7 @@ class Sequence(list):
         """
         super(Sequence, self).__init__([Item(items.pop(0))])
         self.__missing = []
+        self.__NEEDREINDEX = False
         while items:
             f = Item(items.pop(0))
             try:
@@ -205,6 +224,8 @@ class Sequence(list):
             except KeyboardInterrupt:
                 log.info("Stopping.")
                 break
+            
+            
 
     def __attrs__(self):
         """Replaces format directives with values"""
@@ -296,7 +317,7 @@ class Sequence(list):
 
     def frames(self):
         """:return: List of files in sequence."""
-        if not hasattr(self, '__frames') or not self.__frames:
+        if not hasattr(self, '__frames') or not self.__frames or self.__NEEDREINDEX:
             self.__frames = list(map(int, self._get_frames()))
             self.__frames.sort()
         return self.__frames
@@ -407,6 +428,57 @@ class Sequence(list):
             self.__missing = None
         else:
             raise SequenceError('Item is not a member of this sequence')
+
+    def get_max_mtime(self):
+        '''
+        returns the latest mtime of all items
+        '''
+        maxDate = list()
+        for i in self:
+            maxDate.append(i.mtime)
+        return max(maxDate)
+    
+    def get_size(self):
+        '''
+        returns the size all items 
+        divide the result by 1024/1024 to get megabytes
+        '''
+        tempSize = list() 
+        for i in self:
+            tempSize.append(i.size)
+        return sum(tempSize)
+    
+    def reIndex(self, addSub, padding=None, run=False):
+        '''
+        renames the files on disk
+        reIndex the items in the sequence object egg
+        1001 + 100 = 1101
+        can change the padding too
+        @param addSub int
+        @param padding str 
+        @param run boolean 
+        '''
+        if not padding:
+            padding = self.format("%p")
+
+        for image,frame in zip(self,self.frames()):
+            oldName = image.path
+            newFrame = padding % (frame + addSub)
+            newFileName ="%s%s%s" % (self.format("%h"), newFrame , self.format("%t") )
+            newName = os.path.join(self.dirname, newFileName)
+            try:
+                import shutil
+                if run:
+                    shutil.move(oldName,newName)
+            except Exception,e:
+                log.error(e)
+            else:
+                log.info('renaming %s -->' % oldName)
+                log.info('         %s' % newName)
+                self.__NEEDREINDEX = True
+                image.frame = newFrame
+        else:
+            self.frames()
 
     def _get_padding(self):
         """:return: padding string, e.g. %07d"""
@@ -733,7 +805,7 @@ def getSequences(source):
         items = sorted(source, key=lambda x: str(x))
     elif isinstance(source, str):
         if os.path.isdir(source):
-            items = sorted(glob(os.path.join(source, '*')))
+            items = sorted(glob(os.path.join(source, '*.*')))
         else:
             items = sorted(glob(source))
     else:
