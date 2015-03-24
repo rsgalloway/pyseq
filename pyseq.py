@@ -144,13 +144,13 @@ class Item(str):
 
     @property
     def size(self):
-        """Non-numerical components of item name
+        """filesize of item
         """
         return self.__size
 
     @property
     def mtime(self):
-        """Non-numerical components of item name
+        """modification time of item
         """
         return self.__mtime
 
