@@ -458,18 +458,6 @@ class Sequence(list):
         """
         return [f.frame for f in self if f.frame is not '']
 
-    def _get_missing_old(self):
-        """looks for missing sequence indexes in sequence
-        """
-        if len(self) > 1:
-            frange=None
-            try:
-                frange = range(self.start(), self.end())
-            except:
-                frange = range(self.start(), self.end())
-            return filter(lambda x: x not in self.frames(), frange)
-        return ''
-
     def _get_missing(self):
         """ looks for missing sequence indexes in sequence
         """
