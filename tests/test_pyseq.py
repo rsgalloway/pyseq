@@ -33,7 +33,7 @@
 import os
 import unittest
 import subprocess
-from pyseq import Item, Sequence, diff, uncompress, getSequences
+from pyseq import Item, Sequence, diff, uncompress, get_sequences
 
 
 class ItemTestCase(unittest.TestCase):
@@ -158,14 +158,14 @@ class ItemTestCase(unittest.TestCase):
             "can't set attribute"
         )
 
-    def test_isSibling_method_is_working_properly(self):
+    def test_is_sibling_method_is_working_properly(self):
         """testing if the is_sibling() is working properly
         """
         item1 = Item('/mnt/S/Some/Path/to/a/file/with/numbers/file.0010.exr')
         item2 = Item('/mnt/S/Some/Path/to/a/file/with/numbers/file.0101.exr')
 
-        self.assertTrue(item1.isSibling(item2))
-        self.assertTrue(item2.isSibling(item1))
+        self.assertTrue(item1.is_sibling(item2))
+        self.assertTrue(item2.is_sibling(item1))
 
 
 class SequenceTestCase(unittest.TestCase):
@@ -247,7 +247,7 @@ class HelperFunctionsTestCase(unittest.TestCase):
     """tests the helper functions like
     pyseq.diff()
     pyseq.uncompress()
-    pyseq.getSequences()
+    pyseq.get_sequences()
     """
 
     def test_diff_is_working_properly_1(self):
@@ -388,10 +388,10 @@ class HelperFunctionsTestCase(unittest.TestCase):
             len(seq8)
         )
 
-    def test_getSequences_is_working_properly_1(self):
-        """testing if getSequences is working properly
+    def test_get_sequences_is_working_properly_1(self):
+        """testing if get_sequences is working properly
         """
-        seqs = getSequences('./files/')
+        seqs = get_sequences('./files/')
 
         expected_results = [
             '012_vb_110_v001.1-10.png',
@@ -420,10 +420,10 @@ class HelperFunctionsTestCase(unittest.TestCase):
                 str(seq)
             )
 
-    def test_getSequences_is_working_properly_2(self):
-        """testing if getSequences is working properly
+    def test_get_sequences_is_working_properly_2(self):
+        """testing if get_sequences is working properly
         """
-        seqs = getSequences(['fileA.1.rgb', 'fileA.2.rgb', 'fileB.1.rgb'])
+        seqs = get_sequences(['fileA.1.rgb', 'fileA.2.rgb', 'fileB.1.rgb'])
         expected_results = [
             'fileA.1-2.rgb',
             'fileB.1.rgb'
@@ -434,10 +434,10 @@ class HelperFunctionsTestCase(unittest.TestCase):
                 str(seq)
             )
 
-    def test_getSequences_is_working_properly_3(self):
-        """testing if getSequences is working properly
+    def test_get_sequences_is_working_properly_3(self):
+        """testing if get_sequences is working properly
         """
-        seqs = getSequences('./tests/files/bnc*')
+        seqs = get_sequences('./tests/files/bnc*')
         expected_results = [
             'bnc01_TinkSO_tx_0_ty_0.%04d.tif 101-105',
             'bnc01_TinkSO_tx_0_ty_1.%04d.tif 101-105',

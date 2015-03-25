@@ -60,8 +60,8 @@ __all__ = [
 log = logging.getLogger('pyseq')
 log.addHandler(logging.StreamHandler())
 log.setLevel(int(os.environ.get('PYSEQ_LOG_LEVEL', logging.INFO)))
-
-# log.setLevel(logging.DEBUG)
+# Show DeprecationWarnings in 2.7+
+warnings.simplefilter('always', DeprecationWarning)
 
 
 class SequenceError(Exception):
@@ -79,7 +79,8 @@ class FormatError(Exception):
 def deprecated(func):
     def inner(*args, **kwargs):
         warnings.warn("Call to deprecated method {}".format(func.__name__),
-                      category=DeprecationWarning)
+                      category=DeprecationWarning, stacklevel=2)
+        # category=DeprecationWarning,
         return func(*args, **kwargs)
     inner.__name__ = func.__name__
     inner.__doc__ = func.__doc__
