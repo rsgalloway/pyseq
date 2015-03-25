@@ -111,7 +111,6 @@ class Item(str):
         """
         return self.__path
 
-
     @property
     def name(self):
         """Item base name attribute
@@ -267,7 +266,6 @@ class Sequence(list):
 
         :return: Formatted string.
         """
-        
         format_char_types = {
             's': 'i',
             'e': 'i',
@@ -461,16 +459,24 @@ class Sequence(list):
         return [f.frame for f in self if f.frame is not '']
 
     def _get_missing(self):
-        """looks for missing sequence indexes in sequence
+        """ looks for missing sequence indexes in sequence
         """
-        if len(self) > 1:
-            frange=None
-            try:
-                frange = range(self.start(), self.end())
-            except:
-                frange = range(self.start(), self.end())
-            return filter(lambda x: x not in self.frames(), frange)
-        return ''
+        missing = []
+        frames = self.frames()
+        if len(frames) == 0:
+            return missing
+        prev = frames[0]
+        index = 1
+        while index < len(frames):
+            diff = frames[index] - prev
+            if diff == 1:
+                prev = frames[index]
+                index += 1
+            else:
+                prev += 1
+                missing.append(prev)
+
+        return missing
 
 
 def diff(f1, f2):
