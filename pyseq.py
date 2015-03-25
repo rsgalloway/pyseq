@@ -86,7 +86,7 @@ class Item(str):
         log.debug('adding %s' % item)
         self.item = item
         self.__path = getattr(item, 'path', os.path.abspath(str(item)))
-        self.__dirname = os.path.dirname(str(item))
+        self.__dirname = os.path.dirname(self.__path)
         self.__filename = os.path.basename(str(item))
         self.__digits = gDigitsRE.findall(self.name)
         self.__parts = gDigitsRE.split(self.name)
@@ -429,27 +429,27 @@ class Sequence(list):
         else:
             raise SequenceError('Item is not a member of this sequence')
 
-    def get_max_mtime(self):
-        '''
+    def getMaxMTime(self):
+        """
         returns the latest mtime of all items
-        '''
+        """
         maxDate = list()
         for i in self:
             maxDate.append(i.mtime)
         return max(maxDate)
     
-    def get_size(self):
-        '''
+    def getSize(self):
+        """
         returns the size all items 
         divide the result by 1024/1024 to get megabytes
-        '''
+        """
         tempSize = list() 
         for i in self:
             tempSize.append(i.size)
         return sum(tempSize)
     
     def reIndex(self, addSub, padding=None, run=False):
-        '''
+        """
         renames the files on disk
         reIndex the items in the sequence object egg
         1001 + 100 = 1101
@@ -457,15 +457,20 @@ class Sequence(list):
         @param addSub int
         @param padding str 
         @param run boolean 
-        '''
+        """
         if not padding:
             padding = self.format("%p")
-
-        for image,frame in zip(self,self.frames()):
+        
+        if addSub > 0:
+            gen = ((image,frame) for (image,frame) in zip(reversed(self),reversed(self.frames())))
+        else:
+            gen = ((image,frame) for (image,frame) in zip(self,self.frames()))
+        
+        for image,frame in gen:
             oldName = image.path
             newFrame = padding % (frame + addSub)
             newFileName ="%s%s%s" % (self.format("%h"), newFrame , self.format("%t") )
-            newName = os.path.join(self.dirname, newFileName)
+            newName = os.path.join(image.dirname, newFileName)
             try:
                 import shutil
                 if run:
@@ -805,7 +810,7 @@ def getSequences(source):
         items = sorted(source, key=lambda x: str(x))
     elif isinstance(source, str):
         if os.path.isdir(source):
-            items = sorted(glob(os.path.join(source, '*.*')))
+            items = sorted(glob(os.path.join(source, '*')))
         else:
             items = sorted(glob(source))
     else:
