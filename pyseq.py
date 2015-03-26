@@ -66,6 +66,9 @@ digits_re = re.compile(r'\d+')
 # regex for matching format directives
 format_re = re.compile(r'%(?P<pad>\d+)?(?P<var>\w+)')
 
+# character to join explicit frame ranges on
+rangeJoin = os.environ.get("PYSEQ_SEP", " ")
+
 __all__ = [
     'SequenceError', 'Item', 'Sequence', 'diff', 'uncompress', 'getSequences',
     'get_sequences'
@@ -565,7 +568,7 @@ class Sequence(list):
             frange.append(str(start))
         else:
             frange.append('%s-%s' % (str(start), str(end)))
-        return ' '.join(frange)
+        return rangeJoin.join(frange)
 
     def _get_frames(self):
         """finds the sequence indexes from item names

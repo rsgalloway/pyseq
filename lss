@@ -75,17 +75,35 @@ Formatting options:
     parser.add_option("-d", "--debug", dest="debug", action="store_true",
                       default=False,
                       help="set logging level to debug (or $PYSEQ_LOG_LEVEL)")
+    parser.add_option("-w", "--walk", dest="walk", action="store_true",
+                      default=False, help="Walks the entire directory "
+                      "structure.")
     (options, args) = parser.parse_args()
 
     if options.debug:
         pyseq.log.setLevel(logging.DEBUG)
 
     if len(args) == 0:
-        args = os.listdir(os.getcwd())
-    elif len(args) == 1 and os.path.isdir(args[0]):
-        args = os.listdir(args[0])
-    for seq in pyseq.get_sequences(args):
-        print(seq.format(options.format))
+        start = os.getcwd()
+    elif len(args) == 1:
+        start = args[0].rstrip(os.sep)
+    else:
+        parser.error("Too many arguments given.")
+
+    if os.path.isdir(args[0]) is False:
+        parser.error("First argument is not a directory")
+
+    spaces = "  "
+    for root, dirs, files in os.walk(start):
+        cnt = 0
+        if options.walk is False:
+            del dirs[:]
+        else:
+            cnt = len(root.split(os.sep)) - len(start.split(os.sep))
+            print(spaces * cnt + os.path.basename(root) + os.sep)
+
+        for seq in pyseq.getSequences(files):
+            print(spaces * cnt + seq.format(options.format))
 
     return 0
 
