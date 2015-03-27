@@ -35,7 +35,6 @@
 
 __version__ = "0.4.0"
 
-
 import os
 import re
 import logging
@@ -59,18 +58,17 @@ __all__ = [
 log = logging.getLogger('pyseq')
 log.addHandler(logging.StreamHandler())
 log.setLevel(int(os.environ.get('PYSEQ_LOG_LEVEL', logging.INFO)))
-
-# log.setLevel(logging.DEBUG)
+#log.setLevel(logging.DEBUG)
 
 
 class SequenceError(Exception):
-    """special exception for sequence errors
+    """Special exception for sequence errors
     """
     pass
 
 
 class FormatError(Exception):
-    """special exception for seq format errors
+    """Special exception for seq format errors
     """
     pass
 
@@ -90,13 +88,9 @@ class Item(str):
         self.__filename = os.path.basename(str(item))
         self.__digits = gDigitsRE.findall(self.name)
         self.__parts = gDigitsRE.split(self.name)
-        
-        if os.path.isfile(self.__path):
-            self.__size = os.path.getsize(self.__path)
-            self.__mtime = os.path.getmtime(self.__path)
-        else:
-            self.__size = 0
-            self.__mtime = 0
+        self.__size = os.path.getsize(self.__path) if self.exists else 0
+        self.__mtime = os.path.getmtime(self.__path) if self.exists else 0
+
         # modified by self.is_sibling()
         self.frame = ''
         self.head = self.name
@@ -140,16 +134,22 @@ class Item(str):
         """Non-numerical components of item name
         """
         return self.__parts
+    
+    @property
+    def exists(self):
+        """Returns True if this item exists on disk
+        """
+        return os.path.isfile(self.__path)
 
     @property
     def size(self):
-        """filesize of item
+        """Returns the size of the Item, reported by os.stat
         """
         return self.__size
 
     @property
     def mtime(self):
-        """modification time of item
+        """Returns the modification time of the Item
         """
         return self.__mtime
 
@@ -211,7 +211,7 @@ class Sequence(list):
         """
         super(Sequence, self).__init__([Item(items.pop(0))])
         self.__missing = []
-        self.__NEEDREINDEX = False
+        self.__dirty = False
         while items:
             f = Item(items.pop(0))
             try:
@@ -223,8 +223,6 @@ class Sequence(list):
             except KeyboardInterrupt:
                 log.info("Stopping.")
                 break
-            
-            
 
     def __attrs__(self):
         """Replaces format directives with values"""
@@ -309,13 +307,31 @@ class Sequence(list):
             fmt = fmt.replace(_old, _new)
         return fmt % self.__attrs__()
 
+    @property
+    def mtime(self):
+        """Returns the latest mtime of all items
+        """
+        maxDate = list()
+        for i in self:
+            maxDate.append(i.mtime)
+        return max(maxDate)
+    
+    @property
+    def size(self):
+        """Returns the size all items (divide by 1024*1024 for MBs)
+        """
+        tempSize = list() 
+        for i in self:
+            tempSize.append(i.size)
+        return sum(tempSize)
+    
     def length(self):
         """:return: The length of the sequence."""
         return len(self)
 
     def frames(self):
         """:return: List of files in sequence."""
-        if not hasattr(self, '__frames') or not self.__frames or self.__NEEDREINDEX:
+        if not hasattr(self, '__frames') or not self.__frames or self.__dirty:
             self.__frames = list(map(int, self._get_frames()))
             self.__frames.sort()
         return self.__frames
@@ -410,8 +426,7 @@ class Sequence(list):
         return False
 
     def append(self, item):
-        """
-        Adds another member to the sequence.
+        """Adds another member to the sequence.
 
         :param item: pyseq.Item object.
 
@@ -427,59 +442,43 @@ class Sequence(list):
         else:
             raise SequenceError('Item is not a member of this sequence')
 
-    def getMaxMTime(self):
-        """
-        returns the latest mtime of all items
-        """
-        maxDate = list()
-        for i in self:
-            maxDate.append(i.mtime)
-        return max(maxDate)
-    
-    def getSize(self):
-        """
-        returns the size all items 
-        divide the result by 1024/1024 to get megabytes
-        """
-        tempSize = list() 
-        for i in self:
-            tempSize.append(i.size)
-        return sum(tempSize)
-    
-    def reIndex(self, addSub, padding=None, run=False):
-        """
-        renames the files on disk
-        reIndex the items in the sequence object egg
-        1001 + 100 = 1101
-        can change the padding too
-        @param addSub int
-        @param padding str 
-        @param run boolean 
+    def reIndex(self, offset, padding=None):
+        """Renames and reindexes the items in the sequence, e.g. ::
+
+			>>> seq.reIndex(offset=100)
+
+        will add a 100 frame offset to each Item in `seq`, and rename
+        the files on disk.
+
+        :param offset: the frame offset to apply to each item 
+        :param padding: change the padding
         """
         if not padding:
             padding = self.format("%p")
         
-        if addSub > 0:
-            gen = ((image,frame) for (image,frame) in zip(reversed(self),reversed(self.frames())))
+        if offset > 0:
+            gen = ((image,frame) for (image,frame) in zip(reversed(self), 
+                reversed(self.frames())))
         else:
             gen = ((image,frame) for (image,frame) in zip(self,self.frames()))
         
-        for image,frame in gen:
+        for image, frame in gen:
             oldName = image.path
-            newFrame = padding % (frame + addSub)
-            newFileName ="%s%s%s" % (self.format("%h"), newFrame , self.format("%t") )
+            newFrame = padding % (frame + offset)
+            newFileName ="%s%s%s" % (self.format("%h"), newFrame , 
+                self.format("%t"))
             newName = os.path.join(image.dirname, newFileName)
+
             try:
                 import shutil
-                if run:
-                    shutil.move(oldName,newName)
-            except Exception,e:
-                log.error(e)
+                shutil.move(oldName,newName)
+            except Exception as err:
+                log.error(err)
             else:
-                log.info('renaming %s -->' % oldName)
-                log.info('         %s' % newName)
-                self.__NEEDREINDEX = True
+                log.debug('renaming %s %s' % (oldName, newName))
+                self.__dirty = True
                 image.frame = newFrame
+
         else:
             self.frames()
 
@@ -494,8 +493,7 @@ class Sequence(list):
             return ''
 
     def _get_framerange(self, missing=True):
-        """
-        Returns frame range string, e.g. 1-500.
+        """Returns frame range string, e.g. 1-500.
 
         :param missing: Expand sequence to exclude missing sequence indices.
 
@@ -536,7 +534,7 @@ class Sequence(list):
         return [f.frame for f in self if f.frame is not '']
 
     def _get_missing(self):
-        """ looks for missing sequence indexes in sequence
+        """Looks for missing sequence indexes in sequence
         """
         missing = []
         frames = self.frames()
@@ -560,7 +558,7 @@ def diff(f1, f2):
     """
     Examines diffs between f1 and f2 and deduces numerical sequence number.
 
-    For example:
+    For example ::
 
         >>> diff('file01_0040.rgb', 'file01_0041.rgb')
         [{'frames': ('0040', '0041'), 'start': 7, 'end': 11}]
