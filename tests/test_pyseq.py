@@ -31,6 +31,8 @@
 # -----------------------------------------------------------------------------
 
 import os
+import re
+import random
 import unittest
 import subprocess
 from pyseq import Item, Sequence, diff, uncompress, getSequences
@@ -242,6 +244,41 @@ class SequenceTestCase(unittest.TestCase):
             seq.format('%h%4s-%4e%t'),
         )
 
+    def test__get_missing(self):
+        """ test that _get_missing works
+        """
+        # Can't initialize Sequence without an item
+        # seq = Sequence([])
+        # self.assertEqual(seq._get_missing(), [])
+
+        seq = Sequence(["file.00010.jpg"])
+        self.assertEqual(seq._get_missing(), [])
+
+        seq = Sequence(self.files)
+        seq.append("file.0006.jpg")
+        self.assertEqual(seq._get_missing(), [4, 5])
+
+        seq = Sequence(["file.%04d.jpg" % i for i in xrange(20)])
+        seq.pop(10)
+        seq.pop(10)
+        seq.pop(10)
+        seq.pop(14)
+        seq.pop(14)
+        missing = [10, 11, 12, 17, 18]
+        self.assertEqual(seq._get_missing(), missing)
+
+        missing = []
+        seq = Sequence(["file.0001.jpg"])
+        for i in xrange(2, 50):
+            if random.randint(0, 1) == 1:
+                seq.append("file.%04d.jpg" % i)
+            else:
+                missing.append(i)
+
+        # remove ending random frames
+        while missing[-1] > int(re.search("file\.(\d{4})\.jpg", seq[-1]).group(1)):
+            missing.pop(-1)
+        self.assertEqual(seq._get_missing(), missing)
 
 class HelperFunctionsTestCase(unittest.TestCase):
     """tests the helper functions like

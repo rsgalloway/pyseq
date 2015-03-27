@@ -117,7 +117,6 @@ class Item(str):
         """
         return self.__path
 
-
     @property
     def name(self):
         """Item base name attribute
@@ -288,7 +287,6 @@ class Sequence(list):
 
         :return: Formatted string.
         """
-        
         format_char_types = {
             's': 'i',
             'e': 'i',
@@ -428,8 +426,9 @@ class Sequence(list):
             self.__missing = None
         else:
             raise SequenceError('Item is not a member of this sequence')
-
-    def getMaxMTime(self):
+    
+    @property
+    def mtime(self):
         """
         returns the latest mtime of all items
         """
@@ -438,7 +437,8 @@ class Sequence(list):
             maxDate.append(i.mtime)
         return max(maxDate)
     
-    def getSize(self):
+    @property
+    def size(self):
         """
         returns the size all items 
         divide the result by 1024/1024 to get megabytes
@@ -448,7 +448,7 @@ class Sequence(list):
             tempSize.append(i.size)
         return sum(tempSize)
     
-    def reIndex(self, addSub, padding=None, run=False):
+    def reIndex(self, addSub, padding=None):
         """
         renames the files on disk
         reIndex the items in the sequence object egg
@@ -473,8 +473,7 @@ class Sequence(list):
             newName = os.path.join(image.dirname, newFileName)
             try:
                 import shutil
-                if run:
-                    shutil.move(oldName,newName)
+                shutil.move(oldName,newName)
             except Exception,e:
                 log.error(e)
             else:
@@ -538,16 +537,24 @@ class Sequence(list):
         return [f.frame for f in self if f.frame is not '']
 
     def _get_missing(self):
-        """looks for missing sequence indexes in sequence
+        """ looks for missing sequence indexes in sequence
         """
-        if len(self) > 1:
-            frange=None
-            try:
-                frange = range(self.start(), self.end())
-            except:
-                frange = range(self.start(), self.end())
-            return filter(lambda x: x not in self.frames(), frange)
-        return ''
+        missing = []
+        frames = self.frames()
+        if len(frames) == 0:
+            return missing
+        prev = frames[0]
+        index = 1
+        while index < len(frames):
+            diff = frames[index] - prev
+            if diff == 1:
+                prev = frames[index]
+                index += 1
+            else:
+                prev += 1
+                missing.append(prev)
+
+        return missing
 
 
 def diff(f1, f2):
