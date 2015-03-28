@@ -12,7 +12,7 @@ Installation
 
 Installation using setuputils: ::
 
-  % easy_install pyseq
+  % pip install pyseq
 
 
 Basic Usage

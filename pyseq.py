@@ -29,7 +29,22 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 # -----------------------------------------------------------------------------
-"""docs and latest version available for download at
+
+"""PySeq is a python module that finds groups of items that follow a naming
+convention containing a numerical sequence index, e.g. ::
+
+    fileA.001.png, fileA.002.png, fileA.003.png...
+
+and serializes them into a compressed sequence string representing the entire
+sequence, e.g. ::
+
+    fileA.1-3.png
+
+It should work regardless of where the numerical sequence index is embedded 
+in the name.
+
+Docs and latest version available for download at
+
    http://github.com/rsgalloway/pyseq
 """
 
@@ -38,27 +53,31 @@ __version__ = "0.4.0"
 import os
 import re
 import logging
+import warnings
 from glob import glob
 from datetime import datetime
 
 # default serialization format string
-gFormat = '%4l %h%p%t %R'
+global_format = '%4l %h%p%t %R'
 
 # regex for matching numerical characters
-gDigitsRE = re.compile(r'\d+')
+digits_re = re.compile(r'\d+')
 
 # regex for matching format directives
-gFormatRE = re.compile(r'%(?P<pad>\d+)?(?P<var>\w+)')
+format_re = re.compile(r'%(?P<pad>\d+)?(?P<var>\w+)')
 
 __all__ = [
-    'SequenceError', 'Item', 'Sequence', 'diff', 'uncompress', 'getSequences'
+    'SequenceError', 'Item', 'Sequence', 'diff', 'uncompress', 'getSequences',
+    'get_sequences'
 ]
 
 # logging handlers
 log = logging.getLogger('pyseq')
 log.addHandler(logging.StreamHandler())
 log.setLevel(int(os.environ.get('PYSEQ_LOG_LEVEL', logging.INFO)))
-#log.setLevel(logging.DEBUG)
+
+# Show DeprecationWarnings in 2.7+
+warnings.simplefilter('always', DeprecationWarning)
 
 
 class SequenceError(Exception):
@@ -71,6 +90,19 @@ class FormatError(Exception):
     """Special exception for seq format errors
     """
     pass
+
+
+def deprecated(func):
+    """Deprecation warning decorator
+    """
+    def inner(*args, **kwargs):
+        warnings.warn("Call to deprecated method {}".format(func.__name__),
+                      category=DeprecationWarning, stacklevel=2)
+        return func(*args, **kwargs)
+    inner.__name__ = func.__name__
+    inner.__doc__ = func.__doc__
+    inner.__dict__.update(func.__dict__)
+    return inner
 
 
 class Item(str):
@@ -86,8 +118,8 @@ class Item(str):
         self.__path = getattr(item, 'path', os.path.abspath(str(item)))
         self.__dirname = os.path.dirname(self.__path)
         self.__filename = os.path.basename(str(item))
-        self.__digits = gDigitsRE.findall(self.name)
-        self.__parts = gDigitsRE.split(self.name)
+        self.__digits = digits_re.findall(self.name)
+        self.__parts = digits_re.split(self.name)
         self.__size = os.path.getsize(self.__path) if self.exists else 0
         self.__mtime = os.path.getmtime(self.__path) if self.exists else 0
 
@@ -103,7 +135,7 @@ class Item(str):
         return '<pyseq.Item "%s">' % self.name
 
     def __getattr__(self, key):
-        return getattr(self.item, key, None)
+        return getattr(self.item, key)
 
     @property
     def path(self):
@@ -134,7 +166,7 @@ class Item(str):
         """Non-numerical components of item name
         """
         return self.__parts
-    
+
     @property
     def exists(self):
         """Returns True if this item exists on disk
@@ -153,7 +185,13 @@ class Item(str):
         """
         return self.__mtime
 
+    @deprecated
     def isSibling(self, item):
+        """Deprecated: use is_sibling instead
+        """
+        return self.is_sibling(item)
+
+    def is_sibling(self, item):
         """Determines if this and item are part of the same sequence.
 
         :param item: An :class:`.Item` instance.
@@ -212,6 +250,7 @@ class Sequence(list):
         super(Sequence, self).__init__([Item(items.pop(0))])
         self.__missing = []
         self.__dirty = False
+
         while items:
             f = Item(items.pop(0))
             try:
@@ -225,7 +264,7 @@ class Sequence(list):
                 break
 
     def __attrs__(self):
-        """Replaces format directives with values"""
+        """Replaces format directives with values."""
         return {
             'l': self.length(),
             's': self.start(),
@@ -246,12 +285,12 @@ class Sequence(list):
         return '<pyseq.Sequence "%s">' % str(self)
 
     def __getattr__(self, key):
-        return getattr(self[0], key, None)
+        return getattr(self[0], key)
 
     def __contains__(self, item):
         super(Sequence, self).__contains__(Item(item))
 
-    def format(self, fmt=gFormat):
+    def format(self, fmt=global_format):
         """Format the stdout string.
 
         The following directives can be embedded in the format string.
@@ -298,7 +337,7 @@ class Sequence(list):
             't': 's'
         }
 
-        for m in gFormatRE.finditer(fmt):
+        for m in format_re.finditer(fmt):
             var = m.group('var')
             pad = m.group('pad')
             fmt_char = format_char_types[var]
@@ -315,16 +354,16 @@ class Sequence(list):
         for i in self:
             maxDate.append(i.mtime)
         return max(maxDate)
-    
+
     @property
     def size(self):
         """Returns the size all items (divide by 1024*1024 for MBs)
         """
-        tempSize = list() 
+        tempSize = list()
         for i in self:
             tempSize.append(i.size)
         return sum(tempSize)
-    
+
     def length(self):
         """:return: The length of the sequence."""
         return len(self)
@@ -389,9 +428,9 @@ class Sequence(list):
             if not isinstance(item, Item):
                 item = Item(item)
             if self[-1] != item:
-                return self[-1].isSibling(item)
+                return self[-1].is_sibling(item)
             elif self[0] != item:
-                return self[0].isSibling(item)
+                return self[0].is_sibling(item)
             else:
                 # it should be the only item in the list
                 if self[0] == item:
@@ -400,7 +439,7 @@ class Sequence(list):
         return True
 
     def contains(self, item):
-        """Checks for sequence membership. Calls Item.isSibling() and returns
+        """Checks for sequence membership. Calls Item.is_sibling() and returns
         True if item is part of the sequence.
 
         For example:
@@ -445,33 +484,33 @@ class Sequence(list):
     def reIndex(self, offset, padding=None):
         """Renames and reindexes the items in the sequence, e.g. ::
 
-			>>> seq.reIndex(offset=100)
+            >>> seq.reIndex(offset=100)
 
         will add a 100 frame offset to each Item in `seq`, and rename
         the files on disk.
 
-        :param offset: the frame offset to apply to each item 
+        :param offset: the frame offset to apply to each item
         :param padding: change the padding
         """
         if not padding:
             padding = self.format("%p")
-        
+
         if offset > 0:
-            gen = ((image,frame) for (image,frame) in zip(reversed(self), 
+            gen = ((image, frame) for (image, frame) in zip(reversed(self),
                 reversed(self.frames())))
         else:
-            gen = ((image,frame) for (image,frame) in zip(self,self.frames()))
-        
+            gen = ((image, frame) for (image, frame) in zip(self, self.frames()))
+
         for image, frame in gen:
             oldName = image.path
             newFrame = padding % (frame + offset)
-            newFileName ="%s%s%s" % (self.format("%h"), newFrame , 
+            newFileName = "%s%s%s" % (self.format("%h"), newFrame,
                 self.format("%t"))
             newName = os.path.join(image.dirname, newFileName)
 
             try:
                 import shutil
-                shutil.move(oldName,newName)
+                shutil.move(oldName, newName)
             except Exception as err:
                 log.error(err)
             else:
@@ -555,8 +594,7 @@ class Sequence(list):
 
 
 def diff(f1, f2):
-    """
-    Examines diffs between f1 and f2 and deduces numerical sequence number.
+    """Examines diffs between f1 and f2 and deduces numerical sequence number.
 
     For example ::
 
@@ -577,8 +615,8 @@ def diff(f1, f2):
     if not type(f2) == Item:
         f2 = Item(f2)
 
-    l1 = [m for m in gDigitsRE.finditer(f1.name)]
-    l2 = [m for m in gDigitsRE.finditer(f2.name)]
+    l1 = [m for m in digits_re.finditer(f1.name)]
+    l2 = [m for m in digits_re.finditer(f2.name)]
 
     d = []
     if len(l1) == len(l2):
@@ -596,9 +634,8 @@ def diff(f1, f2):
     return d
 
 
-def uncompress(seq_string, fmt=gFormat):
-    """
-    Basic uncompression or deserialization of a compressed sequence string.
+def uncompress(seq_string, fmt=global_format):
+    """Basic uncompression or deserialization of a compressed sequence string.
 
     For example:
 
@@ -650,7 +687,6 @@ def uncompress(seq_string, fmt=gFormat):
     name = os.path.basename(seq_string)
     log.debug('uncompress: %s' % name)
 
-
     # map of directives to regex
     remap = {
         's': '\d+',
@@ -674,7 +710,7 @@ def uncompress(seq_string, fmt=gFormat):
 
     log.debug('fmt escaped: %s' % fmt)
 
-    for m in gFormatRE.finditer(fmt):
+    for m in format_re.finditer(fmt):
         _old = '%%%s%s' % (m.group('pad') or '', m.group('var'))
         _new = '(?P<%s>%s)' % (
             m.group('var'),
@@ -753,20 +789,26 @@ def uncompress(seq_string, fmt=gFormat):
             name = '%s%s%s' % (match.group('h'), f, match.group('t'))
             items.append(Item(os.path.join(dirname, name)))
 
-    seqs = getSequences(items)
+    seqs = get_sequences(items)
     if seqs:
         return seqs[0]
     return seqs
 
 
+@deprecated
 def getSequences(source):
+    """Deprecated: use get_sequences instead
     """
-    Returns a list of Sequence objects given a directory or list that contain
+    return get_sequences(source)
+
+
+def get_sequences(source):
+    """Returns a list of Sequence objects given a directory or list that contain
     sequential members.
 
     Get sequences in a directory:
 
-        >>> seqs = getSequences('./tests/files/')
+        >>> seqs = get_sequences('./tests/files/')
         >>> for s in seqs: print(s)
         ...
         012_vb_110_v001.1-10.png
@@ -789,7 +831,7 @@ def getSequences(source):
 
     Get sequences from a list of file names:
 
-        >>> seqs = getSequences(['fileA.1.rgb', 'fileA.2.rgb', 'fileB.1.rgb'])
+        >>> seqs = get_sequences(['fileA.1.rgb', 'fileA.2.rgb', 'fileB.1.rgb'])
         >>> for s in seqs: print(s)
         ...
         fileA.1-2.rgb
@@ -797,7 +839,7 @@ def getSequences(source):
 
     Get sequences from a list of objects, preserving object attrs:
 
-        >>> seqs = getSequences(repo.files())
+        >>> seqs = get_sequences(repo.files())
         >>> seqs[0].date
         datetime.datetime(2011, 3, 21, 17, 31, 24)
 
@@ -835,4 +877,5 @@ def getSequences(source):
             seqs.append(seq)
 
     log.debug('time: %s' % (datetime.now() - start))
+
     return list(seqs)
