@@ -2,28 +2,38 @@
 CHANGELOG
 =========
 
+v0.4.1
+======
+
+* Performance improvement by increasing Sequence._get_missing speed.
+
+* Adds size and mtime properties to Item and Sequence classes.
+
+* Deprecates getSequences(): use get_sequences() instead.
+
+* Deprecates Item.isSibling(): use Item.is_sibling() instead.
+
+* Additional PEP8 updates.
+
 v0.4.0
 ======
 
-* **New:** Some PEP8 and Python 3+ updates.
+* Some PEP8 and Python 3+ updates.
 
-* **New:** Added *unittests* for the whole library (requires python 2.7+).
+* Added *unittests* for the whole library (requires python 2.7+).
 
-* **Update:** The ``format`` parameter is renamed to ``fmt`` in
-  ``uncompress()`` and ``Sequence.format()`` to not to shadow the 
-  **Python built-in**.
+* The ``format`` parameter is renamed to ``fmt`` in ``uncompress()`` and 
+``Sequence.format()`` to not to shadow the **Python built-in**.
 
-* **New:** Added a method called ``includes()`` to the ``Sequence`` class
-  that does what the ``contains()`` method was doing in previous versions, 
-  that is, it now checks if the given Item could be contained in that 
-  particular Sequence.
+* Added a method called ``includes()`` to the ``Sequence`` class that does 
+  what the ``contains()`` method was doing in previous versions, that is, it 
+  now checks if the given Item could be contained in that particular Sequence.
 
-* **Update:** Updated ``Sequence.contains()`` method behavior updated to
-  better match its name, that is, it now checks if the Item is contained inside 
-  the boundaries of the Sequence.
+* Updated ``Sequence.contains()`` method behavior updated to better match its name, 
+  that is, it now checks if the Item is contained inside the boundaries of the 
+  Sequence.
 
-* **Fix:** The padding characters are now properly interpreted, as shown
-  below::
+* The padding characters are now properly interpreted, as shown below::
 
     seq = Sequence([
         'file.0001.jpg',

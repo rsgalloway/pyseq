@@ -48,7 +48,7 @@ Docs and latest version available for download at
    http://github.com/rsgalloway/pyseq
 """
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 
 import os
 import re
