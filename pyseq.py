@@ -50,6 +50,7 @@ Docs and latest version available for download at
 
 __version__ = "0.4.1"
 
+import itertools
 import os
 import re
 import logging
@@ -81,6 +82,13 @@ log.setLevel(int(os.environ.get('PYSEQ_LOG_LEVEL', logging.INFO)))
 
 # Show DeprecationWarnings in 2.7+
 warnings.simplefilter('always', DeprecationWarning)
+
+def _natural_key(x):
+    return [int(c) if c.isdigit() else c.lower() for c in re.split("(\d+)", x)]
+
+
+def natural_sort(items):
+    return sorted(items, key=_natural_key)
 
 
 class SequenceError(Exception):
@@ -882,3 +890,43 @@ def get_sequences(source):
     log.debug('time: %s' % (datetime.now() - start))
 
     return list(seqs)
+
+
+def walk(source, level=-1, topdown=True, onerror=None, followlinks=False):
+    """ Generator that traverses a directory structure starting at
+        source looking for sequences.
+        :param source: valid folder path to traverse
+        :param level: int, if < 0 traverse entire structure otherwise
+                      traverse to given depth
+        :param topdown: walk from the top down
+        :param onerror: callable to handle os.listdir errors
+        :param followlinks: whether to follow links
+    """
+    start = datetime.now()
+    assert isinstance(source, basestring)
+    assert os.path.exists(source)
+    source = os.path.abspath(source)
+    for root, dirs, files in os.walk(source, topdown, onerror, followlinks):
+        if topdown is True:
+            parts = root.replace(source, "").split(os.sep)
+            while "" in parts:
+                parts.remove("")
+            if len(parts) == level - 1:
+                del dirs[:]
+
+        files.sort(key=_natural_key)
+        seqs = []
+        seq = None
+        while len(files) > 0:
+            item = Item(files.pop(0))
+            if seq is None:
+                seq = Sequence([item])
+                continue
+
+            if seq.includes(item) is True:
+                seq.append(item)
+            else:
+                seqs.append(seq)
+                seq = None
+        yield root, dirs, seqs
+    log.debug('time: %s' % (datetime.now() - start))

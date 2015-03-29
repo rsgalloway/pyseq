@@ -75,8 +75,8 @@ Formatting options:
     parser.add_option("-d", "--debug", dest="debug", action="store_true",
                       default=False,
                       help="set logging level to debug (or $PYSEQ_LOG_LEVEL)")
-    parser.add_option("-w", "--walk", dest="walk", action="store_true",
-                      default=False, help="Walks the entire directory "
+    parser.add_option("-r", "--recursive", dest="recursive", type=int,
+                      default=-1, help="Walks the entire directory "
                       "structure.")
     (options, args) = parser.parse_args()
 
@@ -93,17 +93,13 @@ Formatting options:
     if os.path.isdir(args[0]) is False:
         parser.error("First argument is not a directory")
 
-    spaces = "  "
-    for root, dirs, files in os.walk(start):
-        cnt = 0
-        if options.walk is False:
-            del dirs[:]
-        else:
-            cnt = len(root.split(os.sep)) - len(start.split(os.sep))
-            print(spaces * cnt + os.path.basename(root) + os.sep)
-
-        for seq in pyseq.getSequences(files):
-            print(spaces * cnt + seq.format(options.format))
+    if options.recursive is False:
+        for seq in pyseq.getSequences(start):
+            print seq
+    else:
+        level = options.recursive
+        for root, dirs, files in pyseq.walk(start, level):
+            print os.path.basename(start)
 
     return 0
 
