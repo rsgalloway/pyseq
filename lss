@@ -36,6 +36,62 @@ import optparse
 import logging
 import pyseq
 
+def tree(source, level):
+    print source
+    blue = "\033[94m"
+    endc = "\033[0m"
+    ends = {}
+    done = []
+    for root, dirs, seqs in pyseq.walk(source, level):
+        if len(dirs) > 0:
+            ends[root] = dirs[-1]
+        else:
+            ends[root] = None
+
+        sp = ""
+        if root != source:
+            p = root
+            while p != source:
+                dir_name, base = os.path.split(p)
+                if dir_name == source:
+                    break
+                elif dir_name in done:
+                    sp = "   " + sp
+                elif ends[dir_name] != base:
+                    sp = " │ " + sp
+                elif ends[dir_name] == base:
+                    sp = " │ " + sp
+                else:
+                    sp = "   " + sp
+                p = dir_name
+
+        base = os.path.basename(root)
+        if root == source:
+            print "%s%s%s" % (blue, os.path.basename(root), endc)
+        elif ends[os.path.dirname(root)] == base:
+            print sp, "└─", "%s%s%s" % (blue, base, endc)
+            done.append(root)
+            ends[os.path.dirname(root)] = None
+            sp += "   "
+        else:
+            print sp, "├─", "%s%s%s" % (blue, base, endc)
+            sp += " │ "
+
+        l = len(seqs)
+        for i, seq in enumerate(seqs):
+            if i == (l - 1) and len(dirs) == 0:
+                print sp, "└─", seq
+            else:
+                print sp, "├─", seq
+
+
+def _recur_cb(option, opt_str, value, parser):
+    if value is None:
+        value = -1
+    else:
+        value = int(value)
+    setattr(parser.values, option.dest, value)
+
 
 def main():
     """
@@ -75,8 +131,8 @@ Formatting options:
     parser.add_option("-d", "--debug", dest="debug", action="store_true",
                       default=False,
                       help="set logging level to debug (or $PYSEQ_LOG_LEVEL)")
-    parser.add_option("-r", "--recursive", dest="recursive", type=int,
-                      default=-1, help="Walks the entire directory "
+    parser.add_option("-r", "--recursive", dest="recursive", action="callback",
+                      callback=_recur_cb, help="Walks the entire directory "
                       "structure.")
     (options, args) = parser.parse_args()
 
@@ -86,20 +142,19 @@ Formatting options:
     if len(args) == 0:
         start = os.getcwd()
     elif len(args) == 1:
-        start = args[0].rstrip(os.sep)
+        start = os.path.abspath(args[0].rstrip(os.sep))
     else:
         parser.error("Too many arguments given.")
 
-    if os.path.isdir(args[0]) is False:
-        parser.error("First argument is not a directory")
+    if os.path.isdir(start) is False:
+        parser.error("Not a directory")
 
-    if options.recursive is False:
+    if options.recursive is None:
         for seq in pyseq.getSequences(start):
             print seq
     else:
         level = options.recursive
-        for root, dirs, files in pyseq.walk(start, level):
-            print os.path.basename(start)
+        tree(start, level)
 
     return 0
 

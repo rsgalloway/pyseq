@@ -48,15 +48,14 @@ Docs and latest version available for download at
    http://github.com/rsgalloway/pyseq
 """
 
-__version__ = "0.4.1"
-
-import itertools
 import os
 import re
 import logging
 import warnings
 from glob import glob
 from datetime import datetime
+
+__version__ = "0.4.1"
 
 # default serialization format string
 global_format = '%4l %h%p%t %R'
@@ -82,6 +81,7 @@ log.setLevel(int(os.environ.get('PYSEQ_LOG_LEVEL', logging.INFO)))
 
 # Show DeprecationWarnings in 2.7+
 warnings.simplefilter('always', DeprecationWarning)
+
 
 def _natural_key(x):
     return [int(c) if c.isdigit() else c.lower() for c in re.split("(\d+)", x)]
@@ -916,17 +916,17 @@ def walk(source, level=-1, topdown=True, onerror=None, followlinks=False):
 
         files.sort(key=_natural_key)
         seqs = []
-        seq = None
-        while len(files) > 0:
-            item = Item(files.pop(0))
-            if seq is None:
-                seq = Sequence([item])
-                continue
+        if len(files) > 0:
+            seq = Sequence([Item(files.pop(0))])
+            while len(files) > 0:
+                item = Item(files.pop(0))
+                if seq.includes(item) is True:
+                    seq.append(item)
+                else:
+                    seqs.append(seq)
+                    seq = Sequence([item])
+            seqs.append(seq)
 
-            if seq.includes(item) is True:
-                seq.append(item)
-            else:
-                seqs.append(seq)
-                seq = None
         yield root, dirs, seqs
+
     log.debug('time: %s' % (datetime.now() - start))
