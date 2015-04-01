@@ -954,9 +954,7 @@ def _find_view_pairs(seqs,views,newSeqs):
             if s3d.groups()[1] not in viewDict and viewDict['head'] == str(seq)[:s3d.start()+1] and viewDict['tail'] == str(seq)[s3d.end()-1:]:
                 viewDict[s3d.groups()[1]] = seq
                 remover.append(seq)
-            elif s3d.groups()[1] in viewDict or viewDict['head'] != str(seq)[:s3d.start()+1] or viewDict['tail'] != str(seq)[s3d.end()-1:]:
-                global recycle
-                recycle = True
+                
     for rem in remover:
         seqs.remove(rem)
     if len(viewDict)==len(views)+3:
@@ -1062,21 +1060,13 @@ def get_sequences(source, stereo=False, folders = False):
             newSeqs = seqs
         else:
             multiViewSeqs = list()
-            recycle = False
             while seqs:
                 # cycle through this till all viewPairs are matched 
                 for views in view_pairs:
                     ret = _find_view_pairs(seqs,views,newSeqs)
                     if ret:
                         multiViewSeqs.append(ret)
-                if seqs and not recycle:
-                    remover = list()
-                    for seq in seqs:
-                        newSeqs.append(seq)
-                        remover.append(seq)
-                    for rem in remover:
-                        seqs.remove(rem)
-        
+
         for viewDict in multiViewSeqs:
             ## get the first view 
             seq = viewDict.get(viewDict.get('views')[0])
