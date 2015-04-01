@@ -620,7 +620,7 @@ class Sequence(list):
 
         return missing
 
-class multiViewSequence(Sequence):
+class MultiViewSequence(Sequence):
 
     def __init__(self, items, **kwargs):
         """
@@ -637,24 +637,15 @@ class multiViewSequence(Sequence):
         all format functions on seq only return a %V or %v in the head or tail, depending on the view position
         """
         
-        super(multiViewSequence, self).__init__([Item(items.pop(0))])
-
-        while items:
-            f = Item(items.pop(0))
-            try:
-                self.append(f)
-                log.debug('+Item belongs to sequence.')
-            except SequenceError:
-                log.debug('-Item does not belong to sequence.')
-                continue
-            except KeyboardInterrupt:
-                log.info("Stopping.")
-                break    
+        super(MultiViewSequence, self).__init__(items)
+        self.__views = list()
         
         for key in kwargs:
-            setattr(self, key, kwargs[key])
-            
-        self.__views = sorted(kwargs.keys())
+            if key in [item for sublist in view_pairs for item in sublist]:
+                setattr(self, key, kwargs[key])
+                self.__views.append(key)
+                
+        self.__views.sort()
         if len(self[0].view.groups()[1]) > 1:
             self.__viewAbbrev = '%V'
         elif len(self[0].view.groups()[1]) == 1:
@@ -1092,7 +1083,7 @@ def get_sequences(source, stereo=False, folders = False):
             args = {}
             for view in reversed(viewDict.get('views')):
                 args[view] = viewDict.get(view)
-            newSeqs.append(multiViewSequence(seq[:],**args))
+            newSeqs.append(MultiViewSequence(seq[:],**args))
         
         log.debug("time: %s" %(datetime.now() - start))
         log.info("added sequences: %s" %(newSeqs))
