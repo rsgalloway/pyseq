@@ -36,7 +36,11 @@ import optparse
 import logging
 import pyseq
 
-def tree(source, level):
+
+def tree(source, level, seq_format):
+    """ recusrively walk from the source and display
+        all the the folders and sequences.
+    """
     print source
     blue = "\033[94m"
     endc = "\033[0m"
@@ -80,12 +84,14 @@ def tree(source, level):
         l = len(seqs)
         for i, seq in enumerate(seqs):
             if i == (l - 1) and len(dirs) == 0:
-                print sp, "└─", seq
+                print sp, "└─", seq.format(seq_format)
             else:
-                print sp, "├─", seq
+                print sp, "├─", seq.format(seq_format)
 
 
 def _recur_cb(option, opt_str, value, parser):
+    """ callback for the 'recursive' argument
+    """
     if value is None:
         value = -1
     else:
@@ -150,11 +156,11 @@ Formatting options:
         parser.error("Not a directory")
 
     if options.recursive is None:
-        for seq in pyseq.getSequences(start):
-            print seq
+        for seq in pyseq.get_sequences(start):
+            print(seq.format(options.format))
     else:
         level = options.recursive
-        tree(start, level)
+        tree(start, level, options.format)
 
     return 0
 

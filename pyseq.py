@@ -71,7 +71,7 @@ rangeJoin = os.environ.get("PYSEQ_SEP", " ")
 
 __all__ = [
     'SequenceError', 'Item', 'Sequence', 'diff', 'uncompress', 'getSequences',
-    'get_sequences'
+    'get_sequences', "walk"
 ]
 
 # logging handlers
@@ -138,6 +138,24 @@ class Item(str):
         self.frame = ''
         self.head = self.name
         self.tail = ''
+
+    def __eq__(self, other):
+        return self.path == other.path
+
+    def __ne__(self, other):
+        return self.path != other.path
+
+    # def __lt__(self, other):
+    #     return int(self.frame) < int(other.frame)
+
+    # def __gt__(self, other):
+    #     return int(self.frame) > int(other.frame)
+
+    # def __ge__(self, other):
+    #     return int(self.frame) >= int(other.frame)
+
+    # def __le__(self, other):
+    #     return int(self.frame) <= int(other.frame)
 
     def __str__(self):
         return str(self.name)
@@ -903,8 +921,8 @@ def walk(source, level=-1, topdown=True, onerror=None, followlinks=False):
         :param followlinks: whether to follow links
     """
     start = datetime.now()
-    assert isinstance(source, basestring)
-    assert os.path.exists(source)
+    assert isinstance(source, basestring) is True
+    assert os.path.exists(source) is True
     source = os.path.abspath(source)
     for root, dirs, files in os.walk(source, topdown, onerror, followlinks):
         if topdown is True:
@@ -917,9 +935,13 @@ def walk(source, level=-1, topdown=True, onerror=None, followlinks=False):
         files.sort(key=_natural_key)
         seqs = []
         if len(files) > 0:
-            seq = Sequence([Item(files.pop(0))])
+            fname = files.pop(0)
+            full_path = os.path.join(root, fname)
+            seq = Sequence([Item(full_path)])
             while len(files) > 0:
-                item = Item(files.pop(0))
+                fname = files.pop(0)
+                full_path = os.path.join(root, fname)
+                item = Item(full_path)
                 if seq.includes(item) is True:
                     seq.append(item)
                 else:

@@ -521,7 +521,7 @@ class HelperFunctionsTestCase(unittest.TestCase):
                 s.append(Sequence(frames))
 
             real_seqs.append(s)
-
+        # self.assertEqual(fnd_seqs[0][0], real_seqs[0][0])
         self.assertEqual(fnd_seqs, real_seqs)
 
 class LSSTestCase(unittest.TestCase):
@@ -565,24 +565,25 @@ class LSSTestCase(unittest.TestCase):
             self.lss,
             test_files
         )
-        print result
         self.assertEqual(
             """  10 012_vb_110_v001.%04d.png 1-10
   10 012_vb_110_v002.%04d.png 1-10
    7 a.%03d.tga 1-3 10 12-14
-   1 alpha.txt
+   1 alpha.txt 
    5 bnc01_TinkSO_tx_0_ty_0.%04d.tif 101-105
    5 bnc01_TinkSO_tx_0_ty_1.%04d.tif 101-105
    5 bnc01_TinkSO_tx_1_ty_0.%04d.tif 101-105
    5 bnc01_TinkSO_tx_1_ty_1.%04d.tif 101-105
+   1 dir1 
    2 file.%02d.tif 1-2
-   1 file.info.03.rgb
+   1 file.info.03.rgb 
+   3 file01.%03d.j2k 1-2 4
    4 file01_%04d.rgb 40-43
    4 file02_%04d.rgb 44-47
    4 file%d.03.rgb 1-4
    3 fileA.%04d.jpg 1-3
    3 fileA.%04d.png 1-3
-   1 file_02.tif
+   1 file_02.tif 
    4 z1_001_v1.%d.png 1-4
    4 z1_002_v1.%d.png 1-4
    4 z1_002_v2.%d.png 1-4
