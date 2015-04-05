@@ -290,6 +290,51 @@ class Sequence(list):
     def __contains__(self, item):
         super(Sequence, self).__contains__(Item(item))
 
+    def __setitem__(self, index, item):
+        """ Used to set a particular element in the sequence
+        """
+        if type(item) is not Item:
+            item = Item(item)
+        if self.includes(item):
+            super(Sequence, self).__setitem__(index, item)
+            self.__frames = None
+            self.__missing = None
+        else:
+            raise SequenceError("Item is not a member of sequence.")
+
+    def __setslice__(self, start, end, item):
+        if isinstance(item, basestring):
+            item = Sequence([item])
+        if isinstance(item, list) is False:
+            raise TypeError("Invalid type to add to sequence")
+        for i in item:
+            if self.includes(i) is False:
+                raise SequenceError("Item (%s) is not a member of sequence."
+                                    % i)
+        super(Sequence, self).__setslice__(start, end, item)
+        self.__frames = None
+        self.__missing = None
+
+    def __add__(self, item):
+        """ return a new sequence with the item appended.  Accepts an Item,
+            a string, or a list.
+        """
+        if isinstance(item, basestring):
+            item = Sequence([item])
+        if isinstance(item, list) is False:
+            raise TypeError("Invalid type to add to sequence")
+        ns = Sequence(self[::])
+        ns.extend(item)
+        return ns
+
+    def __iadd__(self, item):
+        if isinstance(item, basestring) or type(item) is Item:
+            item = [item]
+        if isinstance(item, list) is False:
+            raise TypeError("Invalid type to add to sequence")
+        self.extend(item)
+        return self
+
     def format(self, fmt=global_format):
         """Format the stdout string.
 
@@ -480,6 +525,39 @@ class Sequence(list):
             self.__missing = None
         else:
             raise SequenceError('Item is not a member of this sequence')
+
+    def insert(self, index, item):
+        """ Add another member to the sequence at the given index.
+            :param item: pyseq.Item object.
+            :exc: `SequenceError` raised if item is not a sequence member.
+        """
+        if type(item) is not Item:
+            item = Item(item)
+
+        if self.includes(item):
+            super(Sequence, self).insert(index, item)
+            self.__frames = None
+            self.__missing = None
+        else:
+            raise SequenceError("Item is not a member of this sequence.")
+
+    def extend(self, items):
+        """ Add members to the sequence.
+            :param items: list of pyseq.Item objects.
+            :exc: `SequenceError` raised if any items are not a sequence
+                  member.
+        """
+        for item in items:
+            if type(item) is not Item:
+                item = Item(item)
+
+            if self.includes(item):
+                super(Sequence, self).append(item)
+                self.__frames = None
+                self.__missing = None
+            else:
+                raise SequenceError("Item (%s) is not a member of this "
+                                    "sequence." % item)
 
     def reIndex(self, offset, padding=None):
         """Renames and reindexes the items in the sequence, e.g. ::
