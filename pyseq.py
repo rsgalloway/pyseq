@@ -622,34 +622,29 @@ class Sequence(list):
 
 class MultiViewSequence(Sequence):
 
-    def __init__(self, items, **kwargs):
+    def __init__(self, seq, views):
         """
         multiViewSequence
-        sequence container 
-        items are items from a sequence object egg from a found left view seq[:]
-        kwargs get set as an attribute for each key 
-        {'left': sequence object left, 'right': sequence object}
-        ==> self.left = sequence object left
-            self.right = sequence.object right
-        to iterate through there is a views list
-        for view in seq.views:
-            viewSeq = getattr(seq,view)
-        all format functions on seq only return a %V or %v in the head or tail, depending on the view position
+        sequence container
+        seq this needs a valid sequence with a view
+        views list of views like ['left','right'] or ['blue','green','yellow']
         """
-        
-        super(MultiViewSequence, self).__init__(items)
-        self.__views = list()
-        
-        for key in kwargs:
-            if key in [item for sublist in view_pairs for item in sublist]:
-                setattr(self, key, kwargs[key])
-                self.__views.append(key)
-                
+        super(MultiViewSequence, self).__init__(seq[:])
+        if not seq.view:
+            raise SequenceError("cannot init a multiviewsequence without a sequence with a found view")
+        if seq.view.groups()[1] in [item for sublist in view_pairs for item in sublist]:
+            setattr(self, seq.view.groups()[1], seq)
+
+        self.__views = views
         self.__views.sort()
+
         if len(self[0].view.groups()[1]) > 1:
             self.__viewAbbrev = '%V'
         elif len(self[0].view.groups()[1]) == 1:
-            self.__viewAbbrev = '%v'
+            self.__viewAbbrev = '%v' 
+
+    def __repr__(self):
+        return '<pyseq.MultiViewSequence "%s">' % str(self)
 
     @property
     def views(self):
@@ -721,6 +716,44 @@ class MultiViewSequence(Sequence):
             return re.sub(views_re, '%s%s%s' %(s3d.groups()[0], tempViewAbbrev, s3d.groups()[-1]),_dirname)
         else:
             return _dirname
+
+    def includesView(self, seq):
+        ## get one seq object to match to...
+        for view in self.views:
+            if hasattr(self, view):
+                matchSeq = getattr(self, view)
+                ## should we raise an Exception here ?
+                ## as the init always sets a view this should not be necessary
+
+        if (seq.view.groups()[1] in self.views and
+            not hasattr(self, seq.view.groups()[1]) and
+                matchSeq.format('%h%p%t')[:matchSeq.view.start()+1] == seq.format('%h%p%t')[:seq.view.start()+1] and
+                    matchSeq.format('%h%p%t')[matchSeq.view.end()-1:] == seq.format('%h%p%t')[seq.view.end()-1:]):
+            return True
+        else:
+            return False
+
+
+    def appendView(self, seq):
+        """Adds another sequence to the MultiViewSequence.
+
+        :param seq: pyseq.Sequence object.
+
+        :exc:`SequenceError` raised if sequence does not match the MultiViewSequence
+        """
+
+        if self.includesView(seq):
+            setattr(self, seq.view.groups()[1], seq)
+            log.info('adding view %s to %s' %(seq.view.groups()[1],str(self)))
+        else:
+            raise SequenceError('Sequence is not a member of this sequence') 
+    
+    @property
+    def hasAllViews(self):
+        for view in self.views:
+            if not hasattr(self, view):
+                return False
+        return True
 
 def diff(f1, f2):
     """Examines diffs between f1 and f2 and deduces numerical sequence number.
@@ -923,50 +956,6 @@ def uncompress(seq_string, fmt=global_format):
         return seqs[0]
     return seqs
 
-def _find_view_pairs(seqs,views,newSeqs):
-    """
-    matches sequence into a dictionary based on a viewList
-    views = ['left','right', n*views]
-    seqs = list of sequence objects
-    newSeqs = is a temporary list all seqs get append to that do not match the s3dregex or where only one view is present
-    returnes {'head': string of seq up to the view
-                'tail': string of seq behind the view
-                'views': list(views)
-                'left': sequence object matching left
-                'right': sequence object matching right
-                'n': sequence object matching n* views}
-    -- todo I guess this all could be optimized but my brain capacity is reached :-)
-    """
-    viewDict = dict()
-    store = False
-    remover = list()
-    for seq in seqs:
-        s3d = seq.view
-        if not s3d:
-            newSeqs.append(seq)
-            remover.append(seq) 
-        elif s3d and s3d.groups()[1] in views:
-            if not store:
-                viewDict['head'] = str(seq)[:s3d.start()+1]
-                viewDict['tail'] = str(seq)[s3d.end()-1:]
-                viewDict['views'] = views
-                store = True
-            if s3d.groups()[1] not in viewDict and viewDict['head'] == str(seq)[:s3d.start()+1] and viewDict['tail'] == str(seq)[s3d.end()-1:]:
-                viewDict[s3d.groups()[1]] = seq
-                remover.append(seq)
-                
-    for rem in remover:
-        seqs.remove(rem)
-    if len(viewDict)==len(views)+3:
-        ## we do have an match the viewDict is full an matches the length of the specified view Pairs
-        return viewDict
-    else:
-        ## we do have a match but not all views are present
-        for view in views:
-            if view in viewDict:
-                seq = viewDict.get(view)
-                newSeqs.append(seq)
-
 @deprecated
 def getSequences(source, **kwargs):
     """Deprecated: use get_sequences instead
@@ -1054,27 +1043,48 @@ def get_sequences(source, stereo=False, folders = False):
         log.info("added sequences: %s" %(seqs))
         return seqs
     else:
+        
+        def checkIn(seq, seqs):
+            if not seqs:
+                return False
+            for s in seqs:
+                if (s.views == seq.views and
+                        str(s) == str(seq)):
+                    return True
+            return False
+        
         seqs.sort()
         newSeqs = list()
-        if len(seqs) == 1: #with one match only it cant be a multiview sequence
-            newSeqs = seqs
-        else:
-            multiViewSeqs = list()
-            while seqs:
-                # cycle through this till all viewPairs are matched 
-                for views in view_pairs:
-                    ret = _find_view_pairs(seqs,views,newSeqs)
-                    if ret:
-                        multiViewSeqs.append(ret)
+        multiViewSeqs = list()
+        while seqs:
+            seq = seqs.pop(0)
+            if not seq.view:
+                newSeqs.append(seq)
+            else:
+                ## get the views that correspond to the sequence
+                for v in view_pairs:
+                    if seq.view.groups()[1] in v:
+                        views = v
+                        break
+                ## views is always true as the regex to find the view is built from the view_pairs so it needs to be in there
+                multiViewSeq = MultiViewSequence(seq, views)
+                if not checkIn(multiViewSeq, multiViewSeqs):
+                    multiViewSeqs.append(multiViewSeq)
+                else:
+                    ## iterate through all found multiviewseqs
+                    for mvSeq in multiViewSeqs:
+                        if mvSeq.includesView(seq):
+                            mvSeq.appendView(seq)
 
-        for viewDict in multiViewSeqs:
-            ## get the first view 
-            seq = viewDict.get(viewDict.get('views')[0])
-            args = {}
-            for view in reversed(viewDict.get('views')):
-                args[view] = viewDict.get(view)
-            newSeqs.append(MultiViewSequence(seq[:],**args))
-        
+        ## get seqs out that do not have all views present
+        for mvSeq in multiViewSeqs:
+            if mvSeq.hasAllViews:
+                newSeqs.append(mvSeq)
+            else:
+                for view in mvSeq.views:
+                    if hasattr(mvSeq, view):
+                        newSeqs.append(getattr(mvSeq, view))
+                    
         log.debug("time: %s" %(datetime.now() - start))
         log.info("added sequences: %s" %(newSeqs))
         return newSeqs
