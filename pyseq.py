@@ -932,6 +932,7 @@ def walk(source, level=-1, topdown=True, onerror=None, followlinks=False, hidden
     assert isinstance(source, basestring) is True
     assert os.path.exists(source) is True
     source = os.path.abspath(source)
+
     for root, dirs, files in os.walk(source, topdown, onerror, followlinks):
 
         if not hidden:
@@ -945,23 +946,6 @@ def walk(source, level=-1, topdown=True, onerror=None, followlinks=False, hidden
             if len(parts) == level - 1:
                 del dirs[:]
 
-        files.sort(key=_natural_key)
-        seqs = []
-        if len(files) > 0:
-            fname = files.pop(0)
-            full_path = os.path.join(root, fname)
-            seq = Sequence([Item(full_path)])
-            while len(files) > 0:
-                fname = files.pop(0)
-                full_path = os.path.join(root, fname)
-                item = Item(full_path)
-                if seq.includes(item) is True:
-                    seq.append(item)
-                else:
-                    seqs.append(seq)
-                    seq = Sequence([item])
-            seqs.append(seq)
-
-        yield root, dirs, seqs
+        yield root, dirs, get_sequences(files)
 
     log.debug('time: %s' % (datetime.now() - start))
