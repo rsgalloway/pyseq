@@ -67,11 +67,11 @@ digits_re = re.compile(r'\d+')
 format_re = re.compile(r'%(?P<pad>\d+)?(?P<var>\w+)')
 
 # character to join explicit frame ranges on
-range_join = os.environ.get("PYSEQ_SEP", " ")
+range_join = os.environ.get('PYSEQ_JOIN_CHAR', ' ')
 
 __all__ = [
-    'SequenceError', 'Item', 'Sequence', 'diff', 'uncompress', 'getSequences',
-    'get_sequences', "walk"
+    'SequenceError', 'FormatError', 'Item', 'Sequence', 'diff', 'uncompress',
+    'getSequences', 'get_sequences', 'walk'
 ]
 
 # logging handlers
@@ -92,13 +92,13 @@ def natural_sort(items):
 
 
 class SequenceError(Exception):
-    """Special exception for sequence errors
+    """Special exception for Sequence errors
     """
     pass
 
 
 class FormatError(Exception):
-    """Special exception for seq format errors
+    """Special exception for Sequence format errors
     """
     pass
 
@@ -145,17 +145,17 @@ class Item(str):
     def __ne__(self, other):
         return self.path != other.path
 
-    # def __lt__(self, other):
-    #     return int(self.frame) < int(other.frame)
+    def __lt__(self, other):
+        return int(self.frame) < int(other.frame)
 
-    # def __gt__(self, other):
-    #     return int(self.frame) > int(other.frame)
+    def __gt__(self, other):
+        return int(self.frame) > int(other.frame)
 
-    # def __ge__(self, other):
-    #     return int(self.frame) >= int(other.frame)
+    def __ge__(self, other):
+        return int(self.frame) >= int(other.frame)
 
-    # def __le__(self, other):
-    #     return int(self.frame) <= int(other.frame)
+    def __le__(self, other):
+        return int(self.frame) <= int(other.frame)
 
     def __str__(self):
         return str(self.name)
@@ -247,8 +247,7 @@ class Item(str):
 
 
 class Sequence(list):
-    """
-    Extends list class with methods that handle item sequentialness.
+    """Extends list class with methods that handle item sequentialness.
 
     For example:
 
@@ -300,6 +299,7 @@ class Sequence(list):
             'e': self.end(),
             'f': self.frames(),
             'm': self.missing(),
+            'd': self.size,
             'p': self._get_padding(),
             'r': self._get_framerange(missing=False),
             'R': self._get_framerange(missing=True),
@@ -344,6 +344,8 @@ class Sequence(list):
         +-----------+-------------------------------------+
         | ``%R``    | explicit range, start-end [missing] |
         +-----------+-------------------------------------+
+        | ``%d``    | disk usage                          |
+        +-----------+-------------------------------------+
         | ``%h``    | string preceding sequence number    |
         +-----------+-------------------------------------+
         | ``%t``    | string after the sequence number    |
@@ -362,6 +364,7 @@ class Sequence(list):
             'p': 's',
             'r': 's',
             'R': 's',
+            'd': 's',
             'h': 's',
             't': 's'
         }
@@ -369,7 +372,10 @@ class Sequence(list):
         for m in format_re.finditer(fmt):
             var = m.group('var')
             pad = m.group('pad')
-            fmt_char = format_char_types[var]
+            try:
+                fmt_char = format_char_types[var]
+            except KeyError as err:
+                raise FormatError("Bad directive: %%%s" % var)
             _old = '%s%s' % (pad or '', var)
             _new = '(%s)%s%s' % (var, pad or '', fmt_char)
             fmt = fmt.replace(_old, _new)
@@ -910,21 +916,28 @@ def get_sequences(source):
     return list(seqs)
 
 
-def walk(source, level=-1, topdown=True, onerror=None, followlinks=False):
-    """ Generator that traverses a directory structure starting at
-        source looking for sequences.
-        :param source: valid folder path to traverse
-        :param level: int, if < 0 traverse entire structure otherwise
-                      traverse to given depth
-        :param topdown: walk from the top down
-        :param onerror: callable to handle os.listdir errors
-        :param followlinks: whether to follow links
+def walk(source, level=-1, topdown=True, onerror=None, followlinks=False, hidden=False):
+    """Generator that traverses a directory structure starting at
+    source looking for sequences.
+
+    :param source: valid folder path to traverse
+    :param level: int, if < 0 traverse entire structure otherwise
+                  traverse to given depth
+    :param topdown: walk from the top down
+    :param onerror: callable to handle os.listdir errors
+    :param followlinks: whether to follow links
+    :param hidden: include hidden files and dirs
     """
     start = datetime.now()
     assert isinstance(source, basestring) is True
     assert os.path.exists(source) is True
     source = os.path.abspath(source)
     for root, dirs, files in os.walk(source, topdown, onerror, followlinks):
+
+        if not hidden:
+            files = [f for f in files if not f[0] == '.']
+            dirs[:] = [d for d in dirs if not d[0] == '.']
+
         if topdown is True:
             parts = root.replace(source, "").split(os.sep)
             while "" in parts:

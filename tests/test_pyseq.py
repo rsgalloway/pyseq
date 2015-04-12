@@ -35,8 +35,6 @@ import re
 import random
 import unittest
 import subprocess
-
-import pyseq
 from pyseq import Item, Sequence, diff, uncompress, get_sequences
 
 
@@ -489,40 +487,6 @@ class HelperFunctionsTestCase(unittest.TestCase):
                 seq.format('%h%p%t %r')
             )
 
-    def test_walk_succeed(self):
-        roots = []
-        fnd_dirs = []
-        fnd_seqs = []
-        start = os.path.join(os.path.dirname(__file__), "files", "dir1")
-        for root, dirs, seqs in pyseq.walk(start):
-            roots.append(root)
-            fnd_dirs.append(dirs)
-            fnd_seqs.append(seqs)
-
-        real_roots = [start, os.path.join(start, "dir2")]
-        self.assertEqual(real_roots, roots)
-        self.assertEqual(fnd_dirs, [["dir2"], []])
-        bases = [[(start, "bnc01_TinkSO_tx_0_ty_0.%04d.tif", 101, 106),
-                  (start, "file01.%03d.j2k", 1, 3),
-                  (start, "z1_001_v1.%01d.png", 1, 5),
-                  (start, "z1_002_v1.%01d.png", 1, 5)],
-                 [(os.path.join(start, "dir2"), "012_vb_110_v001.%04d.png",
-                   1, 5),
-                  (os.path.join(start, "dir2"), "012_vb_110_v002.%04d.png",
-                   6, 11)]]
-        real_seqs = []
-        for sub in bases:
-            s = []
-            for dir_name, file_name, start, end in sub:
-                path = os.path.join(dir_name, file_name)
-                frames = []
-                for i in xrange(start, end):
-                    frames.append(path % i)
-                s.append(Sequence(frames))
-
-            real_seqs.append(s)
-        # self.assertEqual(fnd_seqs[0][0], real_seqs[0][0])
-        self.assertEqual(fnd_seqs, real_seqs)
 
 class LSSTestCase(unittest.TestCase):
     """Tests lss command
@@ -565,8 +529,8 @@ class LSSTestCase(unittest.TestCase):
             self.lss,
             test_files
         )
-        self.assertEqual(
-            """  10 012_vb_110_v001.%04d.png 1-10
+
+        self.assertEqual("""  10 012_vb_110_v001.%04d.png 1-10
   10 012_vb_110_v002.%04d.png 1-10
    7 a.%03d.tga 1-3 10 12-14
    1 alpha.txt 
@@ -574,7 +538,6 @@ class LSSTestCase(unittest.TestCase):
    5 bnc01_TinkSO_tx_0_ty_1.%04d.tif 101-105
    5 bnc01_TinkSO_tx_1_ty_0.%04d.tif 101-105
    5 bnc01_TinkSO_tx_1_ty_1.%04d.tif 101-105
-   1 dir1 
    2 file.%02d.tif 1-2
    1 file.info.03.rgb 
    3 file01.%03d.j2k 1-2 4
