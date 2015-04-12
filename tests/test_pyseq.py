@@ -530,8 +530,7 @@ class LSSTestCase(unittest.TestCase):
             test_files
         )
 
-        self.assertEqual(
-            """  10 012_vb_110_v001.%04d.png 1-10
+        self.assertEqual("""  10 012_vb_110_v001.%04d.png 1-10
   10 012_vb_110_v002.%04d.png 1-10
    7 a.%03d.tga 1-3 10 12-14
    1 alpha.txt 
@@ -541,6 +540,7 @@ class LSSTestCase(unittest.TestCase):
    5 bnc01_TinkSO_tx_1_ty_1.%04d.tif 101-105
    2 file.%02d.tif 1-2
    1 file.info.03.rgb 
+   3 file01.%03d.j2k 1-2 4
    4 file01_%04d.rgb 40-43
    4 file02_%04d.rgb 44-47
    4 file%d.03.rgb 1-4
