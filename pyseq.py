@@ -67,7 +67,7 @@ digits_re = re.compile(r'\d+')
 format_re = re.compile(r'%(?P<pad>\d+)?(?P<var>\w+)')
 
 # character to join explicit frame ranges on
-range_join = os.environ.get('PYSEQ_JOIN_CHAR', ' ')
+range_join = os.environ.get('PYSEQ_RANGE_SEP', ' ')
 
 __all__ = [
     'SequenceError', 'FormatError', 'Item', 'Sequence', 'diff', 'uncompress',
@@ -855,7 +855,7 @@ def uncompress(seq_string, fmt=global_format):
         log.debug("matched R")
         # 1-10 13 15-20 38
         # expand all the frames
-        number_groups = R.split(' ')
+        number_groups = R.split(range_join)
 
         for number_group in number_groups:
             if '-' in number_group:
