@@ -36,6 +36,7 @@ import random
 import unittest
 import subprocess
 from pyseq import Item, Sequence, diff, uncompress, get_sequences
+from pyseq import SequenceError
 
 
 class ItemTestCase(unittest.TestCase):
@@ -205,6 +206,115 @@ class SequenceTestCase(unittest.TestCase):
         self.assertFalse(
             seq.contains('file.0015.jpg')
         )
+
+    def test___setitem__(self):
+        s = Sequence(["file.01.ext", "file.05.ext"])
+        s[1] = "file.02.ext"
+        self.assertEqual(len(s), 2)
+        self.assertEqual(s[0], Item("file.01.ext"))
+        self.assertEqual(s[1], Item("file.02.ext"))
+
+        self.assertRaises(SequenceError, s.__setitem__, 0, "item.1.ext")
+
+    def test___add__(self):
+        s = Sequence(["file.01.ext"])
+        ns = s + Item("file.02.ext")
+        self.assertEqual(len(ns), 2)
+        self.assertEqual(ns[0], s[0])
+        self.assertEqual(ns[1], Item("file.02.ext"))
+        self.assertEqual(len(s), 1)
+
+        ns = s + "file.02.ext"
+        self.assertEqual(len(ns), 2)
+        self.assertEqual(ns[0], s[0])
+        self.assertEqual(ns[1], Item("file.02.ext"))
+        self.assertEqual(len(s), 1)
+
+        ns = s + ["file.02.ext"]
+        self.assertEqual(len(ns), 2)
+        self.assertEqual(ns[0], s[0])
+        self.assertEqual(ns[1], Item("file.02.ext"))
+        self.assertEqual(len(s), 1)
+
+        ns = s + Sequence(["file.02.ext"])
+        self.assertEqual(len(ns), 2)
+        self.assertEqual(ns[0], s[0])
+        self.assertEqual(ns[1], Item("file.02.ext"))
+        self.assertEqual(len(s), 1)
+
+        self.assertRaises(SequenceError, s.__add__, "item.01.ext")
+        self.assertRaises(TypeError, s.__add__, 1)
+
+    def test___iadd__(self):
+        s = Sequence(["file.01.ext"])
+        s += Item("file.02.ext")
+        self.assertEqual(len(s), 2)
+        self.assertEqual(s[0], s[0])
+        self.assertEqual(s[1], Item("file.02.ext"))
+
+        s = Sequence(["file.01.ext"])
+        s += "file.02.ext"
+        self.assertEqual(len(s), 2)
+        self.assertEqual(s[0], s[0])
+        self.assertEqual(s[1], Item("file.02.ext"))
+
+        s = Sequence(["file.01.ext"])
+        s += ["file.02.ext"]
+        self.assertEqual(len(s), 2)
+        self.assertEqual(s[0], s[0])
+        self.assertEqual(s[1], Item("file.02.ext"))
+
+        s = Sequence(["file.01.ext"])
+        s += Sequence(["file.02.ext"])
+        self.assertEqual(len(s), 2)
+        self.assertEqual(s[0], s[0])
+        self.assertEqual(s[1], Item("file.02.ext"))
+
+    def test___setslice___(self):
+        s = Sequence(["file.001.ext"])
+        s[1:2] = "file.002.ext"
+        self.assertEqual(len(s), 2)
+        self.assertEqual(s[0], Item("file.001.ext"))
+        self.assertEqual(s[1], Item("file.002.ext"))
+
+        s = Sequence(["file.001.ext"])
+        s[1:2] = Item("file.002.ext")
+        self.assertEqual(len(s), 2)
+        self.assertEqual(s[0], Item("file.001.ext"))
+        self.assertEqual(s[1], Item("file.002.ext"))
+
+        s = Sequence(["file.001.ext"])
+        s[1:2] = [Item("file.002.ext")]
+        self.assertEqual(len(s), 2)
+        self.assertEqual(s[0], Item("file.001.ext"))
+        self.assertEqual(s[1], Item("file.002.ext"))
+
+        s = Sequence(["file.001.ext"])
+        s[1:2] = Sequence([Item("file.002.ext")])
+        self.assertEqual(len(s), 2)
+        self.assertEqual(s[0], Item("file.001.ext"))
+        self.assertEqual(s[1], Item("file.002.ext"))
+
+        self.assertRaises(SequenceError, s.__setslice__, 1, 2, 'item.001.ext')
+
+    def test_insert(self):
+        s = Sequence(["file.001.ext"])
+        s.insert(0, "file.002.ext")
+        self.assertEqual(len(s), 2)
+        self.assertEqual(s[0], Item("file.002.ext"))
+        self.assertEqual(s[1], Item("file.001.ext"))
+
+        self.assertRaises(SequenceError, s.insert, 1, "item")
+
+    def test_extend(self):
+        s = Sequence(["file.001.ext"])
+        s.extend(["file.002.ext", "file.003.ext"])
+        self.assertEqual(len(s), 3)
+        self.assertEqual(s[0], Item("file.001.ext"))
+        self.assertEqual(s[1], Item("file.002.ext"))
+        self.assertEqual(s[2], Item("file.003.ext"))
+
+        self.assertRaises(SequenceError, s.extend, ["item"])
 
     def test_includes_is_working_properly(self):
         """testing if Sequence.includes() method is working properly
