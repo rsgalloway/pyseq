@@ -175,17 +175,20 @@ script:</p>
 </pre></div>
 </div>
 <p>Using the &#8220;z1&#8221; file sequence example in the &#8220;tests&#8221; directory:</p>
-<div class="highlight-python"><div class="highlight"><pre>% ls tests/files/z1*
-tests/files/z1_001_v1.1.png   tests/files/z1_001_v1.4.png     tests/files/z1_002_v1.3.png     tests/z1_002_v2.2.png
-tests/files/z1_001_v1.2.png   tests/files/z1_002_v1.1.png     tests/files/z1_002_v1.4.png     tests/z1_002_v2.3.png
-tests/files/z1_001_v1.3.png   tests/files/z1_002_v1.2.png     tests/files/z1_002_v2.1.png     tests/z1_002_v2.4.png
+<div class="highlight-python"><div class="highlight"><pre>$ ls tests/files/z1*
+tests/files/z1_001_v1.1.png tests/files/z1_002_v1.3.png
+tests/files/z1_001_v1.2.png tests/files/z1_002_v1.4.png
+tests/files/z1_001_v1.3.png tests/files/z1_002_v2.1.png
+tests/files/z1_001_v1.4.png tests/files/z1_002_v2.2.png
+tests/files/z1_002_v1.1.png tests/files/z1_002_v2.3.png
+tests/files/z1_002_v1.2.png tests/files/z1_002_v2.4.png
 
-% lss tests/files/z1*
+$ lss tests/files/z1*
    4 z1_001_v1.%d.png 1-4
    4 z1_002_v1.%d.png 1-4
    4 z1_002_v2.%d.png 1-4
 
-% lss tests/files/z1* -f &quot;%h%r%t&quot;
+$ lss tests/files/z1* -f &quot;%h%r%t&quot;
 z1_001_v1.1-4.png
 z1_002_v1.1-4.png
 z1_002_v2.1-4.png
@@ -262,7 +265,13 @@ in the name.</p>
 <dl class="exception">
 <dt id="pyseq.SequenceError">
 <em class="property">exception </em><code class="descclassname">pyseq.</code><code class="descname">SequenceError</code><a class="headerlink" href="#pyseq.SequenceError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Special exception for sequence errors</p>
+<dd><p>Special exception for Sequence errors</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="pyseq.FormatError">
+<em class="property">exception </em><code class="descclassname">pyseq.</code><code class="descname">FormatError</code><a class="headerlink" href="#pyseq.FormatError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Special exception for Sequence format errors</p>
 </dd></dl>
 
 <dl class="class">
@@ -426,6 +435,16 @@ True if item is part of the sequence.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="pyseq.Sequence.extend">
+<code class="descname">extend</code><span class="sig-paren">(</span><em>items</em><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Sequence.extend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add members to the sequence.
+:param items: list of pyseq.Item objects.
+:exc: <cite>SequenceError</cite> raised if any items are not a sequence</p>
+<blockquote>
+<div>member.</div></blockquote>
+</dd></dl>
+
+<dl class="method">
 <dt id="pyseq.Sequence.format">
 <code class="descname">format</code><span class="sig-paren">(</span><em>fmt='%4l %h%p%t %R'</em><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Sequence.format" title="Permalink to this definition">¶</a></dt>
 <dd><p>Format the stdout string.</p>
@@ -466,10 +485,13 @@ Format directives support padding, for example: &#8220;%04l&#8221;.</p>
 <tr class="row-odd"><td><code class="docutils literal"><span class="pre">%R</span></code></td>
 <td>explicit range, start-end [missing]</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">%h</span></code></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">%d</span></code></td>
+<td>disk usage</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">%h</span></code></td>
 <td>string preceding sequence number</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">%t</span></code></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">%t</span></code></td>
 <td>string after the sequence number</td>
 </tr>
 </tbody>
@@ -527,6 +549,14 @@ is a sibling of any of the items in the list</p>
 <span class="go">False</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyseq.Sequence.insert">
+<code class="descname">insert</code><span class="sig-paren">(</span><em>index</em>, <em>item</em><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Sequence.insert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add another member to the sequence at the given index.
+:param item: pyseq.Item object.
+:exc: <cite>SequenceError</cite> raised if item is not a sequence member.</p>
 </dd></dl>
 
 <dl class="method">
@@ -777,6 +807,30 @@ sequential members.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>source</strong> &#8211; Can be directory path, list of strings, or sortable list of objects.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">List of pyseq.Sequence class objects.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyseq.walk">
+<code class="descclassname">pyseq.</code><code class="descname">walk</code><span class="sig-paren">(</span><em>source</em>, <em>level=-1</em>, <em>topdown=True</em>, <em>onerror=None</em>, <em>followlinks=False</em>, <em>hidden=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.walk" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generator that traverses a directory structure starting at
+source looking for sequences.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>source</strong> &#8211; valid folder path to traverse</li>
+<li><strong>level</strong> &#8211; int, if &lt; 0 traverse entire structure otherwise
+traverse to given depth</li>
+<li><strong>topdown</strong> &#8211; walk from the top down</li>
+<li><strong>onerror</strong> &#8211; callable to handle os.listdir errors</li>
+<li><strong>followlinks</strong> &#8211; whether to follow links</li>
+<li><strong>hidden</strong> &#8211; include hidden files and dirs</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>

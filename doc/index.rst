@@ -72,20 +72,23 @@ Using the "z1" file sequence example in the "tests" directory:
 
 ::
 
-  % ls tests/files/z1*
-  tests/files/z1_001_v1.1.png	tests/files/z1_001_v1.4.png	tests/files/z1_002_v1.3.png	tests/z1_002_v2.2.png
-  tests/files/z1_001_v1.2.png	tests/files/z1_002_v1.1.png	tests/files/z1_002_v1.4.png	tests/z1_002_v2.3.png
-  tests/files/z1_001_v1.3.png	tests/files/z1_002_v1.2.png	tests/files/z1_002_v2.1.png	tests/z1_002_v2.4.png
+ $ ls tests/files/z1*
+ tests/files/z1_001_v1.1.png tests/files/z1_002_v1.3.png
+ tests/files/z1_001_v1.2.png tests/files/z1_002_v1.4.png
+ tests/files/z1_001_v1.3.png tests/files/z1_002_v2.1.png
+ tests/files/z1_001_v1.4.png tests/files/z1_002_v2.2.png
+ tests/files/z1_002_v1.1.png tests/files/z1_002_v2.3.png
+ tests/files/z1_002_v1.2.png tests/files/z1_002_v2.4.png
 
-  % lss tests/files/z1*
-     4 z1_001_v1.%d.png 1-4
-     4 z1_002_v1.%d.png 1-4
-     4 z1_002_v2.%d.png 1-4
+ $ lss tests/files/z1*
+    4 z1_001_v1.%d.png 1-4
+    4 z1_002_v1.%d.png 1-4
+    4 z1_002_v2.%d.png 1-4
 
-  % lss tests/files/z1* -f "%h%r%t"
-  z1_001_v1.1-4.png
-  z1_002_v1.1-4.png
-  z1_002_v2.1-4.png
+ $ lss tests/files/z1* -f "%h%r%t"
+ z1_001_v1.1-4.png
+ z1_002_v1.1-4.png
+ z1_002_v2.1-4.png
 
 
 API Examples
