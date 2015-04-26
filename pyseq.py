@@ -55,7 +55,7 @@ import warnings
 from glob import glob
 from datetime import datetime
 
-__version__ = "0.4.1"
+__version__ = "0.4.2"
 
 # default serialization format string
 global_format = '%4l %h%p%t %R'
@@ -967,13 +967,16 @@ def get_sequences(source):
 
     if isinstance(source, list):
         items = sorted(source, key=lambda x: str(x))
+
     elif isinstance(source, str):
         if os.path.isdir(source):
             items = sorted(glob(os.path.join(source, '*')))
         else:
             items = sorted(glob(source))
+
     else:
         raise TypeError('Unsupported format for source argument')
+
     log.debug('Found %s files' % len(items))
 
     # organize the items into sequences

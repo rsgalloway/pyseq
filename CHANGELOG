@@ -2,6 +2,19 @@
 CHANGELOG
 =========
 
+v0.4.2
+======
+
+* Adds recursive walk() function, and -r option to lss.
+
+* Adds frame range separator as env var.
+
+* Adds disk usage (%d) directive to formatting.
+
+* Adds insert, extend, and magic methods.
+
+* Fixes lss to support multiple arguments.
+
 v0.4.1
 ======
 
@@ -48,22 +61,22 @@ v0.4.0
     print(seq.format('%h%4s-%4e%t'))
     # will print 'file.   1-   6.jpg'
 
-v0.2.2 - 2012 Jun 21
-====================
+v0.2.2
+======
 
 * Fixed %R in uncompress()
 
 * Fixed minor bug in getSequences() with glob
 
-v0.2.1b - 2011 Mar 23
-=====================
+v0.2.1b
+=======
 
 * supports sequences of any serializable, sortable items
 
 * fixes bug in lss
 
-v0.2.0b - 2011 Mar 14
-=====================
+v0.2.0b
+=======
 
 * Added support for wildcards in getSequence source input and in lss
 
@@ -104,9 +117,11 @@ v0.2.0b - 2011 Mar 14
 
 * Added html docs.
 
-v0.1.2 - 2011 Feb 15
-====================
+v0.1.2
+======
 
 * ``getSequences`` now takes either a directory path or a Python list of files.
+
 * Added setup.py
+
 * Added lss script

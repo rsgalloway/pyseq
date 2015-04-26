@@ -32,20 +32,24 @@
 
 import os
 import sys
-import optparse
-import logging
+import glob
 import pyseq
+import logging
+import optparse
 
 
 def tree(source, level, seq_format):
-    """ recusrively walk from the source and display
-        all the the folders and sequences.
+    """Recusrively walk from the source and display all the the folders and
+    sequences.
     """
-    print source
+
     blue = "\033[94m"
     endc = "\033[0m"
     ends = {}
     done = []
+
+    print "%s%s" % (blue, os.path.relpath(source))
+
     for root, dirs, seqs in pyseq.walk(source, level):
         if len(dirs) > 0:
             ends[root] = dirs[-1]
@@ -71,7 +75,7 @@ def tree(source, level, seq_format):
 
         base = os.path.basename(root)
         if root == source:
-            print "%s%s%s" % (blue, os.path.basename(root), endc)
+            pass
         elif ends[os.path.dirname(root)] == base:
             print "".join([sp, "└── ", "%s%s%s" % (blue, base, endc)])
             done.append(root)
@@ -90,7 +94,7 @@ def tree(source, level, seq_format):
 
 
 def _recur_cb(option, opt_str, value, parser):
-    """ callback for the 'recursive' argument
+    """Callback for the `recursive` argument.
     """
     if value is None:
         value = -1
@@ -122,6 +126,7 @@ Formatting options:
         %%p   padding, e.g. %%06d
         %%r   absolute range, start-end
         %%R   expanded range, start-end [missing]
+        %%d   disk usage
         %%h   string preceding sequence number
         %%t   string after the sequence number
 
@@ -141,22 +146,23 @@ Formatting options:
     if options.debug:
         pyseq.log.setLevel(logging.DEBUG)
 
-    if len(args) == 0:
-        start = os.getcwd()
-    elif len(args) == 1:
-        start = os.path.abspath(args[0].rstrip(os.sep))
-    else:
-        parser.error("Too many arguments given.")
-
-    if os.path.isdir(start) is False:
-        parser.error("Not a directory")
+    items = []
+    for path in args:
+        if os.path.isdir(path):
+            items.extend(os.listdir(path))
+        else:
+            items.extend(glob.glob(path))
 
     if options.recursive is None:
-        for seq in pyseq.get_sequences(start):
+        for seq in pyseq.get_sequences(items):
             print(seq.format(options.format or pyseq.global_format))
     else:
         level = options.recursive
-        tree(start, level, options.format or "%h%r%t")
+        for path in args:
+            path = os.path.abspath(path.rstrip(os.sep))
+            if not os.path.isdir(path):
+                continue
+            tree(path, level, options.format or "%h%r%t")
 
     return 0
 
