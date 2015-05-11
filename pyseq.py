@@ -67,7 +67,7 @@ digits_re = re.compile(r'\d+')
 format_re = re.compile(r'%(?P<pad>\d+)?(?P<var>\w+)')
 
 # character to join explicit frame ranges on
-range_join = os.environ.get('PYSEQ_RANGE_SEP', ' ')
+range_join = os.environ.get('PYSEQ_RANGE_SEP', ', ')
 
 __all__ = [
     'SequenceError', 'FormatError', 'Item', 'Sequence', 'diff', 'uncompress',
@@ -661,6 +661,9 @@ class Sequence(list):
             else:
                 return ''
 
+        if not self.frames():
+            return ''
+
         for i in range(0, len(self.frames())):
             if int(self.frames()[i]) != int(
                     self.frames()[i - 1]) + 1 and i != 0:
@@ -678,7 +681,7 @@ class Sequence(list):
             frange.append(str(start))
         else:
             frange.append('%s-%s' % (str(start), str(end)))
-        return range_join.join(frange)
+        return "[%s]" % range_join.join(frange)
 
     def _get_frames(self):
         """finds the sequence indexes from item names
@@ -805,10 +808,10 @@ def uncompress(seq_string, fmt=global_format):
         's': '\d+',
         'e': '\d+',
         'l': '\d+',
-        'h': '\S+',
-        't': '\S+',
+        'h': '(\S+)?',
+        't': '(\S+)?',
         'r': '\d+-\d+',
-        'R': '[\d\s\-]+',
+        'R': '\[[\d\s?\-,?]+\]',
         'p': '%\d+d',
         'm': '\[.*\]',
         'f': '\[.*\]'
@@ -818,6 +821,7 @@ def uncompress(seq_string, fmt=global_format):
 
     # escape any re chars in format
     fmt = re.escape(fmt)
+    
     # replace \% with % back again
     fmt = fmt.replace('\\%', '%')
 
@@ -836,6 +840,8 @@ def uncompress(seq_string, fmt=global_format):
     regex = re.compile(fmt)
     match = regex.match(name)
 
+    log.debug("match: %s" % match.groupdict() if match else "")
+
     frames = []
     missing = []
     s = None
@@ -847,14 +853,13 @@ def uncompress(seq_string, fmt=global_format):
 
     try:
         pad = match.group('p')
+
     except IndexError:
         pad = "%d"
 
     try:
         R = match.group('R')
-        log.debug("matched R")
-        # 1-10 13 15-20 38
-        # expand all the frames
+        R = R[1:-1]
         number_groups = R.split(range_join)
 
         for number_group in number_groups:
@@ -863,28 +868,30 @@ def uncompress(seq_string, fmt=global_format):
                 start = int(splits[0])
                 end = int(splits[1])
                 frames.extend(range(start, end + 1))
+
             else:
-                # just append the number
                 end = int(number_group)
                 frames.append(end)
 
     except IndexError:
         try:
             r = match.group('r')
-            log.debug('matched r: %s' % r)
             s, e = r.split('-')
             frames = range(int(s), int(e) + 1)
+
         except IndexError:
             s = match.group('s')
             e = match.group('e')
 
     try:
         frames = eval(match.group('f'))
+
     except IndexError:
         pass
 
     try:
         missing = eval(match.group('m'))
+
     except IndexError:
         pass
 
@@ -894,12 +901,19 @@ def uncompress(seq_string, fmt=global_format):
             if i in missing:
                 continue
             f = pad % i
-            name = '%s%s%s' % (match.group('h'), f, match.group('t'))
+            name = '%s%s%s' % (
+                match.groupdict().get('h', ''), f, 
+                match.groupdict().get('t', '')
+            )
             items.append(Item(os.path.join(dirname, name)))
+
     else:
         for i in frames:
             f = pad % i
-            name = '%s%s%s' % (match.group('h'), f, match.group('t'))
+            name = '%s%s%s' % (
+                match.groupdict().get('h', ''), f, 
+                match.groupdict().get('t', '')
+            )
             items.append(Item(os.path.join(dirname, name)))
 
     seqs = get_sequences(items)

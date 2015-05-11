@@ -337,7 +337,7 @@ class SequenceTestCase(unittest.TestCase):
         seq.append('file.0006.jpg')
         self.assertEqual(
             seq.format('%h%p%t %r (%R)'),
-            'file.%04d.jpg 1-6 (1-3 6)'
+            'file.%04d.jpg 1-6 ([1-3, 6])'
         )
 
     def test_format_is_working_properly_2(self):
@@ -431,7 +431,7 @@ class HelperFunctionsTestCase(unittest.TestCase):
         """testing if uncompress is working properly
         """
         seq2 = uncompress(
-            './tests/files/a.%03d.tga 1-3 10 12-14',
+            './tests/files/a.%03d.tga [1-3, 10, 12-14]',
             fmt='%h%p%t %R'
         )
         self.assertEqual(
@@ -448,7 +448,7 @@ class HelperFunctionsTestCase(unittest.TestCase):
         """testing if uncompress is working properly
         """
         seq3 = uncompress(
-            'a.%03d.tga 1-14 (1-3 10 12-14)',
+            'a.%03d.tga 1-14 ([1-3, 10, 12-14])',
             fmt='%h%p%t %r (%R)'
         )
         self.assertEqual(
@@ -465,7 +465,7 @@ class HelperFunctionsTestCase(unittest.TestCase):
         """testing if uncompress is working properly
         """
         seq4 = uncompress(
-            'a.%03d.tga 1-14 (1-3 10 12-14)',
+            'a.%03d.tga 1-14 ([1-3, 10, 12-14])',
             fmt='%h%p%t %s-%e (%R)'
         )
         self.assertEqual(
@@ -476,21 +476,21 @@ class HelperFunctionsTestCase(unittest.TestCase):
     def test_uncompress_is_working_properly_5(self):
         """testing if uncompress is working properly
         """
-        seq5 = uncompress('a.%03d.tga 1-14 (1 14)', fmt='%h%p%t %r (%R)')
+        seq5 = uncompress('a.%03d.tga 1-14 [1-14]', fmt='%h%p%t %r %R')
         self.assertEqual(
             'a.1-14.tga',
             str(seq5)
         )
 
         self.assertEqual(
-            2,
+            14,
             len(seq5)
         )
 
     def test_uncompress_is_working_properly_6(self):
         """testing if uncompress is working properly
         """
-        seq6 = uncompress('a.%03d.tga 1-14 (1-14)', fmt='%h%p%t %r (%R)')
+        seq6 = uncompress('a.%03d.tga 1-14 ([1-14])', fmt='%h%p%t %r (%R)')
         self.assertEqual(
             'a.1-14.tga',
             str(seq6)
@@ -505,7 +505,7 @@ class HelperFunctionsTestCase(unittest.TestCase):
         """testing if uncompress is working properly
         """
         seq7 = uncompress(
-            'a.%03d.tga 1-100000 (1-10 100000)',
+            'a.%03d.tga 1-100000 ([1-10, 100000])',
             fmt='%h%p%t %r (%R)'
         )
         self.assertEqual(
@@ -625,7 +625,7 @@ class LSSTestCase(unittest.TestCase):
         """
         """
         self.here = os.path.dirname(__file__)
-        self.lss = os.path.join(os.path.dirname(self.here), 'lss')
+        self.lss = os.path.realpath(os.path.join(os.path.dirname(self.here), 'lss'))
 
     def test_lss_is_working_properly_1(self):
         """testing if the lss command is working properly
@@ -640,26 +640,26 @@ class LSSTestCase(unittest.TestCase):
             test_files
         )
 
-        self.assertEqual("""  10 012_vb_110_v001.%04d.png 1-10
-  10 012_vb_110_v002.%04d.png 1-10
-   7 a.%03d.tga 1-3 10 12-14
+        self.assertEqual("""  10 012_vb_110_v001.%04d.png [1-10]
+  10 012_vb_110_v002.%04d.png [1-10]
+   7 a.%03d.tga [1-3, 10, 12-14]
    1 alpha.txt 
-   5 bnc01_TinkSO_tx_0_ty_0.%04d.tif 101-105
-   5 bnc01_TinkSO_tx_0_ty_1.%04d.tif 101-105
-   5 bnc01_TinkSO_tx_1_ty_0.%04d.tif 101-105
-   5 bnc01_TinkSO_tx_1_ty_1.%04d.tif 101-105
-   2 file.%02d.tif 1-2
+   5 bnc01_TinkSO_tx_0_ty_0.%04d.tif [101-105]
+   5 bnc01_TinkSO_tx_0_ty_1.%04d.tif [101-105]
+   5 bnc01_TinkSO_tx_1_ty_0.%04d.tif [101-105]
+   5 bnc01_TinkSO_tx_1_ty_1.%04d.tif [101-105]
+   2 file.%02d.tif [1-2]
    1 file.info.03.rgb 
-   3 file01.%03d.j2k 1-2 4
-   4 file01_%04d.rgb 40-43
-   4 file02_%04d.rgb 44-47
-   4 file%d.03.rgb 1-4
-   3 fileA.%04d.jpg 1-3
-   3 fileA.%04d.png 1-3
+   3 file01.%03d.j2k [1-2, 4]
+   4 file01_%04d.rgb [40-43]
+   4 file02_%04d.rgb [44-47]
+   4 file%d.03.rgb [1-4]
+   3 fileA.%04d.jpg [1-3]
+   3 fileA.%04d.png [1-3]
    1 file_02.tif 
-   4 z1_001_v1.%d.png 1-4
-   4 z1_002_v1.%d.png 1-4
-   4 z1_002_v2.%d.png 1-4
+   4 z1_001_v1.%d.png [1-4]
+   4 z1_002_v1.%d.png [1-4]
+   4 z1_002_v2.%d.png [1-4]
 """,
             result
         )
