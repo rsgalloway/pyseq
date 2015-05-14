@@ -55,7 +55,7 @@ import warnings
 from glob import glob
 from datetime import datetime
 
-__version__ = "0.4.2"
+__version__ = "0.4.3"
 
 # default serialization format string
 global_format = '%4l %h%p%t %R'

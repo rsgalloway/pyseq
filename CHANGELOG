@@ -2,6 +2,17 @@
 CHANGELOG
 =========
 
+v0.4.3
+======
+
+* Fixes regex in ``uncompress`` (issue #19)
+
+* Adds brackets to %R directive formatting
+
+* Fixes lss to use cwd when no args/paths are given
+
+* Changes default range delimiter $PYSEQ_RANGE_SEP to a comma
+
 v0.4.2
 ======
 

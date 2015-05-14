@@ -33,9 +33,9 @@ Now we list the same directory contents using `lss`, which will find the sequenc
 in the default compressed format. ::
 
     $ lss tests/files/z1*
-       4 z1_001_v1.%d.png 1-4
-       4 z1_002_v1.%d.png 1-4
-       4 z1_002_v2.%d.png 1-4
+       4 z1_001_v1.%d.png [1-4]
+       4 z1_002_v1.%d.png [1-4]
+       4 z1_002_v2.%d.png [1-4]
 
 ... with a custom format: ::
 
@@ -55,7 +55,7 @@ Compression, or serialization, of lists of items ::
     file.1-3.jpg
     >>> s.append('file.0006.jpg')
     >>> print(s.format("%h%p%t %R"))
-    file.%04d.jpg 1-3 6
+    file.%04d.jpg [1-3, 6]
     >>> s.contains('file.0009.jpg')
     True
     >>> s.contains('file.0009.pic')
@@ -68,5 +68,5 @@ Uncompression, or deserialization, of compressed sequences strings ::
     150
     >>> seq = uncompress('./tests/012_vb_110_v001.%04d.png 1-10', format='%h%p%t %r')
     >>> print(seq.format('%04l %h%p%t %R'))
-      10 012_vb_110_v001.%04d.png 1-10
+      10 012_vb_110_v001.%04d.png [1-10]
 

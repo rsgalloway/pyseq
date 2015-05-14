@@ -146,6 +146,9 @@ Formatting options:
     if options.debug:
         pyseq.log.setLevel(logging.DEBUG)
 
+    if len(args) == 0:
+        args = [os.getcwd()]
+
     items = []
     for path in args:
         if os.path.isdir(path):
