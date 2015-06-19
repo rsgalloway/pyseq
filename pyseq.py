@@ -65,7 +65,7 @@ global_format = '%4l %h%p%t %R'
 digits_re = re.compile(r'\d+')
 
 # default settings for view pairs
-view_pairs = json.loads(os.environ.get('PYSEQ_VIEWPAIRS','[["left","right"],["blue","green","yellow"],["l","r"],["gouche","droit"],["rt","lt"],["destra","sinistra"]]' ))
+view_pairs = json.loads(os.environ.get('PYSEQ_VIEWPAIRS','[["left","right"],["blue","green","yellow"],["l","r"],["rt","lt"]]' ))
 tempList = [item for sublist in view_pairs for item in sublist]
 tempList.append('%v')
 tempList.append('%V')
@@ -83,7 +83,8 @@ __all__ = [
 
 # logging handlers
 log = logging.getLogger('pyseq')
-log.addHandler(logging.StreamHandler())
+if not log.handlers:
+    log.addHandler(logging.StreamHandler())
 log.setLevel(int(os.environ.get('PYSEQ_LOG_LEVEL', logging.INFO)))
 
 # Show DeprecationWarnings in 2.7+
@@ -744,7 +745,9 @@ class MultiViewSequence(Sequence):
 
         if self.includesView(seq):
             setattr(self, seq.view.groups()[1], seq)
-            log.info('adding view %s to %s' %(seq.view.groups()[1],str(self)))
+            log.debug('adding view "%s" to %s' %(seq.view.groups()[1],str(self)))
+            if self.hasAllViews:
+                log.info('all views %s are present for %s' % ( self.views, str(self)))
         else:
             raise SequenceError('Sequence is not a member of this sequence') 
     
