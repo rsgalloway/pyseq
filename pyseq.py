@@ -79,8 +79,22 @@ log = logging.getLogger('pyseq')
 log.addHandler(logging.StreamHandler())
 log.setLevel(int(os.environ.get('PYSEQ_LOG_LEVEL', logging.INFO)))
 
-# Show DeprecationWarnings in 2.7+
+# show deprecationWarnings in 2.7+
 warnings.simplefilter('always', DeprecationWarning)
+
+# python 3 strings
+try:
+    unicode = unicode
+except NameError:
+    str = str
+    unicode = str
+    bytes = bytes
+    basestring = (str,bytes)
+else:
+    str = str
+    unicode = unicode
+    bytes = str
+    basestring = basestring
 
 
 def _natural_key(x):
