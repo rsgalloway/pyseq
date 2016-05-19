@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # ---------------------------------------------------------------------------------------------
-# Copyright (c) 2011-2015, Ryan Galloway (ryan@rsgalloway.com)
+# Copyright (c) 2011-2016, Ryan Galloway (ryan@rsgalloway.com)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -55,7 +55,7 @@ import warnings
 from glob import glob
 from datetime import datetime
 
-__version__ = "0.4.3"
+__version__ = "0.4.4"
 
 # default serialization format string
 global_format = '%4l %h%p%t %R'
