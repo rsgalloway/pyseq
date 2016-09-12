@@ -30,13 +30,15 @@
 # POSSIBILITY OF SUCH DAMAGE.
 # -----------------------------------------------------------------------------
 
+import cProfile
 import os
 import sys
 import glob
 import pyseq
 import logging
 import optparse
-
+import pstats
+import StringIO
 
 def tree(source, level, seq_format):
     """Recusrively walk from the source and display all the the folders and
@@ -141,6 +143,8 @@ Formatting options:
         default=False, help="set logging level to debug (or $PYSEQ_LOG_LEVEL)")
     parser.add_option("-r", "--recursive", dest="recursive", action="callback",
         callback=_recur_cb, help="Walks the entire directory structure.")
+    parser.add_option("-p", "--profile", dest="profile", action="store_true",
+        default=False, help="Runs with a profiler.")
     (options, args) = parser.parse_args()
 
     if options.debug:
@@ -148,6 +152,11 @@ Formatting options:
 
     if len(args) == 0:
         args = [os.getcwd()]
+
+    prof = None
+    if options.profile is True:
+        prof = cProfile.Profile()
+        prof.enable()
 
     items = []
     for path in args:
@@ -166,6 +175,13 @@ Formatting options:
             if not os.path.isdir(path):
                 continue
             tree(path, level, options.format or "%h%r%t")
+
+    if prof is not None:
+        prof.disable()
+        s = StringIO.StringIO()
+        ps = pstats.Stats(prof, stream=s).sort_stats("cumulative")
+        ps.print_stats()
+        print s.getvalue()
 
     return 0
 
