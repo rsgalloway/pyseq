@@ -1094,7 +1094,8 @@ def iget_sequences(source):
         items = source
     elif isinstance(source, str):
         if os.path.isdir(source):
-            items = iglob(os.path.join(source, "*"))
+            join = os.path.join
+            items = [join(source, x) for x in os.listdir(source)]
         else:
             items = iglob(source)
     else:

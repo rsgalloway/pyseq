@@ -161,7 +161,9 @@ Formatting options:
     items = []
     for path in args:
         if os.path.isdir(path):
-            items.extend(glob.glob(os.path.join(path, "*")))
+            join = os.path.join
+            items = [join(path, x) for x in os.listdir(path)]
+            # items.extend(glob.glob(os.path.join(path, "*")))
         else:
             items.extend(glob.glob(path))
 
