@@ -53,6 +53,7 @@ import re
 import logging
 import warnings
 from glob import glob
+from glob import iglob
 from datetime import datetime
 
 __version__ = "0.4.4"
@@ -99,6 +100,11 @@ else:
 
 def _natural_key(x):
     return [int(c) if c.isdigit() else c.lower() for c in re.split("(\d+)", x)]
+
+
+def _ext_key(x):
+    name, ext = os.path.splitext(x)
+    return [ext] + [int(c) if c.isdigit() else c.lower() for c in re.split("(\d)", name)]
 
 
 def natural_sort(items):
@@ -1023,6 +1029,84 @@ def get_sequences(source):
     log.debug('time: %s' % (datetime.now() - start))
 
     return list(seqs)
+
+
+def iget_sequences(source):
+    """ Generator version of get_sequences.  Creates Sequences from a various
+    source files.  A notable difference is the sort order of iget_sequences
+    versus get_sequences.  iget_sequences uses an adaption of natural sorting
+    that starts with the file extension.  Because of this Sequences are
+    returned ordered by their file extension.
+
+    Get sequences in a directory:
+
+        >>> seqs = get_sequences('./tests/files/')
+        >>> for s in seqs: print(s)
+        ...
+        012_vb_110_v001.1-10.png
+        012_vb_110_v002.1-10.png
+        a.1-14.tga
+        alpha.txt
+        bnc01_TinkSO_tx_0_ty_0.101-105.tif
+        bnc01_TinkSO_tx_0_ty_1.101-105.tif
+        bnc01_TinkSO_tx_1_ty_0.101-105.tif
+        bnc01_TinkSO_tx_1_ty_1.101-105.tif
+        file.1-2.tif
+        file.info.03.rgb
+        file01_40-43.rgb
+        file02_44-47.rgb
+        file1-4.03.rgb
+        file_02.tif
+        z1_001_v1.1-4.png
+        z1_002_v1.1-4.png
+        z1_002_v2.1-4.png
+
+    Get sequences from a list of file names:
+
+        >>> seqs = get_sequences(['fileA.1.rgb', 'fileA.2.rgb', 'fileB.1.rgb'])
+        >>> for s in seqs: print(s)
+        ...
+        fileA.1-2.rgb
+        fileB.1.rgb
+
+    Get sequences from a list of objects, preserving object attrs:
+
+        >>> seqs = get_sequences(repo.files())
+        >>> seqs[0].date
+        datetime.datetime(2011, 3, 21, 17, 31, 24)
+
+    :param source: Can be directory path, list of strings, or sortable list of objects.
+
+    :return: List of pyseq.Sequence class objects.
+    """
+    start = datetime.now()
+    if isinstance(source, list):
+        items = source
+    elif isinstance(source, str):
+        if os.path.isdir(source):
+            items = iglob(os.path.join(source, "*"))
+        else:
+            items = iglob(source)
+    else:
+        raise TypeError("Unsupported format for source argument")
+
+    items = sorted(items, key=_ext_key)
+    log.debug("Found %d files", len(items))
+
+    seq = None
+    while items:
+        item = Item(items.pop(0))
+        if seq is None:
+            seq = Sequence([item])
+        elif seq.includes(item):
+            seq.append(item)
+        else:
+            yield seq
+            seq = Sequence([item])
+
+    if seq is not None:
+        yield seq
+    log.debug("time: %s", datetime.now() - start)
 
 
 def walk(source, level=-1, topdown=True, onerror=None, followlinks=False, hidden=False):
