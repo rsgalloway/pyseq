@@ -144,15 +144,24 @@ class Item(str):
 
     def __init__(self, item):
         super(Item, self).__init__()
-        log.debug('adding %s' % item)
+        log.debug('adding %s', item)
         self.item = item
-        self.__path = getattr(item, 'path', os.path.abspath(str(item)))
-        self.__dirname = os.path.dirname(self.__path)
-        self.__filename = os.path.basename(str(item))
+        self.__path = getattr(item, 'path', None)
+        if self.__path is None:
+            self.__path = os.path.abspath(str(item))
+        self.__dirname, self.__filename = os.path.split(self.__path)
         self.__digits = digits_re.findall(self.name)
         self.__parts = digits_re.split(self.name)
-        self.__size = os.path.getsize(self.__path) if self.exists else 0
-        self.__mtime = os.path.getmtime(self.__path) if self.exists else 0
+        self.__size = 0
+        self.__mtime = 0
+        try:
+            stat = os.stat(self.__path)
+        except OSError as err:
+            if err.errno != 2:
+                pass
+        else:
+            self.__size = stat.st_size
+            self.__mtime = stat.st_mtime
 
         # modified by self.is_sibling()
         self.frame = ''
@@ -298,6 +307,7 @@ class Sequence(list):
         super(Sequence, self).__init__([Item(items.pop(0))])
         self.__missing = []
         self.__dirty = False
+        self.__frames = None
 
         while items:
             f = Item(items.pop(0))
