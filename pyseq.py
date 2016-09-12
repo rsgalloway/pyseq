@@ -164,9 +164,10 @@ class Item(str):
             self.__mtime = stat.st_mtime
 
         # modified by self.is_sibling()
-        self.frame = ''
+        self.frame = None
         self.head = self.name
         self.tail = ''
+        self.pad = 0
 
     def __eq__(self, other):
         return self.path == other.path
@@ -175,16 +176,16 @@ class Item(str):
         return self.path != other.path
 
     def __lt__(self, other):
-        return int(self.frame) < int(other.frame)
+        return self.frame < other.frame
 
     def __gt__(self, other):
-        return int(self.frame) > int(other.frame)
+        return self.frame > other.frame
 
     def __ge__(self, other):
-        return int(self.frame) >= int(other.frame)
+        return self.frame >= other.frame
 
     def __le__(self, other):
-        return int(self.frame) <= int(other.frame)
+        return self.frame <= other.frame
 
     def __str__(self):
         return str(self.name)
@@ -265,10 +266,14 @@ class Item(str):
         # I do not understand why we are updating information
         # while this is a predicate method
         if is_sibling:
-            self.frame = d[0]['frames'][0]
+            frame = d[0]['frames'][0]
+            self.frame = int(frame)
+            self.pad = len(frame)
             self.head = self.name[:d[0]['start']]
             self.tail = self.name[d[0]['end']:]
-            item.frame = d[0]['frames'][1]
+            frame = d[0]['frames'][1]
+            item.frame = int(frame)
+            item.pad = len(frame)
             item.head = item.name[:d[0]['start']]
             item.tail = item.name[d[0]['end']:]
 
@@ -481,7 +486,8 @@ class Sequence(list):
     def frames(self):
         """:return: List of files in sequence."""
         if not hasattr(self, '__frames') or not self.__frames or self.__dirty:
-            self.__frames = list(map(int, self._get_frames()))
+            # self.__frames = list(map(int, self._get_frames()))
+            self.__frames = self._get_frames()
             self.__frames.sort()
         return self.__frames
 
@@ -504,7 +510,8 @@ class Sequence(list):
     def missing(self):
         """:return: List of missing files."""
         if not hasattr(self, '__missing') or not self.__missing:
-            self.__missing = list(map(int, self._get_missing()))
+            # self.__missing = list(map(int, self._get_missing()))
+            self.__missing = self._get_missing()
         return self.__missing
 
     def head(self):
@@ -570,7 +577,7 @@ class Sequence(list):
             if not isinstance(item, Item):
                 item = Item(item)
             return self.includes(item)\
-                and self.end() >= int(item.frame) >= self.start()
+                and self.end() >= item.frame >= self.start()
 
         return False
 
@@ -659,7 +666,7 @@ class Sequence(list):
             else:
                 log.debug('renaming %s %s' % (oldName, newName))
                 self.__dirty = True
-                image.frame = newFrame
+                image.frame = int(newFrame)
 
         else:
             self.frames()
@@ -667,7 +674,8 @@ class Sequence(list):
     def _get_padding(self):
         """:return: padding string, e.g. %07d"""
         try:
-            pad = len(self._get_frames()[0])
+            pad = self[0].pad
+            # pad = len(self._get_frames()[0].pad)
             if pad < 2:
                 return '%d'
             return '%%%02dd' % pad
@@ -716,15 +724,22 @@ class Sequence(list):
     def _get_frames(self):
         """finds the sequence indexes from item names
         """
-        return [f.frame for f in self if f.frame is not '']
+        return [f.frame for f in self if f.frame is not None]
 
     def _get_missing(self):
         """Looks for missing sequence indexes in sequence
+
+        .. todo:: change this to:
+            r = range(frames[0], frames[-1] + 1)
+            return sorted(list(set(frames).symmetric_difference(r)))
+
+
         """
         missing = []
         frames = self.frames()
         if len(frames) == 0:
             return missing
+
         prev = frames[0]
         index = 1
         while index < len(frames):
