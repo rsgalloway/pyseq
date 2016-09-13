@@ -48,6 +48,7 @@ Docs and latest version available for download at
    http://github.com/rsgalloway/pyseq
 """
 
+import functools
 import os
 import re
 import logging
@@ -324,19 +325,19 @@ class Sequence(list):
                 break
 
     def __attrs__(self):
-        """Replaces format directives with values."""
+        """Replaces format directives with callables to get their values."""
         return {
-            'l': self.length(),
-            's': self.start(),
-            'e': self.end(),
-            'f': self.frames(),
-            'm': self.missing(),
-            'd': self.size,
-            'p': self._get_padding(),
-            'r': self._get_framerange(missing=False),
-            'R': self._get_framerange(missing=True),
-            'h': self.head(),
-            't': self.tail()
+            'l': self.length,
+            's': self.start,
+            'e': self.end,
+            'f': self.frames,
+            'm': self.missing,
+            'd': lambda x: self.size,
+            'p': self._get_padding,
+            'r': functools.partial(self._get_framerange, missing=False),
+            'R': functools.partial(self._get_framerange, missing=True),
+            'h': self.head,
+            't': self.tail
         }
 
     def __str__(self):
@@ -446,6 +447,7 @@ class Sequence(list):
             't': 's'
         }
 
+        atts = self.__attrs__()
         for m in format_re.finditer(fmt):
             var = m.group('var')
             pad = m.group('pad')
@@ -456,7 +458,12 @@ class Sequence(list):
             _old = '%s%s' % (pad or '', var)
             _new = '(%s)%s%s' % (var, pad or '', fmt_char)
             fmt = fmt.replace(_old, _new)
-        return fmt % self.__attrs__()
+            val = atts[var]
+            if callable(val):
+                val = atts[var]()
+                atts[var] = val
+
+        return fmt % atts
 
     @property
     def mtime(self):
@@ -483,7 +490,6 @@ class Sequence(list):
     def frames(self):
         """:return: List of files in sequence."""
         if not hasattr(self, '__frames') or not self.__frames or self.__dirty:
-            # self.__frames = list(map(int, self._get_frames()))
             self.__frames = self._get_frames()
             self.__frames.sort()
         return self.__frames
@@ -507,7 +513,6 @@ class Sequence(list):
     def missing(self):
         """:return: List of missing files."""
         if not hasattr(self, '__missing') or not self.__missing:
-            # self.__missing = list(map(int, self._get_missing()))
             self.__missing = self._get_missing()
         return self.__missing
 
