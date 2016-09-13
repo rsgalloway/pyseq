@@ -255,6 +255,8 @@ class Item(str):
 
     @property
     def stat(self):
+        """ Returns the os.stat object for this file.
+        """
         if self.__stat is None:
             self.__stat = os.stat(self.__path)
         return self.__stat
@@ -349,7 +351,7 @@ class Sequence(list):
             'e': self.end,
             'f': self.frames,
             'm': self.missing,
-            'd': lambda x: self.size,
+            'd': lambda *x: self.size,
             'p': self._get_padding,
             'r': functools.partial(self._get_framerange, missing=False),
             'R': functools.partial(self._get_framerange, missing=True),
