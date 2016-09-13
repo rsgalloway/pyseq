@@ -152,16 +152,7 @@ class Item(str):
         self.__dirname, self.__filename = os.path.split(self.__path)
         self.__digits = digits_re.findall(self.name)
         self.__parts = digits_re.split(self.name)
-        self.__size = 0
-        self.__mtime = 0
-        try:
-            stat = os.stat(self.__path)
-        except OSError as err:
-            if err.errno != 2:
-                pass
-        else:
-            self.__size = stat.st_size
-            self.__mtime = stat.st_mtime
+        self.__stat = None
 
         # modified by self.is_sibling()
         self.frame = None
@@ -236,13 +227,19 @@ class Item(str):
     def size(self):
         """Returns the size of the Item, reported by os.stat
         """
-        return self.__size
+        return self.stat.st_size
 
     @property
     def mtime(self):
         """Returns the modification time of the Item
         """
-        return self.__mtime
+        return self.stat.st_mtime
+
+    @property
+    def stat(self):
+        if self.__stat is None:
+            self.__stat = os.stat(self.__path)
+        return self.__stat
 
     @deprecated
     def isSibling(self, item):
