@@ -168,7 +168,7 @@ Formatting options:
             items.extend(glob.glob(path))
 
     if options.recursive is None:
-        for seq in pyseq.iget_sequences(items):
+        for seq in pyseq.get_sequences(items):
             print(seq.format(options.format or pyseq.global_format))
     else:
         level = options.recursive
