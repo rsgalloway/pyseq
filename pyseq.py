@@ -167,7 +167,7 @@ class Item(str):
         self.frame = None
         self.head = self.name
         self.tail = ''
-        self.pad = 0
+        self.pad = None
 
     def __eq__(self, other):
         return self.path == other.path
@@ -675,6 +675,8 @@ class Sequence(list):
         """:return: padding string, e.g. %07d"""
         try:
             pad = self[0].pad
+            if pad is None:
+                return ""
             # pad = len(self._get_frames()[0].pad)
             if pad < 2:
                 return '%d'
@@ -692,29 +694,30 @@ class Sequence(list):
         frange = []
         start = ''
         end = ''
+        frames = self.frames()
 
         if not missing:
-            if self.frames():
+            if frames:
                 return '%s-%s' % (self.start(), self.end())
             else:
                 return ''
 
-        if not self.frames():
+        if not frames:
             return ''
 
-        for i in range(0, len(self.frames())):
-            if int(self.frames()[i]) != int(
-                    self.frames()[i - 1]) + 1 and i != 0:
+        for i in range(0, len(frames)):
+            frame = frames[i]
+            if i != 0 and frame != frames[i - 1] + 1:
                 if start != end:
                     frange.append('%s-%s' % (str(start), str(end)))
                 elif start == end:
                     frange.append(str(start))
-                start = end = self.frames()[i]
+                start = end = frame
                 continue
-            if start is '' or int(start) > int(self.frames()[i]):
-                start = self.frames()[i]
-            if end is '' or int(end) < int(self.frames()[i]):
-                end = self.frames()[i]
+            if start is '' or int(start) > frame:
+                start = frame
+            if end is '' or int(end) < frame:
+                end = frame
         if start == end:
             frange.append(str(start))
         else:
