@@ -100,12 +100,29 @@ else:
 
 
 def _natural_key(x):
+    """ Splits a string into characters and digits.  This helps in sorting file
+    names in a 'natural' way.
+    """
     return [int(c) if c.isdigit() else c.lower() for c in re.split("(\d+)", x)]
 
 
 def _ext_key(x):
+    """ Similar to '_natural_key' except this one uses the file extension at
+    the head of split string.  This fixes issues with files that are named
+    similar but with different file extensions:
+    This example:
+        file.001.jpg
+        file.001.tiff
+        file.002.jpg
+        file.002.tiff
+    Would get properly sorted into:
+        file.001.jpg
+        file.002.jpg
+        file.001.tiff
+        file.002.tiff
+    """
     name, ext = os.path.splitext(x)
-    return [ext] + [int(c) if c.isdigit() else c.lower() for c in re.split("(\d)", name)]
+    return [ext] + _natural_key(name)
 
 
 def natural_sort(items):
@@ -403,31 +420,31 @@ class Sequence(list):
         The following directives can be embedded in the format string.
         Format directives support padding, for example: "%04l".
 
-        +-----------+-------------------------------------+
-        | Directive | Meaning                             |
-        +===========+=====================================+
-        | ``%s``    | sequence start                      |
-        +-----------+-------------------------------------+
-        | ``%e``    | sequence end                        |
-        +-----------+-------------------------------------+
-        | ``%l``    | sequence length                     |
-        +-----------+-------------------------------------+
-        | ``%f``    | list of found files                 |
-        +-----------+-------------------------------------+
-        | ``%m``    | list of missing files               |
-        +-----------+-------------------------------------+
-        | ``%p``    | padding, e.g. %06d                  |
-        +-----------+-------------------------------------+
-        | ``%r``    | implied range, start-end            |
-        +-----------+-------------------------------------+
-        | ``%R``    | explicit range, start-end [missing] |
-        +-----------+-------------------------------------+
-        | ``%d``    | disk usage                          |
-        +-----------+-------------------------------------+
-        | ``%h``    | string preceding sequence number    |
-        +-----------+-------------------------------------+
-        | ``%t``    | string after the sequence number    |
-        +-----------+-------------------------------------+
+        +-----------+--------------------------------------+
+        | Directive | Meaning                              |
+        +===========+======================================+
+        | ``%s``    | sequence start                       |
+        +-----------+--------------------------------------+
+        | ``%e``    | sequence end                         |
+        +-----------+--------------------------------------+
+        | ``%l``    | sequence length                      |
+        +-----------+--------------------------------------+
+        | ``%f``    | list of found files                  |
+        +-----------+--------------------------------------+
+        | ``%m``    | list of missing files                |
+        +-----------+--------------------------------------+
+        | ``%p``    | padding, e.g. %06d                   |
+        +-----------+--------------------------------------+
+        | ``%r``    | implied range, start-end             |
+        +-----------+--------------------------------------+
+        | ``%R``    | explicit broken range, [1-10, 15-20] |
+        +-----------+--------------------------------------+
+        | ``%d``    | disk usage                           |
+        +-----------+--------------------------------------+
+        | ``%h``    | string preceding sequence number     |
+        +-----------+--------------------------------------+
+        | ``%t``    | string after the sequence number     |
+        +-----------+--------------------------------------+
 
         :param fmt: Format string. Default is '%4l %h%p%t %R'.
 
@@ -459,6 +476,7 @@ class Sequence(list):
             _new = '(%s)%s%s' % (var, pad or '', fmt_char)
             fmt = fmt.replace(_old, _new)
             val = atts[var]
+            # only execute the callable once, just in case
             if callable(val):
                 val = atts[var]()
                 atts[var] = val
@@ -679,7 +697,6 @@ class Sequence(list):
             pad = self[0].pad
             if pad is None:
                 return ""
-            # pad = len(self._get_frames()[0].pad)
             if pad < 2:
                 return '%d'
             return '%%%02dd' % pad
@@ -737,26 +754,14 @@ class Sequence(list):
         .. todo:: change this to:
             r = range(frames[0], frames[-1] + 1)
             return sorted(list(set(frames).symmetric_difference(r)))
-
-
         """
         missing = []
         frames = self.frames()
         if len(frames) == 0:
             return missing
 
-        prev = frames[0]
-        index = 1
-        while index < len(frames):
-            diff = frames[index] - prev
-            if diff == 1:
-                prev = frames[index]
-                index += 1
-            else:
-                prev += 1
-                missing.append(prev)
-
-        return missing
+        r = range(frames[0], frames[-1] + 1)
+        return sorted(list(set(frames).symmetric_difference(r)))
 
 
 def diff(f1, f2):
@@ -911,17 +916,21 @@ def uncompress(seq_string, fmt=global_format):
         R = match.group('R')
         R = R[1:-1]
         number_groups = R.split(range_join)
-
+        pad_len = 0
         for number_group in number_groups:
             if '-' in number_group:
                 splits = number_group.split('-')
+                pad_len = max(pad_len, len(splits[0]), len(splits[1]))
                 start = int(splits[0])
                 end = int(splits[1])
                 frames.extend(range(start, end + 1))
 
             else:
                 end = int(number_group)
+                pad_len = max(pad_len, len(number_group))
                 frames.append(end)
+        if pad == "%d" and pad_len != 0:
+            pad = "%0" + str(pad_len) + "d"
 
     except IndexError:
         try:
@@ -1065,45 +1074,45 @@ def iget_sequences(source):
     """ Generator version of get_sequences.  Creates Sequences from a various
     source files.  A notable difference is the sort order of iget_sequences
     versus get_sequences.  iget_sequences uses an adaption of natural sorting
-    that starts with the file extension.  Because of this Sequences are
+    that starts with the file extension.  Because of this, Sequences are
     returned ordered by their file extension.
 
     Get sequences in a directory:
 
-        >>> seqs = get_sequences('./tests/files/')
+        >>> seqs = iget_sequences('./tests/files/')
         >>> for s in seqs: print(s)
         ...
+        file01.1-4.j2k
+        fileA.1-3.jpg
         012_vb_110_v001.1-10.png
         012_vb_110_v002.1-10.png
+        fileA.1-3.png
+        z1_001_v1.1-4.png
+        z1_002_v1.1-4.png
+        z1_002_v2.1-4.png
+        file1.03.rgb
+        file01_40-43.rgb
+        file2.03.rgb
+        file02_44-47.rgb
+        file3-4.03.rgb
+        file.info.03.rgb
         a.1-14.tga
-        alpha.txt
         bnc01_TinkSO_tx_0_ty_0.101-105.tif
         bnc01_TinkSO_tx_0_ty_1.101-105.tif
         bnc01_TinkSO_tx_1_ty_0.101-105.tif
         bnc01_TinkSO_tx_1_ty_1.101-105.tif
         file.1-2.tif
-        file.info.03.rgb
-        file01_40-43.rgb
-        file02_44-47.rgb
-        file1-4.03.rgb
         file_02.tif
-        z1_001_v1.1-4.png
-        z1_002_v1.1-4.png
-        z1_002_v2.1-4.png
+        alpha.txt
 
     Get sequences from a list of file names:
 
-        >>> seqs = get_sequences(['fileA.1.rgb', 'fileA.2.rgb', 'fileB.1.rgb'])
+        >>> seqs = iget_sequences(['fileA.1.rgb', 'fileA.2.rgb', 'fileB.1.rgb'])
         >>> for s in seqs: print(s)
         ...
         fileA.1-2.rgb
         fileB.1.rgb
 
-    Get sequences from a list of objects, preserving object attrs:
-
-        >>> seqs = get_sequences(repo.files())
-        >>> seqs[0].date
-        datetime.datetime(2011, 3, 21, 17, 31, 24)
 
     :param source: Can be directory path, list of strings, or sortable list of objects.
 
