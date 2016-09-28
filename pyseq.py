@@ -48,16 +48,16 @@ Docs and latest version available for download at
    http://github.com/rsgalloway/pyseq
 """
 
-import functools
 import os
 import re
 import logging
 import warnings
+import functools
 from glob import glob
 from glob import iglob
 from datetime import datetime
 
-__version__ = "0.4.4"
+__version__ = "0.5.0"
 
 # default serialization format string
 global_format = '%4l %h%p%t %R'
