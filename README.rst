@@ -44,6 +44,15 @@ in the default compressed format. ::
     z1_002_v1.1-4.png
     z1_002_v2.1-4.png
 
+... recursive: ::
+
+    $ lss -r tests
+    tests
+    ├── test_pyseq.py
+    └── files
+        ├── 012_vb_110_v001.1-10.png
+        └── 012_vb_110_v002.1-10.png
+
 
 API Examples
 ------------
