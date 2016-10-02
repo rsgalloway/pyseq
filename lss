@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # ---------------------------------------------------------------------------------------------
-# Copyright (c) 2011-2015, Ryan Galloway (ryan@rsgalloway.com)
+# Copyright (c) 2011-2016, Ryan Galloway (ryan@rsgalloway.com)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -32,18 +32,83 @@
 
 import os
 import sys
-import optparse
-import logging
+import glob
 import pyseq
+import logging
+import optparse
+
+
+def tree(source, level, seq_format):
+    """Recusrively walk from the source and display all the the folders and
+    sequences.
+    """
+
+    blue = "\033[94m"
+    endc = "\033[0m"
+    ends = {}
+    done = []
+
+    print "%s%s" % (blue, os.path.relpath(source))
+
+    for root, dirs, seqs in pyseq.walk(source, level):
+        if len(dirs) > 0:
+            ends[root] = dirs[-1]
+        else:
+            ends[root] = None
+
+        sp = ""
+        if root != sorted(source):
+            p = root
+            while p != source:
+                dir_name, base = os.path.split(p)
+                if dir_name == source:
+                    break
+                elif dir_name in done:
+                    sp = "    " + sp
+                elif ends[dir_name] != base:
+                    sp = "│   " + sp
+                elif ends[dir_name] == base:
+                    sp = "│   " + sp
+                else:
+                    sp = "    " + sp
+                p = dir_name
+
+        base = os.path.basename(root)
+        if root == source:
+            pass
+        elif ends[os.path.dirname(root)] == base:
+            print "".join([sp, "└── ", "%s%s%s" % (blue, base, endc)])
+            done.append(root)
+            ends[os.path.dirname(root)] = None
+            sp += "    "
+        else:
+            print "".join([sp, "├── ", "%s%s%s" % (blue, base, endc)])
+            sp += "│   "
+
+        l = len(seqs)
+        for i, seq in enumerate(seqs):
+            if i == (l - 1) and len(dirs) == 0:
+                print "".join([sp, "└── ", seq.format(seq_format)])
+            else:
+                print "".join([sp, "├── ", seq.format(seq_format)])
+
+
+def _recur_cb(option, opt_str, value, parser):
+    """Callback for the `recursive` argument.
+    """
+    if value is None:
+        value = -1
+    else:
+        value = int(value)
+    setattr(parser.values, option.dest, value)
 
 
 def main():
-    """
-    Command-line interface.
+    """Command-line interface.
     """
 
     usage = """
-lss [path] [-f format] [-d]
+lss [path] [-f format] [-d] [-r]
 
 Formatting options:
 
@@ -61,6 +126,7 @@ Formatting options:
         %%p   padding, e.g. %%06d
         %%r   absolute range, start-end
         %%R   expanded range, start-end [missing]
+        %%d   disk usage
         %%h   string preceding sequence number
         %%t   string after the sequence number
 
@@ -68,24 +134,39 @@ Formatting options:
     """ % pyseq.global_format
 
     parser = optparse.OptionParser(usage=usage,
-                                   version="%prog " + pyseq.__version__)
+        version="%prog " + pyseq.__version__)
     parser.add_option("-f", "--format", dest="format",
-                      default=pyseq.global_format, help="format the output "
-                      "string")
+        default=None, help="format the output string")
     parser.add_option("-d", "--debug", dest="debug", action="store_true",
-                      default=False,
-                      help="set logging level to debug (or $PYSEQ_LOG_LEVEL)")
+        default=False, help="set logging level to debug (or $PYSEQ_LOG_LEVEL)")
+    parser.add_option("-r", "--recursive", dest="recursive", action="callback",
+        callback=_recur_cb, help="Walks the entire directory structure.")
     (options, args) = parser.parse_args()
 
     if options.debug:
         pyseq.log.setLevel(logging.DEBUG)
 
     if len(args) == 0:
-        args = os.listdir(os.getcwd())
-    elif len(args) == 1 and os.path.isdir(args[0]):
-        args = os.listdir(args[0])
-    for seq in pyseq.get_sequences(args):
-        print(seq.format(options.format))
+        args = [os.getcwd()]
+
+    items = []
+    for path in args:
+        if os.path.isdir(path):
+            join = os.path.join
+            items = [join(path, x) for x in os.listdir(path)]
+        else:
+            items.extend(glob.glob(path))
+
+    if options.recursive is None:
+        for seq in pyseq.get_sequences(items):
+            print(seq.format(options.format or pyseq.global_format))
+    else:
+        level = options.recursive
+        for path in args:
+            path = os.path.abspath(path.rstrip(os.sep))
+            if not os.path.isdir(path):
+                continue
+            tree(path, level, options.format or "%h%r%t")
 
     return 0
 
