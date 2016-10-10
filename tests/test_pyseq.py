@@ -356,6 +356,17 @@ class SequenceTestCase(unittest.TestCase):
             'file.   1-   6.jpg',
             seq.format('%h%4s-%4e%t'),
         )
+        
+    def test_format_is_working_properly_3(self):
+        """testing if format is working properly
+        """
+        seq = Sequence(self.files)
+        seq.append('file.0006.jpg')
+        seq.append('file.0010.jpg')
+        self.assertEqual(
+            seq.format('%h%p%t %r (missing %M)'),
+            'file.%04d.jpg 1-10 (missing [4-5, 7-9])'
+        )
 
     def test__get_missing(self):
         """ test that _get_missing works

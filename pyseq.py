@@ -405,10 +405,11 @@ class Sequence(list):
             'e': self.end,
             'f': self.frames,
             'm': self.missing,
+            'M': functools.partial(self._get_framerange, self.missing, missing=True),
             'd': lambda *x: self.size,
             'p': self._get_padding,
-            'r': functools.partial(self._get_framerange, missing=False),
-            'R': functools.partial(self._get_framerange, missing=True),
+            'r': functools.partial(self._get_framerange, self.frames, missing=False),
+            'R': functools.partial(self._get_framerange, self.frames, missing=True),
             'h': self.head,
             't': self.tail
         }
@@ -489,6 +490,8 @@ class Sequence(list):
         +-----------+--------------------------------------+
         | ``%m``    | list of missing files                |
         +-----------+--------------------------------------+
+        | ``%M``    | explicit missingfiles [11-14,19-21]  |
+        +-----------+--------------------------------------+
         | ``%p``    | padding, e.g. %06d                   |
         +-----------+--------------------------------------+
         | ``%r``    | implied range, start-end             |
@@ -512,6 +515,7 @@ class Sequence(list):
             'l': 'i',
             'f': 's',
             'm': 's',
+            'M': 's',
             'p': 's',
             'r': 's',
             'R': 's',
@@ -806,7 +810,7 @@ class Sequence(list):
         except IndexError:
             return ''
 
-    def _get_framerange(self, missing=True):
+    def _get_framerange(self, input, missing=True):
         """Returns frame range string, e.g. 1-500.
 
         :param missing: Expand sequence to exclude missing sequence indices.
@@ -816,7 +820,7 @@ class Sequence(list):
         frange = []
         start = ''
         end = ''
-        frames = self.frames()
+        frames = input()
 
         if not missing:
             if frames:
