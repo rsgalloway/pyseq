@@ -49,9 +49,9 @@ class ItemTestCase(unittest.TestCase):
     def setUp(self):
         """set up the test
         """
-        self.test_path = \
-            '/mnt/S/Some/Path/to/a/file/with/numbers/file.0010.exr'
-
+        self.test_path =\
+         os.path.abspath(os.path.join(os.sep,'mnt', 'S', 'Some','Path','to','a','file','with','numbers','file.0010.exr'))
+         
     def test_initializing_with_a_string(self):
         """testing if initializing an Item with a string showing the path of a
         file is working properly
@@ -104,10 +104,11 @@ class ItemTestCase(unittest.TestCase):
     def test_dirname_attribute_is_working_properly(self):
         """testing if the dirname attribute is working properly
         """
+        
         i = Item(self.test_path)
         self.assertEqual(
             i.dirname,
-            '/mnt/S/Some/Path/to/a/file/with/numbers'
+            os.path.dirname(self.test_path)
         )
 
     def test_dirname_attribute_is_read_only(self):
