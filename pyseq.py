@@ -1180,7 +1180,11 @@ def walk(source, level=-1, topdown=True, onerror=None, followlinks=False, hidden
                 parts.remove("")
             if len(parts) == level - 1:
                 del dirs[:]
-
-        yield root, dirs, get_sequences(files)
+        #
+        filelist = []
+        for file in files:
+            filelist.append(os.path.join(root,file))
+        yield root, dirs, get_sequences(filelist)
+        #yield root, dirs, get_sequences(files)
 
     log.debug('time: %s' % (datetime.now() - start))
