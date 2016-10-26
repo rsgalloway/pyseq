@@ -641,7 +641,10 @@ class LSSTestCase(unittest.TestCase):
         """
         """
         self.here = os.path.dirname(__file__)
-        self.lss = os.path.realpath(os.path.join(os.path.dirname(self.here), 'lss'))
+        command = 'lss'
+        if os.name == "nt":
+            command = 'lss.bat'
+        self.lss = os.path.realpath(os.path.join(os.path.dirname(self.here), command))
 
     def test_lss_is_working_properly_1(self):
         """testing if the lss command is working properly
