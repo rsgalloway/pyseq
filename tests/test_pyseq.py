@@ -35,9 +35,12 @@ import re
 import random
 import unittest
 import subprocess
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from pyseq import Item, Sequence, diff, uncompress, get_sequences
 from pyseq import SequenceError
-
+import pyseq
+pyseq.default_format = '%h%r%t'
 
 class ItemTestCase(unittest.TestCase):
     """tests the Item class
@@ -46,9 +49,9 @@ class ItemTestCase(unittest.TestCase):
     def setUp(self):
         """set up the test
         """
-        self.test_path = \
-            '/mnt/S/Some/Path/to/a/file/with/numbers/file.0010.exr'
-
+        self.test_path =\
+         os.path.abspath(os.path.join(os.sep,'mnt', 'S', 'Some','Path','to','a','file','with','numbers','file.0010.exr'))
+         
     def test_initializing_with_a_string(self):
         """testing if initializing an Item with a string showing the path of a
         file is working properly
@@ -101,10 +104,11 @@ class ItemTestCase(unittest.TestCase):
     def test_dirname_attribute_is_working_properly(self):
         """testing if the dirname attribute is working properly
         """
+        
         i = Item(self.test_path)
         self.assertEqual(
             i.dirname,
-            '/mnt/S/Some/Path/to/a/file/with/numbers'
+            os.path.dirname(self.test_path)
         )
 
     def test_dirname_attribute_is_read_only(self):
@@ -353,6 +357,17 @@ class SequenceTestCase(unittest.TestCase):
             'file.   1-   6.jpg',
             seq.format('%h%4s-%4e%t'),
         )
+        
+    def test_format_is_working_properly_3(self):
+        """testing if format is working properly
+        """
+        seq = Sequence(self.files)
+        seq.append('file.0006.jpg')
+        seq.append('file.0010.jpg')
+        self.assertEqual(
+            seq.format('%h%p%t %r (missing %M)'),
+            'file.%04d.jpg 1-10 (missing [4-5, 7-9])'
+        )
 
     def test__get_missing(self):
         """ test that _get_missing works
@@ -551,6 +566,7 @@ class HelperFunctionsTestCase(unittest.TestCase):
             'bnc01_TinkSO_tx_1_ty_1.101-105.tif',
             'file.1-2.tif',
             'file.info.03.rgb',
+            'file01.1-4.j2k',
             'file01_40-43.rgb',
             'file02_44-47.rgb',
             'file1-4.03.rgb',
