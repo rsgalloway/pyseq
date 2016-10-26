@@ -61,7 +61,7 @@ __version__ = "0.5.0"
 
 # default serialization format string
 global_format = '%4l %h%p%t %R'
-default_format = '%h%p%t'
+default_format = '%h%r%t'
 
 # regex for matching numerical characters
 digits_re = re.compile(r'\d+')
@@ -352,11 +352,11 @@ class Sequence(list):
             'e': self.end,
             'f': self.frames,
             'm': self.missing,
-            'M': functools.partial(self._get_framerange, self.missing, missing=True),
+            'M': functools.partial(self._get_framerange, self.missing(), missing=True),
             'd': lambda *x: self.size,
             'p': self._get_padding,
-            'r': functools.partial(self._get_framerange, self.frames, missing=False),
-            'R': functools.partial(self._get_framerange, self.frames, missing=True),
+            'r': functools.partial(self._get_framerange, self.frames(), missing=False),
+            'R': functools.partial(self._get_framerange, self.frames(), missing=True),
             'h': self.head,
             't': self.tail
         }
@@ -710,9 +710,10 @@ class Sequence(list):
         except IndexError:
             return ''
 
-    def _get_framerange(self, input, missing=True):
-        """Returns frame range string, e.g. 1-500.
-
+    def _get_framerange(self, frames, missing=True):
+        """Returns frame range string, e.g. [1-500].
+        
+        :param frames: list of ints like [1,4,8,12,15].
         :param missing: Expand sequence to exclude missing sequence indices.
 
         :return: formatted frame range string.
@@ -720,8 +721,6 @@ class Sequence(list):
         frange = []
         start = ''
         end = ''
-        frames = input()
-
         if not missing:
             if frames:
                 return '%s-%s' % (self.start(), self.end())
