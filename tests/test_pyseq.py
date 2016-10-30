@@ -621,7 +621,7 @@ class LSSTestCase(unittest.TestCase):
     def run_command(self, *args):
         """a simple wrapper for subprocess.Popen
         """
-        process = subprocess.Popen(args, stdout=subprocess.PIPE)
+        process = subprocess.Popen(args, stdout=subprocess.PIPE, universal_newlines=True)
 
         # loop until process finishes and capture stderr output
         stdout_buffer = []
