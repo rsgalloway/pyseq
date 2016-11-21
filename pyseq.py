@@ -1047,7 +1047,7 @@ def get_sequences(source):
     if isinstance(source, list):
         items = sorted(source, key=lambda x: str(x))
 
-    elif isinstance(source, str):
+    elif isinstance(source, basestring):
         if os.path.isdir(source):
             items = sorted(glob(os.path.join(source, '*')))
         else:
