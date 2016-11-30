@@ -621,7 +621,7 @@ class LSSTestCase(unittest.TestCase):
     def run_command(self, *args):
         """a simple wrapper for subprocess.Popen
         """
-        process = subprocess.Popen(args, stdout=subprocess.PIPE)
+        process = subprocess.Popen(args, stdout=subprocess.PIPE, universal_newlines=True)
 
         # loop until process finishes and capture stderr output
         stdout_buffer = []
@@ -641,7 +641,10 @@ class LSSTestCase(unittest.TestCase):
         """
         """
         self.here = os.path.dirname(__file__)
-        self.lss = os.path.realpath(os.path.join(os.path.dirname(self.here), 'lss'))
+        command = 'lss'
+        if os.name == "nt":
+            command = 'lss.bat'
+        self.lss = os.path.realpath(os.path.join(os.path.dirname(self.here), command))
 
     def test_lss_is_working_properly_1(self):
         """testing if the lss command is working properly
