@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # ---------------------------------------------------------------------------------------------
-# Copyright (c) 2011-2016, Ryan Galloway (ryan@rsgalloway.com)
+# Copyright (c) 2011-2017, Ryan Galloway (ryan@rsgalloway.com)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -814,46 +814,25 @@ def diff(f1, f2):
 def uncompress(seq_string, fmt=global_format):
     """Basic uncompression or deserialization of a compressed sequence string.
 
-    For example:
+    For example: ::
 
         >>> seq = uncompress('./tests/files/012_vb_110_v001.%04d.png 1-10', fmt='%h%p%t %r')
         >>> print(seq)
         012_vb_110_v001.1-10.png
         >>> len(seq)
         10
-        >>> seq2 = uncompress('./tests/files/a.%03d.tga 1-3 10 12-14', fmt='%h%p%t %R')
+        >>> seq2 = uncompress('./tests/files/a.%03d.tga [1-3, 10, 12-14]', fmt='%h%p%t %R')
         >>> print(seq2)
         a.1-14.tga
         >>> len(seq2)
         7
-        >>> seq3 = uncompress('a.%03d.tga 1-14 (1-3 10 12-14)', fmt='%h%p%t %r (%R)')
+        >>> seq3 = uncompress('a.%03d.tga 1-14 ([1-3, 10, 12-14])', fmt='%h%p%t %r (%R)')
         >>> print(seq3)
         a.1-14.tga
         >>> len(seq3)
         7
-        >>> seq4 = uncompress('a.%03d.tga 1-14 (1-3 10 12-14)', fmt='%h%p%t %s-%e (%R)')
-        >>> print(seq4)
-        a.1-14.tga
-        >>> seq5 = uncompress('a.%03d.tga 1-14 (1 14)', fmt='%h%p%t %r (%R)')
-        >>> print(seq5)
-        a.1-14.tga
-        >>> len(seq5)
-        2
-        >>> seq6 = uncompress('a.%03d.tga 1-14 (1-14)', fmt='%h%p%t %r (%R)')
-        >>> print(seq6)
-        a.1-14.tga
-        >>> len(seq6)
-        14
-        >>> seq7 = uncompress('a.%03d.tga 1-100000 (1-10 100000)', fmt='%h%p%t %r (%R)')
-        >>> print(seq7)
-        a.1-100000.tga
-        >>> len(seq7)
-        11
-        >>> seq8 = uncompress('a.%03d.tga 1-100 ([10, 20, 40, 50])', fmt='%h%p%t %r (%m)')
-        >>> print(seq8)
-        a.1-100.tga
-        >>> len(seq8)
-        96
+
+    See unit tests for more examples.
 
     :param seq_string: Compressed sequence string.
     :param fmt: Format of sequence string.
