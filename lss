@@ -43,8 +43,12 @@ def tree(source, level, seq_format):
     sequences.
     """
 
-    blue = "\033[94m"
-    endc = "\033[0m"
+    if sys.stdout.isatty():
+        blue = "\033[94m"
+        endc = "\033[0m"
+    else:
+        blue = ""
+        endc = ""
     ends = {}
     done = []
 
@@ -91,6 +95,7 @@ def tree(source, level, seq_format):
                 print "".join([sp, "└── ", seq.format(seq_format)])
             else:
                 print "".join([sp, "├── ", seq.format(seq_format)])
+    print endc
 
 
 def _recur_cb(option, opt_str, value, parser):
