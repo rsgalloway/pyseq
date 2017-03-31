@@ -327,6 +327,8 @@ class Sequence(list):
 
         :return: pyseq.Sequence class instance.
         """
+        # otherwise Sequence consumes the list
+        items = items[::]
         super(Sequence, self).__init__([Item(items.pop(0))])
         self.__missing = []
         self.__dirty = False
@@ -354,6 +356,7 @@ class Sequence(list):
             'm': self.missing,
             'M': functools.partial(self._get_framerange, self.missing(), missing=True),
             'd': lambda *x: self.size,
+            'D': self.directory,
             'p': self._get_padding,
             'r': functools.partial(self._get_framerange, self.frames(), missing=False),
             'R': functools.partial(self._get_framerange, self.frames(), missing=True),
@@ -447,6 +450,8 @@ class Sequence(list):
         +-----------+--------------------------------------+
         | ``%d``    | disk usage                           |
         +-----------+--------------------------------------+
+        | ``%D``    | parent directory                     |
+        +-----------+--------------------------------------+
         | ``%h``    | string preceding sequence number     |
         +-----------+--------------------------------------+
         | ``%t``    | string after the sequence number     |
@@ -467,6 +472,7 @@ class Sequence(list):
             'r': 's',
             'R': 's',
             'd': 's',
+            'D': 's',
             'h': 's',
             't': 's'
         }
@@ -507,6 +513,9 @@ class Sequence(list):
         for i in self:
             tempSize.append(i.size)
         return sum(tempSize)
+
+    def directory(self):
+        return self[0].dirname + os.sep
 
     def length(self):
         """:return: The length of the sequence."""
@@ -840,6 +849,9 @@ def uncompress(seq_string, fmt=global_format):
     :return: :class:`.Sequence` instance.
     """
     dirname = os.path.dirname(seq_string)
+    # remove directory
+    if "%D" in fmt:
+        fmt = fmt.replace("%D", "")
     name = os.path.basename(seq_string)
     log.debug('uncompress: %s' % name)
 
@@ -854,14 +866,14 @@ def uncompress(seq_string, fmt=global_format):
         'R': '\[[\d\s?\-%s?]+\]' % re.escape(range_join),
         'p': '%\d+d',
         'm': '\[.*\]',
-        'f': '\[.*\]'
+        'f': '\[.*\]',
     }
 
     log.debug('fmt in: %s' % fmt)
 
     # escape any re chars in format
     fmt = re.escape(fmt)
-    
+
     # replace \% with % back again
     fmt = fmt.replace('\\%', '%')
 
