@@ -443,7 +443,7 @@ class SequenceTestCase(unittest.TestCase):
         self.assertEqual(os.listdir(out), ["file-000001.jpg", "file-000002.jpg",
             "file-000003.jpg", "file-000004.jpg", "file-000005.jpg"])
 
-    def test_reIndex_copy_padding(self):
+    def test_reIndex_copy_offset(self):
         #Test copy using reIndex with offset
         seq = Sequence(["file-000001.jpg", "file-000002.jpg",
             "file-000003.jpg", "file-000004.jpg", "file-000005.jpg"])
