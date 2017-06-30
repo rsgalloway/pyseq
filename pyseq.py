@@ -667,7 +667,7 @@ class Sequence(list):
                 raise SequenceError("Item (%s) is not a member of this "
                                     "sequence." % item)
 
-    def reIndex(self, offset, padding=None):
+    def reIndex(self, offset=0, padding=None, out_path=None):
         """Renames and reindexes the items in the sequence, e.g. ::
 
             >>> seq.reIndex(offset=100)
@@ -677,6 +677,7 @@ class Sequence(list):
 
         :param offset: the frame offset to apply to each item
         :param padding: change the padding
+        :param out_path: set an output path to copy files to
         """
         if not padding:
             padding = self.format("%p")
@@ -693,17 +694,23 @@ class Sequence(list):
             newFileName = "%s%s%s" % (self.format("%h"), newFrame,
                 self.format("%t"))
             newName = os.path.join(image.dirname, newFileName)
-
+            
+            if out_path is not None and os.path.exists(out_path) is True:
+                newName = os.path.join(os.path.abspath(out_path)
+                    , newFileName)
             try:
                 import shutil
-                shutil.move(oldName, newName)
+                if out_path is not None:
+                    shutil.copy2(oldName, newName)
+                else:
+                    shutil.move(oldName, newName)
+
             except Exception as err:
                 log.error(err)
             else:
                 log.debug('renaming %s %s' % (oldName, newName))
                 self.__dirty = True
                 image.frame = int(newFrame)
-
         else:
             self.frames()
 

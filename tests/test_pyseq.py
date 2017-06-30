@@ -35,6 +35,7 @@ import re
 import random
 import unittest
 import subprocess
+import shutil
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from pyseq import Item, Sequence, diff, uncompress, get_sequences
@@ -183,6 +184,21 @@ class SequenceTestCase(unittest.TestCase):
         """set the test up
         """
         self.files = ['file.0001.jpg', 'file.0002.jpg', 'file.0003.jpg']
+        self.remove = []
+
+    def tearDown(self):
+        """ tear down test files
+        """
+        for rm in self.remove:
+            if os.path.exists(rm) is False:
+                continue
+            func = os.remove
+            if os.path.isdir(rm):
+                func = shutil.rmtree
+            try:
+                func(rm)
+            except Exception as e:
+                print "Error removing {}: {} ".format(rm,e)
 
     def test_from_list(self):
         """testing if Sequence instance can be initialized with a list of file
@@ -414,6 +430,32 @@ class SequenceTestCase(unittest.TestCase):
             missing.pop(-1)
         self.assertEqual(seq._get_missing(), missing)
 
+    def test_reIndex_copy(self):
+        #Test copy using reIndex workings and clean up
+        seq = Sequence(["file-000001.jpg", "file-000002.jpg",
+            "file-000003.jpg", "file-000004.jpg", "file-000005.jpg"])
+        out = os.path.join("../","out", "test")
+        self.remove.append(out)    
+        if os.path.exists(out) is False:
+            os.mkdir(out)
+        seq.reIndex(out_path=out)
+    
+        self.assertEqual(os.listdir(out), ["file-000001.jpg", "file-000002.jpg",
+            "file-000003.jpg", "file-000004.jpg", "file-000005.jpg"])
+
+    def test_reIndex_copy_padding(self):
+        #Test copy using reIndex with offset
+        seq = Sequence(["file-000001.jpg", "file-000002.jpg",
+            "file-000003.jpg", "file-000004.jpg", "file-000005.jpg"])
+        out = os.path.join("../", "out", "test")
+        self.remove.append(out)
+        if os.path.exists(out) is  False:
+            os.mkdir(out)
+        seq.reIndex(offset=10,out_path=out)
+
+        self.assertEqual(os.listdir(out), ["file-000011.jpg", "file-000012.jpg",
+            "file-000013.jpg", "file-000014.jpg", "file-000015.jpg"])
+
 class HelperFunctionsTestCase(unittest.TestCase):
     """tests the helper functions like
     pyseq.diff()
@@ -573,6 +615,7 @@ class HelperFunctionsTestCase(unittest.TestCase):
             'bnc01_TinkSO_tx_0_ty_1.101-105.tif',
             'bnc01_TinkSO_tx_1_ty_0.101-105.tif',
             'bnc01_TinkSO_tx_1_ty_1.101-105.tif',
+            'file-1-5.jpg',
             'file.1-2.tif',
             'file.info.03.rgb',
             'file01.1-4.j2k',
@@ -673,6 +716,7 @@ class LSSTestCase(unittest.TestCase):
    5 bnc01_TinkSO_tx_0_ty_1.%04d.tif [101-105]
    5 bnc01_TinkSO_tx_1_ty_0.%04d.tif [101-105]
    5 bnc01_TinkSO_tx_1_ty_1.%04d.tif [101-105]
+   5 file-%06d.jpg [1-5]
    2 file.%02d.tif [1-2]
    1 file.info.03.rgb 
    3 file01.%03d.j2k [1-2, 4]
