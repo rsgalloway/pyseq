@@ -1169,6 +1169,8 @@ def walk(source, level=-1, topdown=True, onerror=None, followlinks=False, hidden
             files = [f for f in files if not f[0] == '.']
             dirs[:] = [d for d in dirs if not d[0] == '.']
 
+        files = [os.path.join(root, f) for f in files]
+
         if topdown is True:
             parts = root.replace(source, "").split(os.sep)
             while "" in parts:
