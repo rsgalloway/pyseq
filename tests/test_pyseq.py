@@ -526,19 +526,20 @@ class HelperFunctionsTestCase(unittest.TestCase):
         )
 
     def test_uncompress_is_working_properly_7(self):
-        """testing if uncompress is working properly
+        """testing if uncompress is working properly,
+        the frame 100000 does not fit inside the pad length
         """
         seq7 = uncompress(
             'a.%03d.tga 1-100000 ([1-10, 100000])',
             fmt='%h%p%t %r (%R)'
         )
         self.assertEqual(
-            'a.1-100000.tga',
+            'a.1-10.tga',
             str(seq7)
         )
 
         self.assertEqual(
-            11,
+            10,
             len(seq7)
         )
 

@@ -57,7 +57,7 @@ from glob import glob
 from glob import iglob
 from datetime import datetime
 
-__version__ = "0.5.0"
+__version__ = "0.5.1"
 
 # default serialization format string
 global_format = '%4l %h%p%t %R'
@@ -809,7 +809,9 @@ def diff(f1, f2):
         for i in range(0, len(l1)):
             m1 = l1.pop(0)
             m2 = l2.pop(0)
-            if m1.start() == m2.start() and m1.group() != m2.group():
+            if (m1.start() == m2.start()) and \
+               (m1.group() != m2.group()) and \
+               (len(m1.group()) == len(m2.group())):
                 d.append({
                     'start': m1.start(),
                     'end': m1.end(),
