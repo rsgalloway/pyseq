@@ -63,6 +63,10 @@ __version__ = "0.5.1"
 global_format = '%4l %h%p%t %R'
 default_format = '%h%r%t'
 
+# use strict padding on sequences (pad length must match)
+# https://github.com/rsgalloway/pyseq/issues/41
+strict_pad = True
+
 # regex for matching numerical characters
 digits_re = re.compile(r'\d+')
 
@@ -809,9 +813,9 @@ def diff(f1, f2):
         for i in range(0, len(l1)):
             m1 = l1.pop(0)
             m2 = l2.pop(0)
-            if (m1.start() == m2.start()) and \
-               (m1.group() != m2.group()) and \
-               (len(m1.group()) == len(m2.group())):
+            if (m1.start() == m2.start()) and (m1.group() != m2.group()):
+                if strict_pad is True and (len(m1.group()) != len(m2.group())):
+                    continue
                 d.append({
                     'start': m1.start(),
                     'end': m1.end(),
