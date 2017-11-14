@@ -55,7 +55,9 @@ import warnings
 import functools
 from glob import glob
 from glob import iglob
+from itertools import groupby
 from datetime import datetime
+from operator import itemgetter
 
 __version__ = "0.5.0"
 
@@ -728,8 +730,6 @@ class Sequence(list):
         :return: formatted frame range string.
         """
         frange = []
-        start = ''
-        end = ''
         if not missing:
             if frames:
                 return '%s-%s' % (self.start(), self.end())
@@ -739,23 +739,13 @@ class Sequence(list):
         if not frames:
             return ''
 
-        for i in range(0, len(frames)):
-            frame = frames[i]
-            if i != 0 and frame != frames[i - 1] + 1:
-                if start != end:
-                    frange.append('%s-%s' % (str(start), str(end)))
-                elif start == end:
-                    frange.append(str(start))
-                start = end = frame
-                continue
-            if start is '' or int(start) > frame:
-                start = frame
-            if end is '' or int(end) < frame:
-                end = frame
-        if start == end:
-            frange.append(str(start))
-        else:
-            frange.append('%s-%s' % (str(start), str(end)))
+        for _, group in groupby(enumerate(frames), lambda (a, b): a - b):
+            group = map(itemgetter(1), group)
+            if len(group) > 1:
+                frange.append("%d-%d" % (group[0], group[-1]))
+            else:
+                frange.append(str(group[0]))
+
         return "[%s]" % range_join.join(frange)
 
     def _get_frames(self):
