@@ -128,6 +128,14 @@ def _ext_key(x):
     return [ext] + _natural_key(name)
 
 
+def _get_format_framerange(range_func, frames_func, missing):
+    """ This function is used to call Sequence._get_framerange without needing
+    to any other functions within Sequence.__attrs__.  It delays calling any
+    functions until the frame range is actually requested
+    """
+    return range_func(frames_func(), missing)
+
+
 def natural_sort(items):
     return sorted(items, key=_natural_key)
 
@@ -356,12 +364,18 @@ class Sequence(list):
             'e': self.end,
             'f': self.frames,
             'm': self.missing,
-            'M': functools.partial(self._get_framerange, self.missing(), missing=True),
+            'M': functools.partial(
+                _get_format_framerange, self._get_framerange,
+                self.missing, True),
             'd': lambda *x: self.size,
             'D': self.directory,
             'p': self._get_padding,
-            'r': functools.partial(self._get_framerange, self.frames(), missing=False),
-            'R': functools.partial(self._get_framerange, self.frames(), missing=True),
+            'r': functools.partial(
+                _get_format_framerange, self._get_framerange,
+                self.frames, False),
+            'R': functools.partial(
+                _get_format_framerange, self._get_framerange,
+                self.frames, True),
             'h': self.head,
             't': self.tail
         }
