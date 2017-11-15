@@ -955,31 +955,28 @@ def uncompress(seq_string, fmt=global_format):
     except IndexError:
         pass
 
-    items = []
-    if missing:
-        for i in range(int(s), int(e) + 1):
-            if i in missing:
-                continue
-            f = pad % i
-            name = '%s%s%s' % (
-                match.groupdict().get('h', ''), f, 
-                match.groupdict().get('t', '')
-            )
-            items.append(Item(os.path.join(dirname, name)))
+    seq = None
+    while len(missing) > 0:
+        m = missing.pop(0)
+        try:
+            frames.remove(m)
+        except IndexError:
+            pass
 
-    else:
-        for i in frames:
-            f = pad % i
-            name = '%s%s%s' % (
-                match.groupdict().get('h', ''), f, 
-                match.groupdict().get('t', '')
+    grp_dict = match.groupdict()
+    for i in frames:
+        name = "%s%s%s" % (
+            grp_dict.get("h", ""),
+            pad % i,
+            grp_dict.get("t", "")
             )
-            items.append(Item(os.path.join(dirname, name)))
+        item = Item(os.path.join(dirname, name))
+        if seq is None:
+            seq = Sequence([item])
+        else:
+            seq.append(item)
 
-    seqs = get_sequences(items)
-    if seqs:
-        return seqs[0]
-    return seqs
+    return seq or []
 
 
 @deprecated
