@@ -852,12 +852,20 @@ def uncompress(seq_string, fmt=global_format):
 
     :return: :class:`.Sequence` instance.
     """
-    dirname = os.path.dirname(seq_string)
+    dirname, name = os.path.split(seq_string)
     # remove directory
-    if "%D" in fmt:
-        fmt = fmt.replace("%D", "")
-    name = os.path.basename(seq_string)
+    fmt = fmt.replace("%D", "")
     log.debug('uncompress: %s' % name)
+
+    log.debug('fmt in: %s' % fmt)
+
+    # escape any re chars in format
+    fmt = re.escape(fmt)
+
+    # replace \% with % back again
+    fmt = fmt.replace('\\%', '%')
+
+    log.debug('fmt escaped: %s' % fmt)
 
     # map of directives to regex
     remap = {
@@ -873,21 +881,12 @@ def uncompress(seq_string, fmt=global_format):
         'f': '\[.*\]',
     }
 
-    log.debug('fmt in: %s' % fmt)
-
-    # escape any re chars in format
-    fmt = re.escape(fmt)
-
-    # replace \% with % back again
-    fmt = fmt.replace('\\%', '%')
-
-    log.debug('fmt escaped: %s' % fmt)
-
     for m in format_re.finditer(fmt):
-        _old = '%%%s%s' % (m.group('pad') or '', m.group('var'))
+        pad, var = m.groups()
+        _old = '%%%s%s' % (pad or '', var)
         _new = '(?P<%s>%s)' % (
-            m.group('var'),
-            remap.get(m.group('var'), '\w+')
+            var,
+            remap.get(var, '\w+')
         )
         fmt = fmt.replace(_old, _new)
 
@@ -896,16 +895,16 @@ def uncompress(seq_string, fmt=global_format):
     regex = re.compile(fmt)
     match = regex.match(name)
 
+    if not match:
+        log.debug('No matches.')
+        return
+
     log.debug("match: %s" % match.groupdict() if match else "")
 
     frames = []
     missing = []
     s = None
     e = None
-
-    if not match:
-        log.debug('No matches.')
-        return
 
     try:
         pad = match.group('p')
@@ -915,33 +914,34 @@ def uncompress(seq_string, fmt=global_format):
 
     try:
         R = match.group('R')
-        R = R[1:-1]
-        number_groups = R.split(range_join)
-        pad_len = 0
-        for number_group in number_groups:
-            if '-' in number_group:
-                splits = number_group.split('-')
-                pad_len = max(pad_len, len(splits[0]), len(splits[1]))
-                start = int(splits[0])
-                end = int(splits[1])
-                frames.extend(range(start, end + 1))
-
-            else:
-                end = int(number_group)
-                pad_len = max(pad_len, len(number_group))
-                frames.append(end)
-        if pad == "%d" and pad_len != 0:
-            pad = "%0" + str(pad_len) + "d"
 
     except IndexError:
         try:
             r = match.group('r')
             s, e = r.split('-')
-            frames = range(int(s), int(e) + 1)
 
         except IndexError:
             s = match.group('s')
             e = match.group('e')
+
+        frames = range(int(s), int(e) + 1)
+
+    else:
+        R = R[1:-1]
+        number_groups = R.split(range_join)
+        pad_len = 0
+        for number_group in number_groups:
+            spl = number_group.split("-")
+            pad_len = max(*map(len, spl) + [pad_len])
+            start = int(spl.pop(0))
+            try:
+                end = int(spl.pop(0))
+            except IndexError:
+                end = start
+            frames.extend(range(start, end + 1))
+
+        if pad == "%d" and pad_len != 0:
+            pad = "%0" + str(pad_len) + "d"
 
     try:
         frames = eval(match.group('f'))
@@ -955,7 +955,18 @@ def uncompress(seq_string, fmt=global_format):
     except IndexError:
         pass
 
-    seq = None
+    try:
+        head = match.group("h")
+
+    except IndexError:
+        head = ""
+
+    try:
+        tail = match.group("t")
+
+    except IndexError:
+        tail = ""
+
     while len(missing) > 0:
         m = missing.pop(0)
         try:
@@ -963,12 +974,12 @@ def uncompress(seq_string, fmt=global_format):
         except IndexError:
             pass
 
-    grp_dict = match.groupdict()
+    seq = None
     for i in frames:
         name = "%s%s%s" % (
-            grp_dict.get("h", ""),
+            head,
             pad % i,
-            grp_dict.get("t", "")
+            tail
             )
         item = Item(os.path.join(dirname, name))
         if seq is None:
