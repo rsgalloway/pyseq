@@ -36,8 +36,8 @@ import random
 import unittest
 import subprocess
 import sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from pyseq import Item, Sequence, diff, uncompress, get_sequences
+sys.path.insert(0,os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from pyseq import FrameRange, Item, Sequence, diff, uncompress, get_sequences
 from pyseq import SequenceError
 import pyseq
 pyseq.default_format = '%h%r%t'
@@ -173,6 +173,97 @@ class ItemTestCase(unittest.TestCase):
 
         self.assertTrue(item1.is_sibling(item2))
         self.assertTrue(item2.is_sibling(item1))
+
+
+class FrameRangeTestCase(unittest.TestCase):
+    """test the FrameRange object
+    """
+
+    def setUp(self):
+        self.testString = "1001-1019x2,20"
+        self.testStringBlock = "1001-1019x2,2001-2019x2"
+        self.testStringIntersect = "1002-1020x2,990-1030x4"
+        self.testStringComplicated = "5-15x5,3-15x3,10-100x10,12,13"
+        self.testStringLong = "10001-20001x2"
+
+    def test_string_decoding(self):
+        frameRange = FrameRange(self.testString)
+        self.assertEqual(
+            frameRange,
+            [20,1001,1003,1005,1007,1009,1011,1013,1015,1017,1019]
+        )
+
+    def test_string_return(self):
+        frameRange = FrameRange(self.testString)
+        self.assertEqual(
+            str(frameRange),"20,1001-1019x2")
+
+
+    def test_string_decoding_intersection(self):
+        frameRange = FrameRange(self.testStringIntersect)
+        self.assertEqual(
+            frameRange,
+            [990,994,998,1002,1004,1006,1008,1010,1012,1014,1016,1018,1020,1022,1026,1030]
+        )
+
+    def test_string_return_intersection(self):
+        frameRange = FrameRange(self.testStringIntersect)
+        self.assertEqual(
+            str(frameRange),"990-1002x4,1004-1022x2,1026-1030x4")
+
+
+    def test_string_return_block(self):
+        frameRange = FrameRange(self.testStringBlock)
+        self.assertEqual(
+            str(frameRange),"1001-1019x2,2001-2019x2")
+
+
+    def test_string_decoding_complex(self):
+        frameRange = FrameRange(self.testStringComplicated)
+        self.assertEqual(
+            frameRange,
+            [3, 5, 6, 9, 10, 12, 13, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+        )
+
+    def test_string_return_complex(self):
+        frameRange = FrameRange(self.testStringComplicated)
+        self.assertEqual(
+            str(frameRange),
+            "3,5,6,9,10,12,13,15,20-100x10"
+        )
+
+    def test_string_decoding_long(self):
+        frameRange = FrameRange(self.testStringLong)
+        result = list(range(10001,20002,2)) # range leaves the last item out even if it matches the stepping..
+        self.assertEqual(
+            frameRange,
+            result
+        )
+
+    # this is a bummer it takes about one sec on my machine... so my sorting code is slow
+    # it takes too long to get through 5000 frames
+    def test_string_return_long(self):
+        frameRange = FrameRange(self.testStringLong)
+        self.assertEqual(
+            str(frameRange),
+            "10001-20001x2"
+        )
+
+
+    def test_start(self):
+        frameRange = FrameRange(self.testStringComplicated)
+        self.assertEqual(
+            frameRange.start,
+            3
+        )
+
+    def test_end(self):
+        frameRange = FrameRange(self.testStringComplicated)
+        self.assertEqual(
+            frameRange.end,
+            100
+        )
+
 
 
 class SequenceTestCase(unittest.TestCase):

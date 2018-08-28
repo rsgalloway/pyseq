@@ -159,6 +159,215 @@ def deprecated(func):
     return inner
 
 
+class FrameRange(list):
+    """ frameRange object a simple list that supports string formatting
+        can either be constructed from a string like '1001-1010x2,1020-1035x5'
+        or a list of ints
+        is set like and does not contain duplicates is always sorted
+    """
+    refullSyntax = re.compile("^([0-9]+)(?:\-)?([0-9]+)?(?:x)?([0-9]+)?")
+
+    def __init__(self, input=[]):
+        super(FrameRange, self).__init__()
+        if not isinstance(input, list):  # lets stuff all into a list so this is easier code wise
+            self.append(input)
+        if isinstance(input, list):
+            self.extend(input)
+
+    def __str__(self):
+        x = self._stepDict_to_string(self._frames_to_stepDict())\
+            #, self._stepDict_to_string(
+            #self._frames_to_stepDict(self._get_missing()))
+        return "%s" % x# missing %s" % x
+
+    @property
+    def start(self):
+        if self:
+            return self[0]
+        return None
+
+    @property
+    def end(self):
+        if self:
+            return self[-1]
+        return None
+
+    def append(self, frame):
+        if isinstance(frame, int):
+            if not frame in self:
+                super(FrameRange, self).append(frame)
+
+        elif isinstance(frame, str):
+            frames = self.frames_from_string(frame)
+            for frame in frames:
+                if not frame in self:
+                    super(FrameRange, self).append(frame)
+        self.sort()
+        # report back that only ints are supported
+
+    def extend(self, frames):
+        '''
+
+        :param frames:
+        '''
+        for frame in frames:
+            self.append(frame)
+
+    def insert(self, index, frame):
+        '''
+        it is questionable how useful this is or we should just lock it up
+        as the object is of set like nature though in a list...
+        :param index:
+        :param frame:
+        '''
+        self.append(frame)
+
+    def frames_from_string(self, input):
+        '''
+        wrapper to extract a list of ints from strings
+        does string cleanup then iterates
+
+        :param input:
+        '''
+        frames = []
+        input = self._clean_string(input)
+        for f in input.split(","):
+            frames += self._frames_from_string(f)
+        return frames
+
+    def _clean_string(self, input):
+        # re sub all out that should not be in there
+        # basically this is only [0-9]x\-\, the rest needs to be gone
+        return input.replace(" ", "")
+
+    def _frames_from_string(self, input):
+        '''
+
+        :param input:
+        '''
+        x = re.search(self.refullSyntax, input)
+        frames = []
+        if x:
+            first, last, step = x.groups()
+            if first and last and step:
+                frames = range(int(first), int(last), int(step))
+                if not int(last) in frames:
+                    frames.append(int(last))
+            elif first and last and not step:
+                frames = range(int(first), int(last))
+                if not int(last) in frames:
+                    frames.append(int(last))
+            elif first and not last and not step:
+                frames = [int(first)]
+        return frames
+
+    def _framesTest(self, frames):
+        if not frames:
+            frames = self
+        res = dict()
+        for e, frame in enumerate(frames):
+            try:
+                next = frames[e + 1]
+            except IndexError:
+                next = 0
+
+    def _frames_to_stepDict(self, frames=None):
+        if not frames:
+            frames = self
+        res = dict()
+        oldDiff = None
+        oldPrevDiff = None
+        for e, frame in enumerate(frames):
+            blockStart = None
+            try:
+                next = frames[e + 1]
+            except IndexError:
+                next = 0
+
+            try:
+                prev = frames[e - 1]
+            except IndexError:
+                prev = 0
+
+            diff = next - frame
+            newDiff = (next - frame)  # * 1000
+            prevDiff = frame - prev
+            if diff < 0:
+                diff =prevDiff
+            if oldPrevDiff:
+                if diff != oldDiff and diff != oldPrevDiff and not oldPrevDiff == oldDiff:
+                    newDiff = diff
+                elif diff == oldDiff:
+                    newDiff = diff
+                elif oldPrevDiff == oldDiff:
+                    newDiff = oldDiff
+                if (diff == oldPrevDiff and diff != oldDiff and oldPrevDiff != oldDiff):
+                    blockStart = frame
+                    #print "block %s" % frame
+
+            if not newDiff in res:
+                res[newDiff] = {"frames": [frame], "end": []}
+            else:
+                if not frame in res[newDiff]["frames"]:
+                    res[newDiff]["frames"].append(frame)
+                    if blockStart:
+                        res[newDiff]["end"].append(frames[e - 1])
+            oldDiff = diff
+            oldPrevDiff = prevDiff
+
+        #print res
+        return res
+
+    def _stepDict_to_string(self, input):
+        ret = dict()
+        for key in input.keys():
+            frames = input[key]["frames"]
+            newDict = self._frames_to_stepDict(frames)
+            for mult in newDict.keys():
+                newFrames = newDict[mult]["frames"]
+                newEnd = newDict[mult]["end"]
+                newEnd.append(newFrames[-1])
+                oldIndex = 0
+                for e, end in enumerate(newEnd):
+                    index = newFrames.index(end)
+                    if len(newFrames) == 1:
+                        ret[newFrames[0]] = ("%s" % newFrames[0])
+                        continue
+                    if len(newFrames) == 2:
+                        ret[newFrames[0]] = ("%s" % newFrames[0])
+                        ret[newFrames[1]] = ("%s" % newFrames[1])
+                        continue
+                    if e == 0:
+                        if mult == 1:
+                            ret[newFrames[0]] = ("%s-%s" % (newFrames[0], newFrames[index]))
+                        else:
+                            ret[newFrames[0]] = ("%s-%sx%s" % (newFrames[0], newFrames[index], mult))
+                    else:
+                        if mult == 1:
+                            ret[newFrames[oldIndex + 1]] = ("%s-%s" % (newFrames[oldIndex + 1], newFrames[index]))
+                        else:
+                            ret[newFrames[oldIndex + 1]] = (
+                                        "%s-%sx%s" % (newFrames[oldIndex + 1], newFrames[index], mult))
+                    oldIndex = index
+        temp = []
+        for o in sorted(ret.keys()):
+            temp.append(ret[o])
+        return ",".join(temp)
+
+    def _get_missing(self):
+        """Looks for missing sequence indexes in sequence
+        .. todo:: change this to:
+            r = range(frames[0], frames[-1] + 1)
+            return sorted(list(set(frames).symmetric_difference(r)))
+        """
+        missing = []
+        frames = self
+        if len(frames) == 0:
+            return missing
+
+        r = range(frames[0], frames[-1] + 1)
+        return sorted(list(set(frames).symmetric_difference(r)))
+
 class Item(str):
     """Sequence member file class
 
@@ -765,7 +974,7 @@ class Sequence(list):
     def _get_frames(self):
         """finds the sequence indexes from item names
         """
-        return [f.frame for f in self if f.frame is not None]
+        return FrameRange([f.frame for f in self if f.frame is not None])
 
     def _get_missing(self):
         """Looks for missing sequence indexes in sequence
