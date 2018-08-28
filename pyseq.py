@@ -175,10 +175,11 @@ class FrameRange(list):
             self.extend(input)
 
     def __str__(self):
-        x = self._stepDict_to_string(self._frames_to_stepDict())\
-            #, self._stepDict_to_string(
-            #self._frames_to_stepDict(self._get_missing()))
-        return "%s" % x# missing %s" % x
+        return self._stepDict_to_string(self._frames_to_stepDict())
+
+    @property
+    def missing(self):
+        return self._stepDict_to_string(self._frames_to_stepDict(self._get_missing()))
 
     @property
     def start(self):
@@ -341,12 +342,22 @@ class FrameRange(list):
                         if mult == 1:
                             ret[newFrames[0]] = ("%s-%s" % (newFrames[0], newFrames[index]))
                         else:
-                            ret[newFrames[0]] = ("%s-%sx%s" % (newFrames[0], newFrames[index], mult))
+                            if newFrames[0] + mult == newFrames[index]:
+                                #if we have only have two frames with the difference of the stepping we want the frames to be solo
+                                ret[newFrames[0]] = ("%s" % newFrames[0])
+                                ret[newFrames[index]] = ("%s" % newFrames[index])
+                            else:
+                                ret[newFrames[0]] = ("%s-%sx%s" % (newFrames[0], newFrames[index], mult))
                     else:
                         if mult == 1:
                             ret[newFrames[oldIndex + 1]] = ("%s-%s" % (newFrames[oldIndex + 1], newFrames[index]))
                         else:
-                            ret[newFrames[oldIndex + 1]] = (
+                            if newFrames[oldIndex + 1] + mult == newFrames[index]:
+                                #if we have only have two frames with the difference of the stepping we want the frames to be solo
+                                ret[newFrames[oldIndex + 1]] = ("%s" % newFrames[oldIndex + 1])
+                                ret[newFrames[index]] = ("%s" % newFrames[index])
+                            else:
+                                ret[newFrames[oldIndex + 1]] = (
                                         "%s-%sx%s" % (newFrames[oldIndex + 1], newFrames[index], mult))
                     oldIndex = index
         temp = []
@@ -574,7 +585,9 @@ class Sequence(list):
             'r': functools.partial(self._get_framerange, self.frames(), missing=False),
             'R': functools.partial(self._get_framerange, self.frames(), missing=True),
             'h': self.head,
-            't': self.tail
+            't': self.tail,
+            'x': str(self._get_frames()),
+            'X': str(self._get_frames().missing)
         }
 
     def __str__(self):
@@ -669,6 +682,10 @@ class Sequence(list):
         +-----------+--------------------------------------+
         | ``%t``    | string after the sequence number     |
         +-----------+--------------------------------------+
+        | ``%x``    | frames with stepping, 1001-1019x2    |
+        +-----------+--------------------------------------+
+        | ``%X``    | missing with stepping, 1001-1019x2   |
+        +-----------+--------------------------------------+
 
         :param fmt: Format string. Default is '%4l %h%p%t %R'.
 
@@ -687,7 +704,9 @@ class Sequence(list):
             'd': 's',
             'D': 's',
             'h': 's',
-            't': 's'
+            't': 's',
+            'x': 's',
+            'X': 's',
         }
 
         atts = self.__attrs__()

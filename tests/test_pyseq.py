@@ -185,6 +185,8 @@ class FrameRangeTestCase(unittest.TestCase):
         self.testStringIntersect = "1002-1020x2,990-1030x4"
         self.testStringComplicated = "5-15x5,3-15x3,10-100x10,12,13"
         self.testStringLong = "10001-20001x2"
+        self.testStringShort = "1001-1003x2"
+        self.testStringNormal = "1001-1500"
 
     def test_string_decoding(self):
         frameRange = FrameRange(self.testString)
@@ -209,7 +211,13 @@ class FrameRangeTestCase(unittest.TestCase):
     def test_string_return_intersection(self):
         frameRange = FrameRange(self.testStringIntersect)
         self.assertEqual(
-            str(frameRange),"990-1002x4,1004-1022x2,1026-1030x4")
+            str(frameRange),"990-1002x4,1004-1022x2,1026,1030")
+
+
+    def test_string_decoding_block(self):
+        frameRange = FrameRange(self.testStringBlock)
+        self.assertEqual(
+            frameRange,range(1001,1020,2)+range(2001,2020,2))#again the last frame from range is 1019 and 2019...
 
 
     def test_string_return_block(self):
@@ -249,6 +257,33 @@ class FrameRangeTestCase(unittest.TestCase):
             "10001-20001x2"
         )
 
+    def test_string_decoding_short(self):
+        frameRange = FrameRange(self.testStringShort)
+        self.assertEqual(
+            frameRange,
+            [1001,1003]
+        )
+
+    def test_string_return_short(self):
+        frameRange = FrameRange(self.testStringShort)
+        self.assertEqual(
+            str(frameRange),
+            "1001,1003"
+        )
+
+    def test_string_decoding_normal(self):
+        frameRange = FrameRange(self.testStringNormal)
+        self.assertEqual(
+            frameRange,
+            range(1001,1501)
+        )
+
+    def test_string_return_normal(self):
+        frameRange = FrameRange(self.testStringNormal)
+        self.assertEqual(
+            str(frameRange),
+            "1001-1500"
+        )
 
     def test_start(self):
         frameRange = FrameRange(self.testStringComplicated)
@@ -274,6 +309,9 @@ class SequenceTestCase(unittest.TestCase):
         """set the test up
         """
         self.files = ['file.0001.jpg', 'file.0002.jpg', 'file.0003.jpg']
+        self.filesXSyntax = list()
+        for i in range(1001,1220,2):
+            self.filesXSyntax.append('file.%04d.jpg' % i)
 
     def test_from_list(self):
         """testing if Sequence instance can be initialized with a list of file
@@ -458,6 +496,26 @@ class SequenceTestCase(unittest.TestCase):
         self.assertEqual(
             seq.format('%h%p%t %r (missing %M)'),
             'file.%04d.jpg 1-10 (missing [4-5, 7-9])'
+        )
+
+    def test_format_is_working_properly_4(self):
+        """testing if format is working properly
+        """
+        seq = Sequence(self.filesXSyntax)
+        self.assertEqual(
+            seq.format('%h%p%t %x (missing %X)'),
+            'file.%04d.jpg 1001-1219x2 (missing 1002-1218x2)'
+        )
+
+    def test_format_is_working_properly_5(self):
+        """testing if format is working properly
+        """
+        seq = Sequence(self.filesXSyntax)
+        seq.append('file.0006.jpg')
+        seq.append('file.0010.jpg')
+        self.assertEqual(
+            seq.format('%h%p%t %x (missing %X)'),
+            'file.%04d.jpg 6,10,1001-1219x2 (missing 7-9,11-1000,1002-1218x2)'
         )
 
     def test_format_directory_attribute(self):
