@@ -174,7 +174,10 @@ class Item(str):
             self.__path = os.path.abspath(str(item))
         self.__dirname, self.__filename = os.path.split(self.__path)
         self.__digits = digits_re.findall(self.name)
-        self.__number = int(self.__digits[-1])
+        if self.__digits:
+            self.__number = int(self.__digits[-1])
+        else:
+            self.__number = None
         self.__parts = digits_re.split(self.name)
         self.__stat = None
 
