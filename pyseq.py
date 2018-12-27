@@ -870,7 +870,7 @@ def uncompress(seq_string, fmt=global_format):
         't': '(\S+)?',
         'r': '\d+-\d+',
         'R': '\[[\d\s?\-%s?]+\]' % re.escape(range_join),
-        'p': '%\d+d',
+        'p': '%\d*d',
         'm': '\[.*\]',
         'f': '\[.*\]',
     }
