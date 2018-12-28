@@ -369,6 +369,16 @@ class SequenceTestCase(unittest.TestCase):
             'file.%04d.jpg 1-10 (missing [4-5, 7-9])'
         )
 
+    def test_format_is_working_properly_4(self):
+        """testing if format is working properly
+        """
+        seq = Sequence(self.files)
+        seq.append('file.0006.jpg')
+        self.assertEqual(
+            seq.format('%h%s%t'),
+            'file.1.jpg'
+        )
+
     def test_format_directory_attribute(self):
         dir_name = os.path.dirname(
             os.path.abspath(self.files[0])) + os.sep
