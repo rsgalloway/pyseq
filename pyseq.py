@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # ---------------------------------------------------------------------------------------------
-# Copyright (c) 2011-2017, Ryan Galloway (ryan@rsgalloway.com)
+# Copyright (c) 2011-2018, Ryan Galloway (ryangalloway.com)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -1152,7 +1152,8 @@ def iget_sequences(source):
     log.debug("time: %s", datetime.now() - start)
 
 
-def walk(source, level=-1, topdown=True, onerror=None, followlinks=False, hidden=False):
+def walk(source, level=-1, topdown=True, onerror=None, followlinks=False,
+         hidden=False):
     """Generator that traverses a directory structure starting at
     source looking for sequences.
 

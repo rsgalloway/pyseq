@@ -2,6 +2,9 @@
 *.swp
 *~
 .DS_Store
+.vscode
+pyseq.egg-info/
 dist
 build
+_build
 MANIFEST
