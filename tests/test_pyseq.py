@@ -572,6 +572,20 @@ class HelperFunctionsTestCase(unittest.TestCase):
             len(seq8)
         )
 
+    def test_uncompress_is_working_properly_9(self):
+        """testing if uncompress is working properly
+        """
+        seq = uncompress(
+            './tests/files/012_vb_110_v001.%d.png 1-9',
+            fmt='%h%p%t %r'
+        )
+        self.assertEqual(
+            '012_vb_110_v001.1-9.png',
+            str(seq)
+        )
+
+        self.assertEqual(9, len(seq))
+
     def test_get_sequences_is_working_properly_1(self):
         """testing if get_sequences is working properly
         """
