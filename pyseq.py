@@ -489,8 +489,8 @@ class Sequence(list):
                 fmt_char = format_char_types[var]
             except KeyError as err:
                 raise FormatError("Bad directive: %%%s" % var)
-            _old = '%s%s' % (pad or '', var)
-            _new = '(%s)%s%s' % (var, pad or '', fmt_char)
+            _old = '%%%s%s' % (pad or '', var)
+            _new = '%%(%s)%s%s' % (var, pad or '', fmt_char)
             fmt = fmt.replace(_old, _new)
             val = atts[var]
             # only execute the callable once, just in case
