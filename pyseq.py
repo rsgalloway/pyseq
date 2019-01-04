@@ -57,7 +57,7 @@ from glob import glob
 from glob import iglob
 from datetime import datetime
 
-__version__ = "0.5.1"
+__version__ = "1.0.0"
 
 # default serialization format string
 global_format = '%4l %h%p%t %R'
@@ -704,7 +704,6 @@ class Sequence(list):
             except Exception as err:
                 log.error(err)
             else:
-                log.debug('renaming %s %s' % (oldName, newName))
                 self.__dirty = True
                 image.frame = int(newFrame)
 
@@ -799,7 +798,6 @@ def diff(f1, f2):
 
     :return: Dictionary with keys: frames, start, end.
     """
-    log.debug('diff: %s %s' % (f1, f2))
     if not type(f1) == Item:
         f1 = Item(f1)
     if not type(f2) == Item:
@@ -822,7 +820,6 @@ def diff(f1, f2):
                     'frames': (m1.group(), m2.group())
                 })
 
-    log.debug(d)
     return d
 
 
@@ -859,7 +856,6 @@ def uncompress(seq_string, fmt=global_format):
     if "%D" in fmt:
         fmt = fmt.replace("%D", "")
     name = os.path.basename(seq_string)
-    log.debug('uncompress: %s' % name)
 
     # map of directives to regex
     remap = {
@@ -875,15 +871,11 @@ def uncompress(seq_string, fmt=global_format):
         'f': '\[.*\]',
     }
 
-    log.debug('fmt in: %s' % fmt)
-
     # escape any re chars in format
     fmt = re.escape(fmt)
 
     # replace \% with % back again
     fmt = fmt.replace('\\%', '%')
-
-    log.debug('fmt escaped: %s' % fmt)
 
     for m in format_re.finditer(fmt):
         _old = '%%%s%s' % (m.group('pad') or '', m.group('var'))
@@ -893,12 +885,8 @@ def uncompress(seq_string, fmt=global_format):
         )
         fmt = fmt.replace(_old, _new)
 
-    log.debug('fmt: %s' % fmt)
-
     regex = re.compile(fmt)
     match = regex.match(name)
-
-    log.debug("match: %s" % match.groupdict() if match else "")
 
     frames = []
     missing = []
@@ -906,7 +894,6 @@ def uncompress(seq_string, fmt=global_format):
     e = None
 
     if not match:
-        log.debug('No matches.')
         return
 
     try:
@@ -1053,8 +1040,6 @@ def get_sequences(source):
     else:
         raise TypeError('Unsupported format for source argument')
 
-    log.debug('Found %s files' % len(items))
-
     # organize the items into sequences
     while items:
         item = Item(items.pop(0))
@@ -1067,8 +1052,6 @@ def get_sequences(source):
         if not found:
             seq = Sequence([item])
             seqs.append(seq)
-
-    log.debug('time: %s' % (datetime.now() - start))
 
     return list(seqs)
 
@@ -1134,7 +1117,6 @@ def iget_sequences(source):
         raise TypeError("Unsupported format for source argument")
 
     items = sorted(items, key=_ext_key)
-    log.debug("Found %d files", len(items))
 
     seq = None
     while items:
@@ -1149,7 +1131,6 @@ def iget_sequences(source):
 
     if seq is not None:
         yield seq
-    log.debug("time: %s", datetime.now() - start)
 
 
 def walk(source, level=-1, topdown=True, onerror=None, followlinks=False,
@@ -1186,5 +1167,3 @@ def walk(source, level=-1, topdown=True, onerror=None, followlinks=False,
                 del dirs[:]
 
         yield root, dirs, get_sequences(files)
-
-    log.debug('time: %s' % (datetime.now() - start))

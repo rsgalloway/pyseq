@@ -52,7 +52,7 @@ def tree(source, level, seq_format):
     ends = {}
     done = []
 
-    print "%s%s" % (blue, os.path.relpath(source))
+    print("%s%s" % (blue, os.path.relpath(source)))
 
     for root, dirs, seqs in pyseq.walk(source, level):
         if len(dirs) > 0:
@@ -81,21 +81,21 @@ def tree(source, level, seq_format):
         if root == source:
             pass
         elif ends[os.path.dirname(root)] == base:
-            print "".join([sp, "└── ", "%s%s%s" % (blue, base, endc)])
+            print("".join([sp, "└── ", "%s%s%s" % (blue, base, endc)]))
             done.append(root)
             ends[os.path.dirname(root)] = None
             sp += "    "
         else:
-            print "".join([sp, "├── ", "%s%s%s" % (blue, base, endc)])
+            print("".join([sp, "├── ", "%s%s%s" % (blue, base, endc)]))
             sp += "│   "
 
         l = len(seqs)
         for i, seq in enumerate(seqs):
             if i == (l - 1) and len(dirs) == 0:
-                print "".join([sp, "└── ", seq.format(seq_format)])
+                print("".join([sp, "└── ", seq.format(seq_format)]))
             else:
-                print "".join([sp, "├── ", seq.format(seq_format)])
-    print endc
+                print("".join([sp, "├── ", seq.format(seq_format)]))
+    print(endc)
 
 
 def _recur_cb(option, opt_str, value, parser):
@@ -141,7 +141,7 @@ Formatting options:
     parser = optparse.OptionParser(usage=usage,
         version="%prog " + pyseq.__version__)
     parser.add_option("-f", "--format", dest="format",
-        default=None, help="format the output string")
+        default=pyseq.global_format, help="format the output string")
     parser.add_option("-d", "--debug", dest="debug", action="store_true",
         default=False, help="set logging level to debug (or $PYSEQ_LOG_LEVEL)")
     parser.add_option("-r", "--recursive", dest="recursive", action="callback",
@@ -171,7 +171,7 @@ Formatting options:
             path = os.path.abspath(path.rstrip(os.sep))
             if not os.path.isdir(path):
                 continue
-            tree(path, level, options.format or "%h%r%t")
+            tree(path, level, options.format)
 
     return 0
 

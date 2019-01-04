@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # ---------------------------------------------------------------------------------------------
-# Copyright (c) 2011-2015, Ryan Galloway (ryan@rsgalloway.com)
+# Copyright (c) 2011-2018, Ryan Galloway (ryangalloway.com)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -32,10 +32,12 @@
 
 import os
 import re
+import sys
+import time
 import random
 import unittest
 import subprocess
-import sys
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from pyseq import Item, Sequence, diff, uncompress, get_sequences
 from pyseq import SequenceError
@@ -392,7 +394,7 @@ class SequenceTestCase(unittest.TestCase):
         seq.append("file.0006.jpg")
         self.assertEqual(seq._get_missing(), [4, 5])
 
-        seq = Sequence(["file.%04d.jpg" % i for i in xrange(20)])
+        seq = Sequence(["file.%04d.jpg" % i for i in range(20)])
         seq.pop(10)
         seq.pop(10)
         seq.pop(10)
@@ -403,7 +405,7 @@ class SequenceTestCase(unittest.TestCase):
 
         missing = []
         seq = Sequence(["file.0001.jpg"])
-        for i in xrange(2, 50):
+        for i in range(2, 50):
             if random.randint(0, 1) == 1:
                 seq.append("file.%04d.jpg" % i)
             else:
@@ -631,21 +633,10 @@ class LSSTestCase(unittest.TestCase):
     def run_command(self, *args):
         """a simple wrapper for subprocess.Popen
         """
-        process = subprocess.Popen(args, stdout=subprocess.PIPE, universal_newlines=True)
-
-        # loop until process finishes and capture stderr output
-        stdout_buffer = []
-        while True:
-            stdout = process.stdout.readline()
-
-            if stdout == b'' and process.poll() is not None:
-                break
-
-            if stdout != b'':
-                stdout_buffer.append(stdout)
-
-        # flatten the buffer
-        return b''.join(stdout_buffer)
+        p = subprocess.Popen(args, stdout=subprocess.PIPE, universal_newlines=True)
+        with p.stdout as f:
+            stdout = f.read()
+        return stdout
 
     def setUp(self):
         """
@@ -666,7 +657,8 @@ class LSSTestCase(unittest.TestCase):
             test_files
         )
 
-        self.assertEqual("""  10 012_vb_110_v001.%04d.png [1-10]
+        # copy/pasted from running lss on tests/files
+        expected_result = """  10 012_vb_110_v001.%04d.png [1-10]
   10 012_vb_110_v002.%04d.png [1-10]
    7 a.%03d.tga [1-3, 10, 12-14]
    1 alpha.txt 
@@ -686,9 +678,60 @@ class LSSTestCase(unittest.TestCase):
    4 z1_001_v1.%d.png [1-4]
    4 z1_002_v1.%d.png [1-4]
    4 z1_002_v2.%d.png [1-4]
-""",
-            result
-        )
+"""
+        self.assertEqual(expected_result, result)
+
+
+class PerformanceTests(unittest.TestCase):
+    """Tests for performance regressions. 
+    
+    Performance tests are not functional tests, and are sensitive to the
+    environment, therefore these tests are not pass/fail but yield a
+    measurement which should be compared to other test results.
+
+    Example measurements, using Intel(R) i7-7700 CPU @ 3.60GHz and
+    Python 2.7.12 [GCC 5.4.0 20160609] on Ubuntu 16.04 ::
+
+        10 seq time: 0.000252962112427
+        100 seq time: 0.00168609619141
+        1000 seq time: 0.0181610584259
+        10000 seq time: 0.186559915543
+        25000 seq time: 0.512591838837
+        50000 seq time: 1.15014815331
+        ../tests/files/* time: 0.00400686264038
+        ./tests/files/bnc* time: 0.000808000564575
+        ./tests/files/file* time: 0.00116086006165
+    """
+
+    def test_create_sequence(self):
+        """Tests creating sequences of various sizes.
+        """
+        def _timeit(n):
+            files = ["file.%06d.exr" % d for d in range(n)]
+            s = time.time()
+            seq = pyseq.Sequence(files)
+            t = time.time() - s
+            print("%s seq time: %s" % (n, t))
+
+        _timeit(10)
+        _timeit(100)
+        _timeit(1000)
+        _timeit(10000)
+        _timeit(25000)
+        _timeit(50000)
+
+    def test_get_sequences(self):
+        """Tests get_sequences on various test files.
+        """
+        def _timeit(p):
+            s = time.time()
+            seqs = pyseq.get_sequences(p)
+            t = time.time() - s
+            print("%s time: %s" % (p, t))
+
+        _timeit('./tests/files/*')
+        _timeit('./tests/files/bnc*')
+        _timeit('./tests/files/file*')
 
 
 if __name__ == '__main__':

@@ -8,3 +8,4 @@ dist
 build
 _build
 MANIFEST
+__pycache__
