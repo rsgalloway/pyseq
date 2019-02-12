@@ -17,5 +17,5 @@ setup(
     author_email='ryan@rsgalloway.com',
     url='http://github.com/rsgalloway/pyseq',
     py_modules=['pyseq'],
-    scripts = ['lss']
+    scripts=['lss']
 )

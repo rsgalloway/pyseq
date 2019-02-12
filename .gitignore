@@ -9,3 +9,5 @@ build
 _build
 MANIFEST
 __pycache__
+env
+venv

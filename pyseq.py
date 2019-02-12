@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # ---------------------------------------------------------------------------------------------
-# Copyright (c) 2011-2018, Ryan Galloway (ryangalloway.com)
+# Copyright (c) 2011-2019, Ryan Galloway (ryangalloway.com)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -55,7 +55,9 @@ import warnings
 import functools
 from glob import glob
 from glob import iglob
+from itertools import groupby
 from datetime import datetime
+from operator import itemgetter
 
 __version__ = "1.0.0"
 
@@ -131,6 +133,14 @@ def _ext_key(x):
     return [ext] + _natural_key(name)
 
 
+def _get_format_framerange(range_func, frames_func, missing):
+    """ This function is used to call Sequence._get_framerange without needing
+    to any other functions within Sequence.__attrs__.  It delays calling any
+    functions until the frame range is actually requested
+    """
+    return range_func(frames_func(), missing)
+
+
 def natural_sort(items):
     return sorted(items, key=_natural_key)
 
@@ -168,7 +178,6 @@ class Item(str):
 
     def __init__(self, item):
         super(Item, self).__init__()
-        log.debug('adding %s', item)
         self.item = item
         self.__path = getattr(item, 'path', None)
         if self.__path is None:
@@ -343,9 +352,7 @@ class Sequence(list):
             f = Item(items.pop(0))
             try:
                 self.append(f)
-                log.debug('+Item belongs to sequence.')
             except SequenceError:
-                log.debug('-Item does not belong to sequence.')
                 continue
             except KeyboardInterrupt:
                 log.info("Stopping.")
@@ -359,12 +366,18 @@ class Sequence(list):
             'e': self.end,
             'f': self.frames,
             'm': self.missing,
-            'M': functools.partial(self._get_framerange, self.missing(), missing=True),
+            'M': functools.partial(
+                _get_format_framerange, self._get_framerange,
+                self.missing, True),
             'd': lambda *x: self.size,
             'D': self.directory,
             'p': self._get_padding,
-            'r': functools.partial(self._get_framerange, self.frames(), missing=False),
-            'R': functools.partial(self._get_framerange, self.frames(), missing=True),
+            'r': functools.partial(
+                _get_format_framerange, self._get_framerange,
+                self.frames, False),
+            'R': functools.partial(
+                _get_format_framerange, self._get_framerange,
+                self.frames, True),
             'h': self.head,
             't': self.tail
         }
@@ -732,8 +745,6 @@ class Sequence(list):
         :return: formatted frame range string.
         """
         frange = []
-        start = ''
-        end = ''
         if not missing:
             if frames:
                 return '%s-%s' % (self.start(), self.end())
@@ -743,23 +754,13 @@ class Sequence(list):
         if not frames:
             return ''
 
-        for i in range(0, len(frames)):
-            frame = frames[i]
-            if i != 0 and frame != frames[i - 1] + 1:
-                if start != end:
-                    frange.append('%s-%s' % (str(start), str(end)))
-                elif start == end:
-                    frange.append(str(start))
-                start = end = frame
-                continue
-            if start is '' or int(start) > frame:
-                start = frame
-            if end is '' or int(end) < frame:
-                end = frame
-        if start == end:
-            frange.append(str(start))
-        else:
-            frange.append('%s-%s' % (str(start), str(end)))
+        for _, group in groupby(enumerate(frames), lambda (a, b): a - b):
+            group = map(itemgetter(1), group)
+            if len(group) > 1:
+                frange.append("%d-%d" % (group[0], group[-1]))
+            else:
+                frange.append(str(group[0]))
+
         return "[%s]" % range_join.join(frange)
 
     def _get_frames(self):
@@ -852,11 +853,16 @@ def uncompress(seq_string, fmt=global_format):
 
     :return: :class:`.Sequence` instance.
     """
-    dirname = os.path.dirname(seq_string)
+    dirname, name = os.path.split(seq_string)
+
     # remove directory
-    if "%D" in fmt:
-        fmt = fmt.replace("%D", "")
-    name = os.path.basename(seq_string)
+    fmt = fmt.replace("%D", "")
+
+    # escape any re chars in format
+    fmt = re.escape(fmt)
+
+    # replace \% with % back again
+    fmt = fmt.replace('\\%', '%')
 
     # map of directives to regex
     remap = {
@@ -872,30 +878,25 @@ def uncompress(seq_string, fmt=global_format):
         'f': '\[.*\]',
     }
 
-    # escape any re chars in format
-    fmt = re.escape(fmt)
-
-    # replace \% with % back again
-    fmt = fmt.replace('\\%', '%')
-
     for m in format_re.finditer(fmt):
-        _old = '%%%s%s' % (m.group('pad') or '', m.group('var'))
+        pad, var = m.groups()
+        _old = '%%%s%s' % (pad or '', var)
         _new = '(?P<%s>%s)' % (
-            m.group('var'),
-            remap.get(m.group('var'), '\w+')
+            var,
+            remap.get(var, '\w+')
         )
         fmt = fmt.replace(_old, _new)
 
     regex = re.compile(fmt)
     match = regex.match(name)
 
+    if not match:
+        return
+
     frames = []
     missing = []
     s = None
     e = None
-
-    if not match:
-        return
 
     try:
         pad = match.group('p')
@@ -905,33 +906,34 @@ def uncompress(seq_string, fmt=global_format):
 
     try:
         R = match.group('R')
-        R = R[1:-1]
-        number_groups = R.split(range_join)
-        pad_len = 0
-        for number_group in number_groups:
-            if '-' in number_group:
-                splits = number_group.split('-')
-                pad_len = max(pad_len, len(splits[0]), len(splits[1]))
-                start = int(splits[0])
-                end = int(splits[1])
-                frames.extend(range(start, end + 1))
-
-            else:
-                end = int(number_group)
-                pad_len = max(pad_len, len(number_group))
-                frames.append(end)
-        if pad == "%d" and pad_len != 0:
-            pad = "%0" + str(pad_len) + "d"
 
     except IndexError:
         try:
             r = match.group('r')
             s, e = r.split('-')
-            frames = range(int(s), int(e) + 1)
 
         except IndexError:
             s = match.group('s')
             e = match.group('e')
+
+        frames = range(int(s), int(e) + 1)
+
+    else:
+        R = R[1:-1]
+        number_groups = R.split(range_join)
+        pad_len = 0
+        for number_group in number_groups:
+            spl = number_group.split("-")
+            pad_len = max(*map(len, spl) + [pad_len])
+            start = int(spl.pop(0))
+            try:
+                end = int(spl.pop(0))
+            except IndexError:
+                end = start
+            frames.extend(range(start, end + 1))
+
+        if pad == "%d" and pad_len != 0:
+            pad = "%0" + str(pad_len) + "d"
 
     try:
         frames = eval(match.group('f'))
@@ -945,31 +947,39 @@ def uncompress(seq_string, fmt=global_format):
     except IndexError:
         pass
 
-    items = []
-    if missing:
-        for i in range(int(s), int(e) + 1):
-            if i in missing:
-                continue
-            f = pad % i
-            name = '%s%s%s' % (
-                match.groupdict().get('h', ''), f, 
-                match.groupdict().get('t', '')
-            )
-            items.append(Item(os.path.join(dirname, name)))
+    try:
+        head = match.group("h")
 
-    else:
-        for i in frames:
-            f = pad % i
-            name = '%s%s%s' % (
-                match.groupdict().get('h', ''), f, 
-                match.groupdict().get('t', '')
-            )
-            items.append(Item(os.path.join(dirname, name)))
+    except IndexError:
+        head = ""
 
-    seqs = get_sequences(items)
-    if seqs:
-        return seqs[0]
-    return seqs
+    try:
+        tail = match.group("t")
+
+    except IndexError:
+        tail = ""
+
+    while len(missing) > 0:
+        m = missing.pop(0)
+        try:
+            frames.remove(m)
+        except IndexError:
+            pass
+
+    seq = None
+    for i in frames:
+        name = "%s%s%s" % (
+            head,
+            pad % i,
+            tail
+            )
+        item = Item(os.path.join(dirname, name))
+        if seq is None:
+            seq = Sequence([item])
+        else:
+            seq.append(item)
+
+    return seq or []
 
 
 @deprecated
