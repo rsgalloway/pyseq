@@ -757,6 +757,17 @@ class PerformanceTests(unittest.TestCase):
         _timeit('./tests/files/bnc*')
         _timeit('./tests/files/file*')
 
+    def test_walk(self):
+        """Tests the pyseq.walk function on the tests dir.
+        """
+        def _timeit(p):
+            s = time.time()
+            seqs = pyseq.walk(p)
+            t = time.time() - s
+            print("%s time: %s" % (p, t))
+
+        _timeit('./tests')
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -68,7 +68,8 @@ default_format = '%h%r%t'
 strict_pad = True
 
 # regex for matching numerical characters
-digits_re = re.compile(r'\d+')
+# https://github.com/rsgalloway/pyseq/issues/5
+digits_re = re.compile(os.getenv('PYSEQ_FRAME_REGEX', r'-?\d+'))
 
 # regex for matching format directives
 format_re = re.compile(r'%(?P<pad>\d+)?(?P<var>\w+)')
@@ -108,7 +109,7 @@ def _natural_key(x):
     """ Splits a string into characters and digits.  This helps in sorting file
     names in a 'natural' way.
     """
-    return [int(c) if c.isdigit() else c.lower() for c in re.split("(\d+)", x)]
+    return [int(c) if c.isdigit() else c.lower() for c in re.split("(-?\d+)", x)]
 
 
 def _ext_key(x):
@@ -1151,7 +1152,12 @@ def walk(source, level=-1, topdown=True, onerror=None, followlinks=False,
     assert os.path.exists(source) is True
     source = os.path.abspath(source)
 
-    for root, dirs, files in os.walk(source, topdown, onerror, followlinks):
+    try:
+        from scandir import walk as _walk
+    except ImportError:
+        from os import walk as _walk
+
+    for root, dirs, files in _walk(source, topdown, onerror, followlinks):
 
         if not hidden:
             files = [f for f in files if not f[0] == '.']
