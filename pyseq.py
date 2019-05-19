@@ -40,7 +40,7 @@ sequence, e.g. ::
 
     fileA.1-3.png
 
-It should work regardless of where the numerical sequence index is embedded 
+It should work regardless of where the numerical sequence index is embedded
 in the name.
 
 Docs and latest version available for download at
@@ -91,20 +91,25 @@ warnings.simplefilter('always', DeprecationWarning)
 
 # python 3 strings
 try:
-    unicode = unicode
+    unicode = unicode # type: type
 except NameError:
-    str = str
+    #str = str
     unicode = str
-    bytes = bytes
+    bytes = bytes # type: type
     basestring = (str,bytes)
 else:
-    str = str
+    #str = str
     unicode = unicode
     bytes = str
     basestring = basestring
 
+if False:
+    from typing import Any, AnyStr, Callable, Iterable, Iterator, List, Match, Optional, Tuple, TypeVar, Union
+    from mypy_extensions import TypedDict
+    Diff = TypedDict("Diff", {"start" : int, "end" : int, "frames" : Tuple[str, str]})
 
 def _natural_key(x):
+    # type: (str) -> List[Union[str, int]]
     """ Splits a string into characters and digits.  This helps in sorting file
     names in a 'natural' way.
     """
@@ -112,6 +117,7 @@ def _natural_key(x):
 
 
 def _ext_key(x):
+    # type: (str) -> List[Union[str, int]]
     """ Similar to '_natural_key' except this one uses the file extension at
     the head of split string.  This fixes issues with files that are named
     similar but with different file extensions:
@@ -127,10 +133,14 @@ def _ext_key(x):
         file.002.tiff
     """
     name, ext = os.path.splitext(x)
-    return [ext] + _natural_key(name)
+    # [ext] is List[str] which doesn't automatically change to
+    # List[Union[str, int]] when adding a List[int]
+    ext_list = [ext] # type: List[Union[str, int]]
+    return ext_list + _natural_key(name)
 
 
 def natural_sort(items):
+    # type: (Iterable[str]) -> List[str]
     return sorted(items, key=_natural_key)
 
 
@@ -166,6 +176,7 @@ class Item(str):
     """
 
     def __init__(self, item):
+        # type: (str) -> None
         super(Item, self).__init__()
         log.debug('adding %s', item)
         self.item = item
@@ -175,13 +186,13 @@ class Item(str):
         self.__dirname, self.__filename = os.path.split(self.__path)
         self.__digits = digits_re.findall(self.name)
         self.__parts = digits_re.split(self.name)
-        self.__stat = None
+        self.__stat = None # type: Optional[os.stat_result]
 
         # modified by self.is_sibling()
-        self.frame = None
-        self.head = self.name
-        self.tail = ''
-        self.pad = None
+        self.frame = None # type: Optional[int]
+        self.head = self.name # type: str
+        self.tail = '' # type: str
+        self.pad = None # type: Optional[int]
 
     def __eq__(self, other):
         return self.path == other.path
@@ -212,54 +223,63 @@ class Item(str):
 
     @property
     def path(self):
+        # type: () -> str
         """Item absolute path, if a filesystem item.
         """
         return self.__path
 
     @property
     def name(self):
+        # type: () -> str
         """Item base name attribute
         """
         return self.__filename
 
     @property
     def dirname(self):
+        # type: () -> str
         """"Item directory name, if a filesystem item."
         """
         return self.__dirname
 
     @property
     def digits(self):
+        # type: () -> List[str]
         """Numerical components of item name.
         """
         return self.__digits
 
     @property
     def parts(self):
+        # type: () -> List[str]
         """Non-numerical components of item name
         """
         return self.__parts
 
     @property
     def exists(self):
+        # type: () -> bool
         """Returns True if this item exists on disk
         """
         return os.path.isfile(self.__path)
 
     @property
     def size(self):
+        # type: () -> int
         """Returns the size of the Item, reported by os.stat
         """
         return self.stat.st_size
 
     @property
     def mtime(self):
+        # type: () -> float
         """Returns the modification time of the Item
         """
         return self.stat.st_mtime
 
     @property
     def stat(self):
+        # type: () -> os.stat_result
         """ Returns the os.stat object for this file.
         """
         if self.__stat is None:
@@ -268,11 +288,13 @@ class Item(str):
 
     @deprecated
     def isSibling(self, item):
+        # type: (str) -> bool
         """Deprecated: use is_sibling instead
         """
         return self.is_sibling(item)
 
     def is_sibling(self, item):
+        # type: (str) -> bool
         """Determines if this and item are part of the same sequence.
 
         :param item: An :class:`.Item` instance.
@@ -324,6 +346,7 @@ class Sequence(list):
     """
 
     def __init__(self, items):
+        # type: (List[str]) -> None
         """
         Create a new Sequence class object.
 
@@ -334,9 +357,9 @@ class Sequence(list):
         # otherwise Sequence consumes the list
         items = items[::]
         super(Sequence, self).__init__([Item(items.pop(0))])
-        self.__missing = []
+        self.__missing = [] # type: Optional[List[int]]
         self.__dirty = False
-        self.__frames = None
+        self.__frames = None # type: Optional[List[int]]
 
         while items:
             f = Item(items.pop(0))
@@ -426,6 +449,7 @@ class Sequence(list):
         return self
 
     def format(self, fmt=global_format):
+        # type: (str) -> str
         """Format the stdout string.
 
         The following directives can be embedded in the format string.
@@ -502,6 +526,7 @@ class Sequence(list):
 
     @property
     def mtime(self):
+        # type: () -> float
         """Returns the latest mtime of all items
         """
         maxDate = list()
@@ -511,6 +536,7 @@ class Sequence(list):
 
     @property
     def size(self):
+        # type: () -> int
         """Returns the size all items (divide by 1024*1024 for MBs)
         """
         tempSize = list()
@@ -519,13 +545,16 @@ class Sequence(list):
         return sum(tempSize)
 
     def directory(self):
+        # type: () -> str
         return self[0].dirname + os.sep
 
     def length(self):
+        # type: () -> int
         """:return: The length of the sequence."""
         return len(self)
 
     def frames(self):
+        # type: () -> List[int]
         """:return: List of files in sequence."""
         if not hasattr(self, '__frames') or not self.__frames or self.__dirty:
             self.__frames = self._get_frames()
@@ -533,6 +562,7 @@ class Sequence(list):
         return self.__frames
 
     def start(self):
+        # type: () -> int
         """:return: First index number in sequence
         """
         try:
@@ -541,6 +571,7 @@ class Sequence(list):
             return 0
 
     def end(self):
+        # type: () -> int
         """:return: Last index number in sequence
         """
         try:
@@ -549,25 +580,30 @@ class Sequence(list):
             return 0
 
     def missing(self):
+        # type: () -> List[int]
         """:return: List of missing files."""
         if not hasattr(self, '__missing') or not self.__missing:
             self.__missing = self._get_missing()
         return self.__missing
 
     def head(self):
+        # type: () -> str
         """:return: String before the sequence index number."""
         return self[0].head
 
     def tail(self):
+        # type: () -> str
         """:return: String after the sequence index number."""
         return self[0].tail
 
     def path(self):
+        # type: () -> str
         """:return: Absolute path to sequence."""
         _dirname = str(os.path.dirname(os.path.abspath(self[0].path)))
         return os.path.join(_dirname, str(self))
 
     def includes(self, item):
+        # type: (str) -> bool
         """Checks if the item can be contained in this sequence that is if it
         is a sibling of any of the items in the list
 
@@ -596,6 +632,7 @@ class Sequence(list):
         return True
 
     def contains(self, item):
+        # type: (str) -> bool
         """Checks for sequence membership. Calls Item.is_sibling() and returns
         True if item is part of the sequence.
 
@@ -622,6 +659,7 @@ class Sequence(list):
         return False
 
     def append(self, item):
+        # type: (str) -> None
         """Adds another member to the sequence.
 
         :param item: pyseq.Item object.
@@ -639,6 +677,7 @@ class Sequence(list):
             raise SequenceError('Item is not a member of this sequence')
 
     def insert(self, index, item):
+        # type: (int, str) -> None
         """ Add another member to the sequence at the given index.
             :param item: pyseq.Item object.
             :exc: `SequenceError` raised if item is not a sequence member.
@@ -654,6 +693,7 @@ class Sequence(list):
             raise SequenceError("Item is not a member of this sequence.")
 
     def extend(self, items):
+        # type: (Iterable[str]) -> None
         """ Add members to the sequence.
             :param items: list of pyseq.Item objects.
             :exc: `SequenceError` raised if any items are not a sequence
@@ -672,6 +712,7 @@ class Sequence(list):
                                     "sequence." % item)
 
     def reIndex(self, offset, padding=None):
+        # type: (int, Optional[str]) -> None
         """Renames and reindexes the items in the sequence, e.g. ::
 
             >>> seq.reIndex(offset=100)
@@ -712,6 +753,7 @@ class Sequence(list):
             self.frames()
 
     def _get_padding(self):
+        # type: () -> str
         """:return: padding string, e.g. %07d"""
         try:
             pad = self[0].pad
@@ -724,16 +766,17 @@ class Sequence(list):
             return ''
 
     def _get_framerange(self, frames, missing=True):
+        # type: (List[int], bool) -> str
         """Returns frame range string, e.g. [1-500].
-        
+
         :param frames: list of ints like [1,4,8,12,15].
         :param missing: Expand sequence to exclude missing sequence indices.
 
         :return: formatted frame range string.
         """
         frange = []
-        start = ''
-        end = ''
+        start = '' # type: Union[str, int]
+        end = '' # type: Union[str, int]
         if not missing:
             if frames:
                 return '%s-%s' % (self.start(), self.end())
@@ -763,18 +806,20 @@ class Sequence(list):
         return "[%s]" % range_join.join(frange)
 
     def _get_frames(self):
+        # type: () -> List[int]
         """finds the sequence indexes from item names
         """
         return [f.frame for f in self if f.frame is not None]
 
     def _get_missing(self):
+        # type: () -> List[int]
         """Looks for missing sequence indexes in sequence
 
         .. todo:: change this to:
             r = range(frames[0], frames[-1] + 1)
             return sorted(list(set(frames).symmetric_difference(r)))
         """
-        missing = []
+        missing = [] # type: List[int]
         frames = self.frames()
         if len(frames) == 0:
             return missing
@@ -784,6 +829,7 @@ class Sequence(list):
 
 
 def diff(f1, f2):
+    # type: (str, str) -> List[Diff]
     """Examines diffs between f1 and f2 and deduces numerical sequence number.
 
     For example ::
@@ -805,10 +851,12 @@ def diff(f1, f2):
     if not type(f2) == Item:
         f2 = Item(f2)
 
-    l1 = [m for m in digits_re.finditer(f1.name)]
-    l2 = [m for m in digits_re.finditer(f2.name)]
+    # using type: ignore here, because mypy doesn't understand that f1, f2 are guaranteed
+    # to be Item now
+    l1 = [m for m in digits_re.finditer(f1.name)] # type: List[Match[str]] # type: ignore
+    l2 = [m for m in digits_re.finditer(f2.name)] # type: List[Match[str]] # type: ignore
 
-    d = []
+    d = [] # type: List[Diff]
     if len(l1) == len(l2):
         for i in range(0, len(l1)):
             m1 = l1.pop(0)
@@ -827,6 +875,7 @@ def diff(f1, f2):
 
 
 def uncompress(seq_string, fmt=global_format):
+    # type: (str, str) -> Optional[Union[Sequence, List[Item]]]
     """Basic uncompression or deserialization of a compressed sequence string.
 
     For example: ::
@@ -900,14 +949,14 @@ def uncompress(seq_string, fmt=global_format):
 
     log.debug("match: %s" % match.groupdict() if match else "")
 
-    frames = []
-    missing = []
+    frames = [] # type: Iterable[int]
+    missing = [] # type: List[int]
     s = None
     e = None
 
     if not match:
         log.debug('No matches.')
-        return
+        return None
 
     try:
         pad = match.group('p')
@@ -926,12 +975,14 @@ def uncompress(seq_string, fmt=global_format):
                 pad_len = max(pad_len, len(splits[0]), len(splits[1]))
                 start = int(splits[0])
                 end = int(splits[1])
-                frames.extend(range(start, end + 1))
+                # mypy complains, but frames is still guaranteed to be a list
+                frames.extend(range(start, end + 1)) # type: ignore
 
             else:
                 end = int(number_group)
                 pad_len = max(pad_len, len(number_group))
-                frames.append(end)
+                # mypy complains, but frames is still guaranteed to be a list
+                frames.append(end) # type: ignore
         if pad == "%d" and pad_len != 0:
             pad = "%0" + str(pad_len) + "d"
 
@@ -964,7 +1015,7 @@ def uncompress(seq_string, fmt=global_format):
                 continue
             f = pad % i
             name = '%s%s%s' % (
-                match.groupdict().get('h', ''), f, 
+                match.groupdict().get('h', ''), f,
                 match.groupdict().get('t', '')
             )
             items.append(Item(os.path.join(dirname, name)))
@@ -973,7 +1024,7 @@ def uncompress(seq_string, fmt=global_format):
         for i in frames:
             f = pad % i
             name = '%s%s%s' % (
-                match.groupdict().get('h', ''), f, 
+                match.groupdict().get('h', ''), f,
                 match.groupdict().get('t', '')
             )
             items.append(Item(os.path.join(dirname, name)))
@@ -981,17 +1032,19 @@ def uncompress(seq_string, fmt=global_format):
     seqs = get_sequences(items)
     if seqs:
         return seqs[0]
-    return seqs
+    return seqs # type: ignore # empty List[Sequence] is equal to List[Item]
 
 
 @deprecated
 def getSequences(source):
+    # type: (Union[AnyStr, List[Any]]) -> List[Sequence]
     """Deprecated: use get_sequences instead
     """
     return get_sequences(source)
 
 
 def get_sequences(source):
+    # type: (Union[AnyStr, List[Any]]) -> List[Sequence]
     """Returns a list of Sequence objects given a directory or list that contain
     sequential members.
 
@@ -1039,16 +1092,17 @@ def get_sequences(source):
     start = datetime.now()
 
     # list for storing sequences to be returned later
-    seqs = []
+    seqs = [] # type: List[Sequence]
 
     if isinstance(source, list):
         items = sorted(source, key=lambda x: str(x))
 
     elif isinstance(source, basestring):
-        if os.path.isdir(source):
-            items = sorted(glob(os.path.join(source, '*')))
+        # mypy doesn't understand that `source` can't be a list because of isinstance
+        if os.path.isdir(source): # type: ignore
+            items = sorted(glob(os.path.join(source, '*'))) # type: ignore
         else:
-            items = sorted(glob(source))
+            items = sorted(glob(source)) # type: ignore
 
     else:
         raise TypeError('Unsupported format for source argument')
@@ -1074,6 +1128,7 @@ def get_sequences(source):
 
 
 def iget_sequences(source):
+    # type: (Union[str, List[Any]]) -> Iterator[Sequence]
     """ Generator version of get_sequences.  Creates Sequences from a various
     source files.  A notable difference is the sort order of iget_sequences
     versus get_sequences.  iget_sequences uses an adaption of natural sorting
@@ -1129,7 +1184,7 @@ def iget_sequences(source):
             join = os.path.join
             items = [join(source, x) for x in os.listdir(source)]
         else:
-            items = iglob(source)
+            items = iglob(source) # type: ignore # temporary type change
     else:
         raise TypeError("Unsupported format for source argument")
 
@@ -1153,6 +1208,7 @@ def iget_sequences(source):
 
 
 def walk(source, level=-1, topdown=True, onerror=None, followlinks=False, hidden=False):
+    # type: (str, int, bool, Callable[[OSError], None], bool, bool) -> Iterator[Tuple[str, List[str], List[Sequence]]]
     """Generator that traverses a directory structure starting at
     source looking for sequences.
 
