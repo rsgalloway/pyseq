@@ -65,10 +65,6 @@ __version__ = "1.0.0"
 global_format = '%4l %h%p%t %R'
 default_format = '%h%r%t'
 
-# use strict padding on sequences (pad length must match)
-# https://github.com/rsgalloway/pyseq/issues/41
-strict_pad = True
-
 # regex for matching numerical characters
 # https://github.com/rsgalloway/pyseq/issues/5
 digits_re = re.compile(os.getenv('PYSEQ_FRAME_REGEX', r'-?\d+'))
@@ -192,6 +188,7 @@ class Item(str):
         self.head = self.name
         self.tail = ''
         self.pad = None
+        self.pad_is_explicit = False
 
     def __eq__(self, other):
         return self.path == other.path
@@ -293,21 +290,43 @@ class Item(str):
             item = Item(item)
 
         d = diff(self, item)
-        is_sibling = (len(d) == 1) and (self.parts == item.parts)
+        if len(d) != 1:  # How could it ever be longer than 1? Could it just be `if not d:`
+            return False
+
+        is_sibling = self.parts == item.parts
+
+        self_frame = d[0]['frames'][0]
+        item_frame = d[0]['frames'][1]
+
+        # Logic for explicit padding
+        self_pad_is_explicit = self.pad_is_explicit or (self_frame.startswith('0') and self_frame != '0')
+        item_pad_is_explicit = item.pad_is_explicit or (item_frame.startswith('0') and item_frame != '0')
+
+        if self_pad_is_explicit and item_pad_is_explicit and (len(self_frame) != len(item_frame)):
+            # Both are explicit and padding doesn't match
+            is_sibling = False
+        elif self_pad_is_explicit:
+            if len(item_frame) < len(self_frame):
+                # We have explicit padding, but second item is not padded to at least same length
+                is_sibling = False
+        elif item_pad_is_explicit:
+            if len(self_frame) < len(item_frame):
+                # We have explicit padding, but second item is not padded to at least same length
+                is_sibling = False
 
         # I do not understand why we are updating information
         # while this is a predicate method
         if is_sibling:
-            frame = d[0]['frames'][0]
-            self.frame = int(frame)
-            self.pad = len(frame)
+            self.frame = int(self_frame)
+            self.pad = len(self_frame)
+            self.pad_is_explicit = self_pad_is_explicit
             self.head = self.name[:d[0]['start']]
             self.tail = self.name[d[0]['end']:]
-            frame = d[0]['frames'][1]
-            item.frame = int(frame)
-            item.pad = len(frame)
-            item.head = item.name[:d[0]['start']]
-            item.tail = item.name[d[0]['end']:]
+            item.frame = int(item_frame)
+            item.pad = len(item_frame)
+            item.pad_is_explicit = item_pad_is_explicit
+            item.head = self.head  # using the same as self, as start and end would differ if different padding
+            item.tail = self.tail
 
         return is_sibling
 
@@ -347,6 +366,8 @@ class Sequence(list):
         self.__missing = []
         self.__dirty = False
         self.__frames = None
+        self.__pad = None
+        self.__pad_is_explicit = False
 
         while items:
             f = Item(items.pop(0))
@@ -598,14 +619,21 @@ class Sequence(list):
         if len(self) > 0:
             if not isinstance(item, Item):
                 item = Item(item)
+
+            comparison_item = None
             if self[-1] != item:
-                return self[-1].is_sibling(item)
+                comparison_item = self[-1]
             elif self[0] != item:
-                return self[0].is_sibling(item)
+                comparison_item = self[0]
             else:
                 # it should be the only item in the list
                 if self[0] == item:
                     return True
+
+            if self.__pad_is_explicit:
+                # Our sequence is explicit, force the item's padding to be explicit as well
+                comparison_item.pad_is_explicit = True
+            return comparison_item.is_sibling(item)
 
         return True
 
@@ -647,6 +675,10 @@ class Sequence(list):
 
         if self.includes(item):
             super(Sequence, self).append(item)
+            if item.pad_is_explicit:
+                self.__pad_is_explicit = True
+            if self.__pad is None or item.pad < self.__pad:
+                self.__pad = item.pad
             self.__frames = None
             self.__missing = None
         else:
@@ -662,6 +694,10 @@ class Sequence(list):
 
         if self.includes(item):
             super(Sequence, self).insert(index, item)
+            if item.pad_is_explicit:
+                self.__pad_is_explicit = True
+            if self.__pad is None or item.pad < self.__pad:
+                self.__pad = item.pad
             self.__frames = None
             self.__missing = None
         else:
@@ -674,11 +710,16 @@ class Sequence(list):
                   member.
         """
         for item in items:
+            # TODO: Just refactor to self.append(item) ?
             if type(item) is not Item:
                 item = Item(item)
 
             if self.includes(item):
                 super(Sequence, self).append(item)
+                if item.pad_is_explicit:
+                    self.__pad_is_explicit = True
+                if self.__pad is None or item.pad < self.__pad:
+                    self.__pad = item.pad
                 self.__frames = None
                 self.__missing = None
             else:
@@ -727,7 +768,7 @@ class Sequence(list):
     def _get_padding(self):
         """:return: padding string, e.g. %07d"""
         try:
-            pad = self[0].pad
+            pad = self.__pad
             if pad is None:
                 return ""
             if pad < 2:
@@ -814,8 +855,6 @@ def diff(f1, f2):
             m1 = l1.pop(0)
             m2 = l2.pop(0)
             if (m1.start() == m2.start()) and (m1.group() != m2.group()):
-                if strict_pad is True and (len(m1.group()) != len(m2.group())):
-                    continue
                 d.append({
                     'start': m1.start(),
                     'end': m1.end(),
