@@ -426,6 +426,52 @@ class SequenceTestCase(unittest.TestCase):
             missing.pop(-1)
         self.assertEqual(seq._get_missing(), missing)
 
+    def test_explicit_padding_is_working_properly(self):
+        """ Test that the sequence is aware of padding and refuses mismatching items
+        """
+        # Starting the sequence with an explicit padding (it has a zero for padding)
+        seq = Sequence(["file.010.jpg"])
+        with self.assertRaises(SequenceError):
+            seq.append("file.1.jpg")
+        with self.assertRaises(SequenceError):
+            seq.append("file.01.jpg")
+        with self.assertRaises(SequenceError):
+            seq.append("file.0001.jpg")
+
+        seq.append("file.001.jpg")
+        seq.append("file.100.jpg")
+        seq.append("file.1001.jpg")
+        self.assertEqual(
+            'file.1-1001.jpg',
+            str(seq)
+        )
+        self.assertEqual(
+            seq._get_padding(),
+            '%03d'
+        )
+
+        # Starting a sequence without an explicit padding
+        seq = Sequence(["file.100.jpg"])
+        with self.assertRaises(SequenceError):
+            seq.append("file.0001.jpg")
+        # Add an item with less padding, after that something with more padding would be wrong
+        seq.append("file.10.jpg")
+        with self.assertRaises(SequenceError):
+            seq.append("file.099.jpg")
+        # Add an item with explicit padding and plausible
+        seq.append("file.07.jpg")
+        with self.assertRaises(SequenceError):
+            seq.append("file.2.jpg")
+        self.assertEqual(
+            'file.7-100.jpg',
+            str(seq)
+        )
+        self.assertEqual(
+            seq._get_padding(),
+            '%02d'
+        )
+
+
 class HelperFunctionsTestCase(unittest.TestCase):
     """tests the helper functions like
     pyseq.diff()
@@ -540,15 +586,6 @@ class HelperFunctionsTestCase(unittest.TestCase):
     def test_uncompress_is_working_properly_7(self):
         """testing if uncompress is working properly
         """
-
-        # when strict padding is enabled frame 100000 is
-        # not a member of the the sequence and throws
-        with self.assertRaises(SequenceError) as cm:
-            uncompress(
-                'a.%03d.tga 1-100000 ([1-10, 100000])',
-                fmt='%h%p%t %r (%R)'
-            )
-
         seq7 = uncompress(
             'a.%03d.tga 1-10 ([1-10])',
             fmt='%h%p%t %r (%R)'
