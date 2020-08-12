@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # ---------------------------------------------------------------------------------------------
-# Copyright (c) 2011-2015, Ryan Galloway (ryan@rsgalloway.com)
+# Copyright (c) 2011-2020, Ryan Galloway (ryan@rsgalloway.com)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -41,6 +41,7 @@ from pyseq import Item, Sequence, diff, uncompress, get_sequences
 from pyseq import SequenceError
 import pyseq
 pyseq.default_format = '%h%r%t'
+
 
 class ItemTestCase(unittest.TestCase):
     """tests the Item class
@@ -392,7 +393,7 @@ class SequenceTestCase(unittest.TestCase):
         seq.append("file.0006.jpg")
         self.assertEqual(seq._get_missing(), [4, 5])
 
-        seq = Sequence(["file.%04d.jpg" % i for i in xrange(20)])
+        seq = Sequence(["file.%04d.jpg" % i for i in range(20)])
         seq.pop(10)
         seq.pop(10)
         seq.pop(10)
@@ -403,7 +404,7 @@ class SequenceTestCase(unittest.TestCase):
 
         missing = []
         seq = Sequence(["file.0001.jpg"])
-        for i in xrange(2, 50):
+        for i in range(2, 50):
             if random.randint(0, 1) == 1:
                 seq.append("file.%04d.jpg" % i)
             else:
@@ -413,6 +414,7 @@ class SequenceTestCase(unittest.TestCase):
         while missing[-1] > int(re.search("file\.(\d{4})\.jpg", seq[-1]).group(1)):
             missing.pop(-1)
         self.assertEqual(seq._get_missing(), missing)
+
 
 class HelperFunctionsTestCase(unittest.TestCase):
     """tests the helper functions like
@@ -631,21 +633,11 @@ class LSSTestCase(unittest.TestCase):
     def run_command(self, *args):
         """a simple wrapper for subprocess.Popen
         """
-        process = subprocess.Popen(args, stdout=subprocess.PIPE, universal_newlines=True)
-
-        # loop until process finishes and capture stderr output
-        stdout_buffer = []
-        while True:
-            stdout = process.stdout.readline()
-
-            if stdout == b'' and process.poll() is not None:
-                break
-
-            if stdout != b'':
-                stdout_buffer.append(stdout)
-
-        # flatten the buffer
-        return b''.join(stdout_buffer)
+        process = subprocess.Popen(args, stdout=subprocess.PIPE,
+            universal_newlines=True
+        )
+        stdout, _ = process.communicate()
+        return stdout
 
     def setUp(self):
         """

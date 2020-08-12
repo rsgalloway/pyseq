@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # ---------------------------------------------------------------------------------------------
-# Copyright (c) 2011-2017, Ryan Galloway (ryan@rsgalloway.com)
+# Copyright (c) 2011-2020, Ryan Galloway (ryan@rsgalloway.com)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -57,7 +57,7 @@ from glob import glob
 from glob import iglob
 from datetime import datetime
 
-__version__ = "0.5.1"
+__version__ = "0.5.2"
 
 # default serialization format string
 global_format = '%4l %h%p%t %R'
@@ -96,7 +96,7 @@ except NameError:
     str = str
     unicode = str
     bytes = bytes
-    basestring = (str,bytes)
+    basestring = (str, bytes)
 else:
     str = str
     unicode = unicode
@@ -383,6 +383,13 @@ class Sequence(list):
     def __setitem__(self, index, item):
         """ Used to set a particular element in the sequence
         """
+        if type(index) is slice:
+            if index.step not in (1, None):
+                raise ValueError('only step=1 supported')
+            if isinstance(item, basestring):
+                item = Sequence([item])
+            super(Sequence, self).__setitem__(index, item)
+            return
         if type(item) is not Item:
             item = Item(item)
         if self.includes(item):
