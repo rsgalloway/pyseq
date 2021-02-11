@@ -5,3 +5,5 @@
 dist
 build
 MANIFEST
+__pycache__
+tmp/
