@@ -282,6 +282,8 @@ class Item(str):
         if not isinstance(item, Item):
             item = Item(item)
 
+        p = lambda x: len(x) if x.startswith('0') else 0
+
         d = diff(self, item)
         is_sibling = (len(d) == 1) and (self.parts == item.parts)
 
@@ -290,12 +292,12 @@ class Item(str):
         if is_sibling:
             frame = d[0]['frames'][0]
             self.frame = int(frame)
-            self.pad = len(frame)
+            self.pad = p(frame)
             self.head = self.name[:d[0]['start']]
             self.tail = self.name[d[0]['end']:]
             frame = d[0]['frames'][1]
             item.frame = int(frame)
-            item.pad = len(frame)
+            item.pad = self.pad
             item.head = item.name[:d[0]['start']]
             item.tail = item.name[d[0]['end']:]
 
@@ -723,7 +725,7 @@ class Sequence(list):
         try:
             pad = min([i.pad for i in self])
             if pad is None:
-                return ""
+                return ''
             if pad < 2:
                 return '%d'
             return '%%%02dd' % pad
