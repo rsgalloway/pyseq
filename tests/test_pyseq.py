@@ -677,7 +677,7 @@ class LSSTestCase(unittest.TestCase):
    1 file_02.tif 
    4 z1_001_v1.%d.png [1-4]
    4 z1_002_v1.%d.png [1-4]
-   4 z1_002_v2.%d.png [1-4]
+   4 z1_002_v2.%d.png [9-12]
 """,
             result
         )
