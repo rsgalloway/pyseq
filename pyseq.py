@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # ---------------------------------------------------------------------------------------------
-# Copyright (c) 2011-2020, Ryan Galloway (ryan@rsgalloway.com)
+# Copyright (c) 2011-2021, Ryan Galloway (ryan@rsgalloway.com)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -57,7 +57,7 @@ from glob import glob
 from glob import iglob
 from datetime import datetime
 
-__version__ = "0.5.2"
+__version__ = "0.5.3"
 
 # default serialization format string
 global_format = '%4l %h%p%t %R'
@@ -65,7 +65,8 @@ default_format = '%h%r%t'
 
 # use strict padding on sequences (pad length must match)
 # https://github.com/rsgalloway/pyseq/issues/41
-strict_pad = True
+# export $PYSEQ_NOT_STRICT=1 to disable strict padding
+strict_pad = os.environ.get('PYSEQ_NOT_STRICT', True)
 
 # regex for matching numerical characters
 digits_re = re.compile(r'\d+')
@@ -282,20 +283,24 @@ class Item(str):
         if not isinstance(item, Item):
             item = Item(item)
 
+        # assume a frame is unpadded unless it starts with a 0
+        padsize = lambda x: item.pad or len(x) if x.startswith('0') else 0
+
+        # diff these two items to determine siblinghood
         d = diff(self, item)
         is_sibling = (len(d) == 1) and (self.parts == item.parts)
 
-        # I do not understand why we are updating information
-        # while this is a predicate method
+        # if these items are in the same sequence, set some common
+        # attributes on both items
         if is_sibling:
             frame = d[0]['frames'][0]
             self.frame = int(frame)
-            self.pad = len(frame)
+            self.pad = padsize(frame)
             self.head = self.name[:d[0]['start']]
             self.tail = self.name[d[0]['end']:]
             frame = d[0]['frames'][1]
             item.frame = int(frame)
-            item.pad = len(frame)
+            item.pad = self.pad
             item.head = item.name[:d[0]['start']]
             item.tail = item.name[d[0]['end']:]
 
@@ -721,9 +726,9 @@ class Sequence(list):
     def _get_padding(self):
         """:return: padding string, e.g. %07d"""
         try:
-            pad = self[0].pad
+            pad = min([i.pad for i in self])
             if pad is None:
-                return ""
+                return ''
             if pad < 2:
                 return '%d'
             return '%%%02dd' % pad
@@ -759,9 +764,9 @@ class Sequence(list):
                     frange.append(str(start))
                 start = end = frame
                 continue
-            if start is '' or int(start) > frame:
+            if start == '' or int(start) > frame:
                 start = frame
-            if end is '' or int(end) < frame:
+            if end == '' or int(end) < frame:
                 end = frame
         if start == end:
             frange.append(str(start))

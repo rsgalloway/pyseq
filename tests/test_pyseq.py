@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # ---------------------------------------------------------------------------------------------
-# Copyright (c) 2011-2020, Ryan Galloway (ryan@rsgalloway.com)
+# Copyright (c) 2011-2021, Ryan Galloway (ryan@rsgalloway.com)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -677,10 +677,77 @@ class LSSTestCase(unittest.TestCase):
    1 file_02.tif 
    4 z1_001_v1.%d.png [1-4]
    4 z1_002_v1.%d.png [1-4]
-   4 z1_002_v2.%d.png [1-4]
+   4 z1_002_v2.%d.png [9-12]
 """,
             result
         )
+
+
+class TestIssues(unittest.TestCase):
+    """tests reported issues on github"""
+
+    def test_issue_60(self):
+        """tests issue 60. with strict padding disabled,
+        padding should be %d"""
+
+        # disable strict padding
+        pyseq.strict_pad = False
+
+        items = [
+            'file.7.jpg', 'file.8.jpg', 'file.9.jpg',
+            'file.10.jpg', 'file.11.jpg', 'file.12.jpg',
+            'file.87.jpg', 'file.99.jpg', 'file.111.jpg'
+        ]
+        seq = pyseq.get_sequences(items)[0]
+        self.assertEqual(len(items), len(seq))
+        self.assertEqual(seq._get_padding(), '%d')
+
+        item = [
+            'file.7.jpg', 'file.8.jpg', 'file.9.jpg',
+            'file.10.jpg', 'file.11.jpg', 'file.12.jpg'
+        ]
+        seq = pyseq.get_sequences(items)[0]
+        self.assertEqual(len(items), len(seq))
+        self.assertEqual(seq._get_padding(), '%d')
+
+        seq = pyseq.get_sequences([
+            'file.1.jpg', 'file.100.jpg', 'file.101.jpg',
+        ])[0]
+        self.assertEqual(len(seq), 3)
+        self.assertEqual(seq._get_padding(), '%d')
+
+        seq = pyseq.get_sequences([
+            'file.10.jpg', 'file.11.jpg', 'file.12.jpg',
+        ])[0]
+        self.assertEqual(len(seq), 3)
+        self.assertEqual(seq._get_padding(), '%d')
+
+        seq = pyseq.get_sequences([
+            'file.100.jpg', 'file.101.jpg', 'file.102.jpg',
+        ])[0]
+        self.assertEqual(len(seq), 3)
+        self.assertEqual(seq._get_padding(), '%d')
+
+        seq = pyseq.get_sequences([
+            'file.9.jpg', 'file.99.jpg', 'file.999.jpg', 'file.9999.jpg',
+        ])[0]
+        self.assertEqual(len(seq), 4)
+        self.assertEqual(seq._get_padding(), '%d')
+
+        seq = pyseq.get_sequences([
+            'file.007.jpg', 'file.010.jpg', 'file.101.jpg',
+        ])[0]
+        self.assertEqual(len(seq), 3)
+        self.assertEqual(seq._get_padding(), '%03d')
+
+        # revert to strict
+        pyseq.strict_pad = True
+
+        seq = pyseq.get_sequences([
+            'file.007.jpg', 'file.010.jpg', 'file.101.jpg',
+        ])[0]
+        self.assertEqual(len(seq), 3)
+        self.assertEqual(seq._get_padding(), '%03d')
 
 
 if __name__ == '__main__':

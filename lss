@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # ---------------------------------------------------------------------------------------------
-# Copyright (c) 2011-2020, Ryan Galloway (ryan@rsgalloway.com)
+# Copyright (c) 2011-2021, Ryan Galloway (ryan@rsgalloway.com)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -143,13 +143,18 @@ Formatting options:
     parser.add_option("-f", "--format", dest="format",
         default=None, help="format the output string")
     parser.add_option("-d", "--debug", dest="debug", action="store_true",
-        default=False, help="set logging level to debug (or $PYSEQ_LOG_LEVEL)")
+        default=False, help="set logging level to debug")
     parser.add_option("-r", "--recursive", dest="recursive", action="callback",
         callback=_recur_cb, help="Walks the entire directory structure.")
+    parser.add_option("-s", "--strict", dest="strict", action="store_true",
+        default=False, help="strict padding (default false)")
     (options, args) = parser.parse_args()
 
     if options.debug:
         pyseq.log.setLevel(logging.DEBUG)
+
+    # strict padding
+    pyseq.strict_pad = options.strict
 
     if len(args) == 0:
         args = [os.getcwd()]

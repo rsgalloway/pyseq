@@ -5,3 +5,8 @@
 dist
 build
 MANIFEST
+__pycache__
+tmp/
+venv/
+venv3/
+.vscode/
