@@ -2,10 +2,22 @@
 CHANGELOG
 =========
 
+v0.5.4
+======
+
+* Fixes setup issues for python 2.7
+
+v0.5.3
+======
+
+* Fixes bug where changes in frame size (e.g. 9 to 10) cause incorrect pad
+
+* Disables strict padding in lss by default (adds --strict option)
+
 v0.5.1
 ======
 
-* adds %M (missing frames) and %D (parent dir) directives
+* Adds %M (missing frames) and %D (parent dir) directives
 
 * lss to only use colors when stdout is tty
 
