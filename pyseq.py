@@ -57,7 +57,7 @@ from glob import glob
 from glob import iglob
 from datetime import datetime
 
-__version__ = "0.5.3"
+__version__ = "0.5.4"
 
 # default serialization format string
 global_format = '%4l %h%p%t %R'
