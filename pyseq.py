@@ -87,9 +87,6 @@ log = logging.getLogger('pyseq')
 log.addHandler(logging.StreamHandler())
 log.setLevel(int(os.environ.get('PYSEQ_LOG_LEVEL', logging.INFO)))
 
-# show deprecationWarnings in 2.7+
-warnings.simplefilter('always', DeprecationWarning)
-
 # python 3 strings
 try:
     unicode = unicode
