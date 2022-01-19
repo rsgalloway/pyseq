@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # ---------------------------------------------------------------------------------------------
-# Copyright (c) 2011-2021, Ryan Galloway (ryan@rsgalloway.com)
+# Copyright (c) 2011-2022, Ryan Galloway (ryan@rsgalloway.com)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -57,7 +57,7 @@ from glob import glob
 from glob import iglob
 from datetime import datetime
 
-__version__ = "0.5.4"
+__version__ = "0.5.5"
 
 # default serialization format string
 global_format = '%4l %h%p%t %R'
@@ -86,9 +86,6 @@ __all__ = [
 log = logging.getLogger('pyseq')
 log.addHandler(logging.StreamHandler())
 log.setLevel(int(os.environ.get('PYSEQ_LOG_LEVEL', logging.INFO)))
-
-# show deprecationWarnings in 2.7+
-warnings.simplefilter('always', DeprecationWarning)
 
 # python 3 strings
 try:
