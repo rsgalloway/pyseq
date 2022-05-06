@@ -2,7 +2,7 @@
 CHANGELOG
 =========
 
-v0.5.6
+v0.6.0
 ======
 
 * Fixes issue #67 (hangs on many missing frames)

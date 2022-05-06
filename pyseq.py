@@ -57,7 +57,7 @@ from glob import glob
 from glob import iglob
 from datetime import datetime
 
-__version__ = "0.5.6"
+__version__ = "0.6.0"
 
 # default serialization format string
 global_format = '%4l %h%p%t %R'
@@ -780,10 +780,11 @@ class Sequence(list):
         """
         return [f.frame for f in self if f.frame is not None]
 
-    def _get_missing(self, max_size=10000):
+    def _get_missing(self, max_size=100000):
         """looks for missing sequence indexes in sequence
 
-        :param max_size: max sequence size before using ranges
+        :param max_size: maximum missing frame sequence size for
+            returning explcit frames, otherwise use ranges
         :return: List of missing frames, or ranges of frames if
             sequence size is greater than max_size
         """
@@ -800,7 +801,7 @@ class Sequence(list):
             # this can be expensive with large lists (high memory)
             return sorted(list(set(frames).symmetric_difference(r)))
         else:
-            log.debug("frame range is large")
+            log.debug("frame range is large, using ranges")
             for i, f in enumerate(frames[:-1]):
                 missing.append(range(f+1, frames[i+1]))
             return missing
