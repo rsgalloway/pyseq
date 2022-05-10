@@ -749,6 +749,122 @@ class TestIssues(unittest.TestCase):
         self.assertEqual(len(seq), 3)
         self.assertEqual(seq._get_padding(), '%03d')
 
+    def test_issue_67(self):
+        """tests issue 67. hangs on many of missing frames."""
+
+        def get_range(frames):
+            return range(frames[0], frames[-1] + 1)
+
+        # test with strict padding disabled
+        pyseq.strict_pad = False
+
+        # normal test case (missing frame count w/i tolerance)
+        files = [
+            'image-1.jpg',
+            'image-383.jpg',
+            'image-844.jpg',
+            'image-2500.jpg',
+            'image-4529.jpg',
+            'image-5000.jpg'
+        ]
+ 
+        seqs = get_sequences(files)
+        self.assertEqual(len(seqs), 1)
+
+        frames = seqs[0].frames()
+        missing = seqs[0]._get_missing()
+        self.assertEqual(len(frames), len(files))
+        self.assertEqual(len(missing), 5000-len(files))
+
+        # high missing frame count test 1
+        files = [
+            'image-1.jpg',
+            'image-1000.jpg',
+            'image-50000000.jpg'
+        ]
+
+        seqs = get_sequences(files)
+        self.assertEqual(len(seqs), 1)
+
+        frames = seqs[0].frames()
+        missing = seqs[0]._get_missing()
+
+        self.assertEqual(len(frames), len(files))
+        r = get_range(frames)
+        self.assertEqual(len(r), 50000000)
+        self.assertTrue(len(missing), 2) #<-- diff behavior: len is num. ranges
+        self.assertEqual(missing[0][0], 2)
+        self.assertEqual(missing[0][-1], 999)
+        self.assertEqual(missing[1][0], 1001)
+        self.assertEqual(missing[1][-1], 49999999)
+        self.assertEqual(seqs[0].format(),
+            "   3 image-%d.jpg [1, 1000, 50000000]"
+        )
+        self.assertEqual(seqs[0].format("%M"),
+            "[2-999, 1001-49999999, ]"
+        )
+
+        # test with strict padding enabled
+        pyseq.strict_pad = True
+
+        # high missing frame count test 2
+        files = [
+            'image-100000000-2048x2048.jpg',
+            'image-500000000-2048x2048.jpg'
+        ]
+
+        seqs = get_sequences(files)
+        self.assertEqual(len(seqs), 1)
+
+        frames = seqs[0].frames()
+        self.assertEqual(len(frames), 2)
+
+        r = get_range(frames)
+        self.assertEqual(len(r), 400000001)
+        missing = seqs[0]._get_missing()
+        self.assertTrue(len(missing), 5000000)
+        self.assertEqual(missing[0][0], 100000001)
+        self.assertEqual(missing[0][-1], 499999999)
+        self.assertEqual(seqs[0].format(),
+            "   2 image-%d-2048x2048.jpg [100000000, 500000000]"
+        )
+        self.assertEqual(seqs[0].format("%M"),
+            "[100000001-499999999, ]"
+        )
+
+        # high missing frame count test 3 (from the issue)
+        files = [
+            'file-1364769281-2048x2048.jpg',
+            'file-530573048-2048x2048.jpg',
+            'file-1127718214-2048x2048.jpg',
+            'file-470543560-2048x2048.jpg',
+            'file-155374807-2048x2048.jpg',
+            'file-1182189546-2048x2048.jpg',
+            'file-157742535-2048x2048.jpg'
+        ]
+
+        seqs = get_sequences(files)
+        self.assertEqual(len(seqs), 2)
+
+        # files with frame padding=10
+        self.assertEqual(seqs[0].frames(),
+            [1127718214, 1182189546, 1364769281]
+        )
+
+        # frame ranges are in the millions
+        frames = seqs[0].frames()
+        r = get_range(frames)
+        self.assertEqual(len(r), 237051068)
+    
+        frames = seqs[1].frames()
+        r = get_range(frames)
+        self.assertEqual(len(r), 375198242)
+
+        # files with frame padding=9
+        self.assertEqual(seqs[1].frames(),
+            [155374807, 157742535, 470543560, 530573048]
+        )
+
 
 if __name__ == '__main__':
     unittest.main()

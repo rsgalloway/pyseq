@@ -57,7 +57,7 @@ from glob import glob
 from glob import iglob
 from datetime import datetime
 
-__version__ = "0.5.5"
+__version__ = "0.6.0"
 
 # default serialization format string
 global_format = '%4l %h%p%t %R'
@@ -754,7 +754,11 @@ class Sequence(list):
 
         for i in range(0, len(frames)):
             frame = frames[i]
-            if i != 0 and frame != frames[i - 1] + 1:
+            if type(frame) == range:
+                frange.append('%s-%s' % (frame[0], frame[-1]))
+                continue
+            prev = frames[i - 1]
+            if i != 0 and frame != prev + 1:
                 if start != end:
                     frange.append('%s-%s' % (str(start), str(end)))
                 elif start == end:
@@ -776,20 +780,31 @@ class Sequence(list):
         """
         return [f.frame for f in self if f.frame is not None]
 
-    def _get_missing(self):
-        """Looks for missing sequence indexes in sequence
+    def _get_missing(self, max_size=100000):
+        """looks for missing sequence indexes in sequence
 
-        .. todo:: change this to:
-            r = range(frames[0], frames[-1] + 1)
-            return sorted(list(set(frames).symmetric_difference(r)))
+        :param max_size: maximum missing frame sequence size for
+            returning explcit frames, otherwise use ranges
+        :return: List of missing frames, or ranges of frames if
+            sequence size is greater than max_size
         """
         missing = []
         frames = self.frames()
+
         if len(frames) == 0:
             return missing
+        elif len(frames) == 1:
+            return frames
 
         r = range(frames[0], frames[-1] + 1)
-        return sorted(list(set(frames).symmetric_difference(r)))
+        if len(r) <= max_size:
+            # this can be expensive with large lists (high memory)
+            return sorted(list(set(frames).symmetric_difference(r)))
+        else:
+            log.debug("frame range is large, using ranges")
+            for i, f in enumerate(frames[:-1]):
+                missing.append(range(f+1, frames[i+1]))
+            return missing
 
 
 def diff(f1, f2):
