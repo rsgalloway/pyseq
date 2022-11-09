@@ -329,14 +329,14 @@ class SequenceTestCase(unittest.TestCase):
         self.assertFalse(seq.includes('file.0009.pic'))
 
     def test_contains_is_working_properly(self):
-        """testing if Sequence.contains() method is working properly
+        """test if Sequence.contains() method is working properly
         """
         seq = Sequence(self.files)
         self.assertFalse(seq.contains('file.0009.jpg'))
         self.assertFalse(seq.contains('file.0009.pic'))
 
     def test_format_is_working_properly_1(self):
-        """testing if format is working properly
+        """test if format is working properly
         """
         seq = Sequence(self.files)
         seq.append('file.0006.jpg')
@@ -346,7 +346,7 @@ class SequenceTestCase(unittest.TestCase):
         )
 
     def test_format_is_working_properly_2(self):
-        """testing if format is working properly
+        """test if format is working properly
         """
         seq = Sequence(self.files)
         seq.append('file.0006.jpg')
@@ -360,7 +360,7 @@ class SequenceTestCase(unittest.TestCase):
         )
         
     def test_format_is_working_properly_3(self):
-        """testing if format is working properly
+        """test if format is working properly
         """
         seq = Sequence(self.files)
         seq.append('file.0006.jpg')
@@ -380,7 +380,7 @@ class SequenceTestCase(unittest.TestCase):
             )
 
     def test__get_missing(self):
-        """ test that _get_missing works
+        """test that _get_missing works
         """
         # Can't initialize Sequence without an item
         # seq = Sequence([])
@@ -702,7 +702,7 @@ class TestIssues(unittest.TestCase):
         self.assertEqual(len(items), len(seq))
         self.assertEqual(seq._get_padding(), '%d')
 
-        item = [
+        items = [
             'file.7.jpg', 'file.8.jpg', 'file.9.jpg',
             'file.10.jpg', 'file.11.jpg', 'file.12.jpg'
         ]
@@ -826,7 +826,7 @@ class TestIssues(unittest.TestCase):
         self.assertEqual(missing[0][0], 100000001)
         self.assertEqual(missing[0][-1], 499999999)
         self.assertEqual(seqs[0].format(),
-            "   2 image-%d-2048x2048.jpg [100000000, 500000000]"
+            "   2 image-%09d-2048x2048.jpg [100000000, 500000000]"
         )
         self.assertEqual(seqs[0].format("%M"),
             "[100000001-499999999, ]"
@@ -864,6 +864,56 @@ class TestIssues(unittest.TestCase):
         self.assertEqual(seqs[1].frames(),
             [155374807, 157742535, 470543560, 530573048]
         )
+
+    def test_issue_69(self):
+        """tests issue 69. more strict padding tests."""
+
+        # padded frames
+        padded = [
+            'file.08.jpg',
+            'file.09.jpg',
+            'file.10.jpg',
+            'file.11.jpg',
+        ]
+
+        # unpadded frames
+        unpadded = [
+            'file.8.jpg',
+            'file.9.jpg',
+            'file.10.jpg',
+            'file.11.jpg',
+        ]
+
+        seqformat = "%4l %h%p%t %R"
+
+        # test with strict padding enabled (default)
+        # with strict pad enabled, the num of digits in each frame must match
+        pyseq.strict_pad = True
+
+        # test padded frames
+        seqs = get_sequences(padded)
+        self.assertEqual(len(seqs), 1)
+        self.assertEqual(seqs[0].format(seqformat), "   4 file.%02d.jpg [8-11]")
+
+        # test unpadded frames
+        seqs = get_sequences(unpadded)
+        self.assertEqual(len(seqs), 2)
+        self.assertEqual(seqs[0].format(seqformat), "   2 file.%02d.jpg [10-11]")
+        self.assertEqual(seqs[1].format(seqformat), "   2 file.%d.jpg [8-9]")
+
+        # test with strict padding disabled
+        # with strict pad disabled, the num of digits in each frame can vary
+        pyseq.strict_pad = False
+
+        # test padded frames
+        seqs = get_sequences(padded)
+        self.assertEqual(len(seqs), 1)
+        self.assertEqual(seqs[0].format(seqformat), "   4 file.%d.jpg [8-11]")
+
+        # test unpadded frames
+        seqs = get_sequences(unpadded)
+        self.assertEqual(len(seqs), 1)
+        self.assertEqual(seqs[0].format(seqformat), "   4 file.%d.jpg [8-11]")
 
 
 if __name__ == '__main__':

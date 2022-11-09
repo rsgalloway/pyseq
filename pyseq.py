@@ -57,7 +57,7 @@ from glob import glob
 from glob import iglob
 from datetime import datetime
 
-__version__ = "0.6.0"
+__version__ = "0.6.1"
 
 # default serialization format string
 global_format = '%4l %h%p%t %R'
@@ -66,7 +66,7 @@ default_format = '%h%r%t'
 # use strict padding on sequences (pad length must match)
 # https://github.com/rsgalloway/pyseq/issues/41
 # export $PYSEQ_NOT_STRICT=1 to disable strict padding
-strict_pad = os.environ.get('PYSEQ_NOT_STRICT', True)
+strict_pad = not os.getenv('PYSEQ_NOT_STRICT', False)
 
 # regex for matching numerical characters
 digits_re = re.compile(r'\d+')
@@ -280,8 +280,15 @@ class Item(str):
         if not isinstance(item, Item):
             item = Item(item)
 
-        # assume a frame is unpadded unless it starts with a 0
-        padsize = lambda x: item.pad or len(x) if x.startswith('0') else 0
+        # strict: frame size (%d) must match between frames (default)
+        # for example: test.09.jpg, test.10.jpg, test.11.jpg
+        if strict_pad:
+            padsize = lambda x: item.pad or len(x)
+
+        # not strict: frame size can change between frames
+        # for example: test.9.jpg, test.10.jpg, test.11.jpg
+        else:
+            padsize = lambda x: item.pad or len(x) if x.startswith('0') else 0
 
         # diff these two items to determine siblinghood
         d = diff(self, item)
