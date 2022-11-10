@@ -60,22 +60,16 @@ API Examples
 Compression, or serialization, of lists of items ::
 
     >>> s = Sequence(['file.0001.jpg', 'file.0002.jpg', 'file.0003.jpg'])
-    >>> print s
+    >>> print(s)
     file.1-3.jpg
     >>> s.append('file.0006.jpg')
     >>> print(s.format("%h%p%t %R"))
     file.%04d.jpg [1-3, 6]
-    >>> s.contains('file.0009.jpg')
-    True
-    >>> s.contains('file.0009.pic')
-    False
 
 Uncompression, or deserialization, of compressed sequences strings ::
 
-    >>> s = uncompress('012_vb_110_v002.1-150.dpx', format="%h%r%t")
+    >>> s = uncompress('./tests/012_vb_110_v001.%04d.png 1-1001', fmt='%h%p%t %r')
     >>> len(s)
-    150
-    >>> seq = uncompress('./tests/012_vb_110_v001.%04d.png 1-10', format='%h%p%t %r')
-    >>> print(seq.format('%04l %h%p%t %R'))
-      10 012_vb_110_v001.%04d.png [1-10]
-
+    1001
+    >>> print(s.format('%04l %h%p%t %R'))
+    1001 012_vb_110_v001.%04d.png [1-1001]

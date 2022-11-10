@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # ---------------------------------------------------------------------------------------------
-# Copyright (c) 2011-2021, Ryan Galloway (ryan@rsgalloway.com)
+# Copyright (c) 2011-2022, Ryan Galloway (ryan@rsgalloway.com)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -531,6 +531,10 @@ class HelperFunctionsTestCase(unittest.TestCase):
         """testing if uncompress is working properly,
         the frame 100000 does not fit inside the pad length
         """
+
+        # enable strict pad checking
+        pyseq.strict_pad = True
+
         seq7 = uncompress(
             'a.%03d.tga 1-100000 ([1-10, 100000])',
             fmt='%h%p%t %r (%R)'
@@ -542,6 +546,23 @@ class HelperFunctionsTestCase(unittest.TestCase):
 
         self.assertEqual(
             10,
+            len(seq7)
+        )
+
+        # disable strict pad checking
+        pyseq.strict_pad = False
+
+        seq7 = uncompress(
+            'a.%03d.tga 1-100000 ([1-10, 100000])',
+            fmt='%h%p%t %r (%R)'
+        )
+        self.assertEqual(
+            'a.1-100000.tga',
+            str(seq7)
+        )
+
+        self.assertEqual(
+            11,
             len(seq7)
         )
 
@@ -770,6 +791,7 @@ class TestIssues(unittest.TestCase):
  
         seqs = get_sequences(files)
         self.assertEqual(len(seqs), 1)
+        self.assertEqual(len(seqs[0]), len(files))
 
         frames = seqs[0].frames()
         missing = seqs[0]._get_missing()
@@ -901,6 +923,11 @@ class TestIssues(unittest.TestCase):
         self.assertEqual(seqs[0].format(seqformat), "   2 file.%02d.jpg [10-11]")
         self.assertEqual(seqs[1].format(seqformat), "   2 file.%d.jpg [8-9]")
 
+        # test uncompress with strict pad
+        # finds frames 1-9 because num digits changes after 9
+        s = uncompress("file.1-150.jpg", fmt="%h%r%t")
+        self.assertEqual(len(s), 9)
+
         # test with strict padding disabled
         # with strict pad disabled, the num of digits in each frame can vary
         pyseq.strict_pad = False
@@ -914,6 +941,10 @@ class TestIssues(unittest.TestCase):
         seqs = get_sequences(unpadded)
         self.assertEqual(len(seqs), 1)
         self.assertEqual(seqs[0].format(seqformat), "   4 file.%d.jpg [8-11]")
+
+        # test uncompress without strict pad, finds all 150 frames
+        s = uncompress("file.1-150.jpg", fmt="%h%r%t")
+        self.assertEqual(len(s), 150)
 
 
 if __name__ == '__main__':

@@ -64,9 +64,11 @@ global_format = '%4l %h%p%t %R'
 default_format = '%h%r%t'
 
 # use strict padding on sequences (pad length must match)
-# https://github.com/rsgalloway/pyseq/issues/41
-# export $PYSEQ_NOT_STRICT=1 to disable strict padding
-strict_pad = not os.getenv('PYSEQ_NOT_STRICT', False)
+#    $ export PYSEQ_STRICT_PAD=1 or 
+#    $ export PYSEQ_NOT_STRICT=1
+# to enable/disable. disabled by default.
+strict_pad = int(os.getenv('PYSEQ_STRICT_PAD', 0)) == 1 or \
+    int(os.getenv('PYSEQ_NOT_STRICT', 1)) == 0
 
 # regex for matching numerical characters
 digits_re = re.compile(r'\d+')
