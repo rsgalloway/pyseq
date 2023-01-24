@@ -2,6 +2,12 @@
 CHANGELOG
 =========
 
+v0.6.1
+======
+
+* Addresses issue #69 (strict padding)
+* Disables pad strictness by default
+
 v0.6.0
 ======
 
