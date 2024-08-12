@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # ---------------------------------------------------------------------------------------------
-# Copyright (c) 2011-2022, Ryan Galloway (ryan@rsgalloway.com)
+# Copyright (c) 2011-2024, Ryan Galloway (ryan@rsgalloway.com)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -89,7 +89,7 @@ log = logging.getLogger('pyseq')
 log.addHandler(logging.StreamHandler())
 log.setLevel(int(os.environ.get('PYSEQ_LOG_LEVEL', logging.INFO)))
 
-# python 3 strings
+# python 2/3 compatibility
 try:
     unicode = unicode
 except NameError:
@@ -130,6 +130,7 @@ def _ext_key(x):
     return [ext] + _natural_key(name)
 
 
+@functools.lru_cache(maxsize=None)
 def natural_sort(items):
     return sorted(items, key=_natural_key)
 
@@ -167,7 +168,6 @@ class Item(str):
 
     def __init__(self, item):
         super(Item, self).__init__()
-        log.debug('adding %s', item)
         self.item = item
         self.__path = getattr(item, 'path', None)
         if self.__path is None:
@@ -259,6 +259,7 @@ class Item(str):
         return self.stat.st_mtime
 
     @property
+    @functools.lru_cache(maxsize=None)
     def stat(self):
         """ Returns the os.stat object for this file.
         """
@@ -279,6 +280,7 @@ class Item(str):
 
         :return: True if this and item are sequential siblings.
         """
+
         if not isinstance(item, Item):
             item = Item(item)
 
@@ -353,9 +355,7 @@ class Sequence(list):
             f = Item(items.pop(0))
             try:
                 self.append(f)
-                log.debug('+Item belongs to sequence.')
             except SequenceError:
-                log.debug('-Item does not belong to sequence.')
                 continue
             except KeyboardInterrupt:
                 log.info("Stopping.")
@@ -599,6 +599,7 @@ class Sequence(list):
             >>> s.includes('fileB.0003.jpg')
             False
         """
+
         if len(self) > 0:
             if not isinstance(item, Item):
                 item = Item(item)
@@ -631,6 +632,7 @@ class Sequence(list):
 
         :return: True if item is a sequence member.
         """
+
         if len(self) > 0:
             if not isinstance(item, Item):
                 item = Item(item)
@@ -646,6 +648,7 @@ class Sequence(list):
 
         :exc:`SequenceError` raised if item is not a sequence member.
         """
+
         if type(item) is not Item:
             item = Item(item)
 
@@ -661,6 +664,7 @@ class Sequence(list):
             :param item: pyseq.Item object.
             :exc: `SequenceError` raised if item is not a sequence member.
         """
+
         if type(item) is not Item:
             item = Item(item)
 
@@ -677,6 +681,7 @@ class Sequence(list):
             :exc: `SequenceError` raised if any items are not a sequence
                   member.
         """
+    
         for item in items:
             if type(item) is not Item:
                 item = Item(item)
@@ -700,6 +705,7 @@ class Sequence(list):
         :param offset: the frame offset to apply to each item
         :param padding: change the padding
         """
+
         if not padding:
             padding = self.format("%p")
 
@@ -722,7 +728,6 @@ class Sequence(list):
             except Exception as err:
                 log.error(err)
             else:
-                log.debug('renaming %s %s' % (oldName, newName))
                 self.__dirty = True
                 image.frame = int(newFrame)
 
@@ -749,6 +754,7 @@ class Sequence(list):
 
         :return: formatted frame range string.
         """
+
         frange = []
         start = ''
         end = ''
@@ -797,6 +803,7 @@ class Sequence(list):
         :return: List of missing frames, or ranges of frames if
             sequence size is greater than max_size
         """
+    
         missing = []
         frames = self.frames()
 
@@ -807,10 +814,11 @@ class Sequence(list):
 
         r = range(frames[0], frames[-1] + 1)
         if len(r) <= max_size:
-            # this can be expensive with large lists (high memory)
-            return sorted(list(set(frames).symmetric_difference(r)))
+            frames_set = set(frames)
+            r_set = set(r)
+            symmetric_diff = frames_set.symmetric_difference(r_set)
+            return sorted(symmetric_diff)
         else:
-            log.debug("frame range is large, using ranges")
             for i, f in enumerate(frames[:-1]):
                 missing.append(range(f+1, frames[i+1]))
             return missing
@@ -832,7 +840,7 @@ def diff(f1, f2):
 
     :return: Dictionary with keys: frames, start, end.
     """
-    log.debug('diff: %s %s' % (f1, f2))
+
     if not type(f1) == Item:
         f1 = Item(f1)
     if not type(f2) == Item:
@@ -855,7 +863,6 @@ def diff(f1, f2):
                     'frames': (m1.group(), m2.group())
                 })
 
-    log.debug(d)
     return d
 
 
@@ -887,12 +894,13 @@ def uncompress(seq_string, fmt=global_format):
 
     :return: :class:`.Sequence` instance.
     """
+
     dirname = os.path.dirname(seq_string)
+
     # remove directory
     if "%D" in fmt:
         fmt = fmt.replace("%D", "")
     name = os.path.basename(seq_string)
-    log.debug('uncompress: %s' % name)
 
     # map of directives to regex
     remap = {
@@ -908,15 +916,11 @@ def uncompress(seq_string, fmt=global_format):
         'f': '\[.*\]',
     }
 
-    log.debug('fmt in: %s' % fmt)
-
     # escape any re chars in format
     fmt = re.escape(fmt)
 
     # replace \% with % back again
     fmt = fmt.replace('\\%', '%')
-
-    log.debug('fmt escaped: %s' % fmt)
 
     for m in format_re.finditer(fmt):
         _old = '%%%s%s' % (m.group('pad') or '', m.group('var'))
@@ -926,12 +930,8 @@ def uncompress(seq_string, fmt=global_format):
         )
         fmt = fmt.replace(_old, _new)
 
-    log.debug('fmt: %s' % fmt)
-
     regex = re.compile(fmt)
     match = regex.match(name)
-
-    log.debug("match: %s" % match.groupdict() if match else "")
 
     frames = []
     missing = []
@@ -939,7 +939,6 @@ def uncompress(seq_string, fmt=global_format):
     e = None
 
     if not match:
-        log.debug('No matches.')
         return
 
     try:
@@ -1030,7 +1029,7 @@ def get_sequences(source):
 
     Get sequences in a directory:
 
-        >>> seqs = get_sequences('./tests/files/')
+        >>> seqs = get_sequences('tests/files/')
         >>> for s in seqs: print(s)
         ...
         012_vb_110_v001.1-10.png
@@ -1059,19 +1058,10 @@ def get_sequences(source):
         fileA.1-2.rgb
         fileB.1.rgb
 
-    Get sequences from a list of objects, preserving object attrs:
-
-        >>> seqs = get_sequences(repo.files())
-        >>> seqs[0].date
-        datetime.datetime(2011, 3, 21, 17, 31, 24)
-
     :param source: Can be directory path, list of strings, or sortable list of objects.
-
     :return: List of pyseq.Sequence class objects.
     """
-    start = datetime.now()
 
-    # list for storing sequences to be returned later
     seqs = []
 
     if isinstance(source, list):
@@ -1086,8 +1076,6 @@ def get_sequences(source):
     else:
         raise TypeError('Unsupported format for source argument')
 
-    log.debug('Found %s files' % len(items))
-
     # organize the items into sequences
     while items:
         item = Item(items.pop(0))
@@ -1100,8 +1088,6 @@ def get_sequences(source):
         if not found:
             seq = Sequence([item])
             seqs.append(seq)
-
-    log.debug('time: %s' % (datetime.now() - start))
 
     return list(seqs)
 
@@ -1149,12 +1135,10 @@ def iget_sequences(source):
         fileA.1-2.rgb
         fileB.1.rgb
 
-
     :param source: Can be directory path, list of strings, or sortable list of objects.
-
     :return: List of pyseq.Sequence class objects.
     """
-    start = datetime.now()
+
     if isinstance(source, list):
         items = source
     elif isinstance(source, str):
@@ -1167,7 +1151,6 @@ def iget_sequences(source):
         raise TypeError("Unsupported format for source argument")
 
     items = sorted(items, key=_ext_key)
-    log.debug("Found %d files", len(items))
 
     seq = None
     while items:
@@ -1182,7 +1165,6 @@ def iget_sequences(source):
 
     if seq is not None:
         yield seq
-    log.debug("time: %s", datetime.now() - start)
 
 
 def walk(source, level=-1, topdown=True, onerror=None, followlinks=False, hidden=False):
@@ -1197,7 +1179,7 @@ def walk(source, level=-1, topdown=True, onerror=None, followlinks=False, hidden
     :param followlinks: whether to follow links
     :param hidden: include hidden files and dirs
     """
-    start = datetime.now()
+
     assert isinstance(source, basestring) is True
     assert os.path.exists(source) is True
     source = os.path.abspath(source)
@@ -1211,12 +1193,10 @@ def walk(source, level=-1, topdown=True, onerror=None, followlinks=False, hidden
         files = [os.path.join(root, f) for f in files]
 
         if topdown is True:
-            parts = root.replace(source, "").split(os.sep)
+            parts = root.replace(source, '').split(os.sep)
             while "" in parts:
-                parts.remove("")
+                parts.remove('')
             if len(parts) == level - 1:
                 del dirs[:]
 
         yield root, dirs, get_sequences(files)
-
-    log.debug('time: %s' % (datetime.now() - start))

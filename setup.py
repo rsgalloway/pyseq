@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2011-2022 Ryan Galloway (ryan@rsgalloway.com)
+# Copyright (c) 2011-2024 Ryan Galloway (ryan@rsgalloway.com)
 #
 # This module is part of Shotman and is released under
 # the BSD License: http://www.opensource.org/licenses/bsd-license.php
