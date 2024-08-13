@@ -97,20 +97,6 @@ log = logging.getLogger("pyseq")
 log.addHandler(logging.StreamHandler())
 log.setLevel(int(os.environ.get("PYSEQ_LOG_LEVEL", logging.INFO)))
 
-# python 2/3 compatibility
-try:
-    unicode = unicode
-except NameError:
-    str = str
-    unicode = str
-    bytes = bytes
-    basestring = (str, bytes)
-else:
-    str = str
-    unicode = unicode
-    bytes = str
-    basestring = basestring
-
 
 def _natural_key(x):
     """Splits a string into characters and digits.  This helps in sorting file
@@ -236,6 +222,9 @@ class Item(str):
     def __le__(self, other):
         return self.frame <= other.frame
 
+    def __hash__(self):
+        return hash(self.path)
+
     def __str__(self):
         return str(self.name)
 
@@ -360,14 +349,14 @@ class Sequence(list):
         :return: pyseq.Sequence class instance.
         """
         # otherwise Sequence consumes the list
-        items = items[::]
-        super(Sequence, self).__init__([Item(items.pop(0))])
+        items = deque(items[::])
+        super(Sequence, self).__init__([Item(items.popleft())])
         self.__missing = []
         self.__dirty = False
         self.__frames = None
 
         while items:
-            f = Item(items.pop(0))
+            f = Item(items.popleft())
             try:
                 self.append(f)
             except SequenceError:
@@ -411,7 +400,7 @@ class Sequence(list):
         if type(index) is slice:
             if index.step not in (1, None):
                 raise ValueError("only step=1 supported")
-            if isinstance(item, basestring):
+            if isinstance(item, str):
                 item = Sequence([item])
             super(Sequence, self).__setitem__(index, item)
             return
@@ -425,7 +414,7 @@ class Sequence(list):
             raise SequenceError("Item is not a member of sequence.")
 
     def __setslice__(self, start, end, item):
-        if isinstance(item, basestring):
+        if isinstance(item, str):
             item = Sequence([item])
         if isinstance(item, list) is False:
             raise TypeError("Invalid type to add to sequence")
@@ -440,7 +429,7 @@ class Sequence(list):
         """return a new sequence with the item appended.  Accepts an Item,
         a string, or a list.
         """
-        if isinstance(item, basestring):
+        if isinstance(item, str):
             item = Sequence([item])
         if isinstance(item, list) is False:
             raise TypeError("Invalid type to add to sequence")
@@ -449,7 +438,7 @@ class Sequence(list):
         return ns
 
     def __iadd__(self, item):
-        if isinstance(item, basestring) or type(item) is Item:
+        if isinstance(item, str) or type(item) is Item:
             item = [item]
         if isinstance(item, list) is False:
             raise TypeError("Invalid type to add to sequence")
@@ -836,6 +825,7 @@ class Sequence(list):
             return missing
 
 
+# @functools.lru_cache(maxsize=None)
 def diff(f1, f2):
     """Examines diffs between f1 and f2 and deduces numerical sequence number.
 
@@ -848,9 +838,8 @@ def diff(f1, f2):
         [{'frames': ('3', '4'), 'start': 4, 'end': 5}]
 
     :param f1: pyseq.Item object.
-    :param f2: pyseq.Item object, for comparison.
-
-    :return: Dictionary with keys: frames, start, end.
+    :param f2: pyseq.Item object to diff.
+    :return: A dictionary with keys 'frames', 'start', and 'end'.
     """
 
     if not isinstance(f1, Item):
@@ -858,14 +847,14 @@ def diff(f1, f2):
     if not isinstance(f2, Item):
         f2 = Item(f2)
 
-    l1 = [m for m in digits_re.finditer(f1.name)]
-    l2 = [m for m in digits_re.finditer(f2.name)]
+    l1 = deque([m for m in digits_re.finditer(f1.name)])
+    l2 = deque([m for m in digits_re.finditer(f2.name)])
 
     d = []
     if len(l1) == len(l2):
-        for i in range(0, len(l1)):
-            m1 = l1.pop(0)
-            m2 = l2.pop(0)
+        for _ in range(0, len(l1)):
+            m1 = l1.popleft()
+            m2 = l2.popleft()
             if (m1.start() == m2.start()) and (m1.group() != m2.group()):
                 if strict_pad is True and (len(m1.group()) != len(m2.group())):
                     continue
@@ -1078,7 +1067,7 @@ def get_sequences(source):
     if isinstance(source, list):
         items = sorted(source, key=lambda x: str(x))
 
-    elif isinstance(source, basestring):
+    elif isinstance(source, str):
         if os.path.isdir(source):
             items = sorted(glob(os.path.join(source, "*")))
         else:
@@ -1093,7 +1082,7 @@ def get_sequences(source):
     while items:
         item = Item(items.popleft())
         found = False
-        for seq in seqs[::-1]:
+        for seq in reversed(seqs):
             if seq.includes(item):
                 seq.append(item)
                 found = True
@@ -1102,7 +1091,7 @@ def get_sequences(source):
             seq = Sequence([item])
             seqs.append(seq)
 
-    return list(seqs)
+    return seqs
 
 
 def iget_sequences(source):
@@ -1163,11 +1152,11 @@ def iget_sequences(source):
     else:
         raise TypeError("Unsupported format for source argument")
 
-    items = sorted(items, key=_ext_key)
+    items = deque(sorted(items, key=_ext_key))
 
     seq = None
     while items:
-        item = Item(items.pop(0))
+        item = Item(items.popleft())
         if seq is None:
             seq = Sequence([item])
         elif seq.includes(item):
@@ -1193,7 +1182,7 @@ def walk(source, level=-1, topdown=True, onerror=None, followlinks=False, hidden
     :param hidden: include hidden files and dirs
     """
 
-    assert isinstance(source, basestring) is True
+    assert isinstance(source, str) is True
     assert os.path.exists(source) is True
     source = os.path.abspath(source)
 
