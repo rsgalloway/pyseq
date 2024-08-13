@@ -40,7 +40,7 @@ sequence, e.g. ::
 
     fileA.1-3.png
 
-It should work regardless of where the numerical sequence index is embedded 
+It should work regardless of where the numerical sequence index is embedded
 in the name.
 
 Docs and latest version available for download at
@@ -114,9 +114,8 @@ else:
 
 def _natural_key(x):
     """Splits a string into characters and digits.  This helps in sorting file
-    names in a 'natural' way.
-    """
-    return [int(c) if c.isdigit() else c.lower() for c in re.split("(\d+)", x)]
+    names in a 'natural' way."""
+    return [int(c) if c.isdigit() else c.lower() for c in re.split(r"(\d+)", x)]
 
 
 def _ext_key(x):
@@ -172,8 +171,32 @@ def deprecated(func):
     return inner
 
 
+def padsize(item, frame):
+    """
+    Determines the pad size for a given Item. Return value may depend on
+    whether strict padding is enabled or not.
+
+    For example: the file item.001.exr will have a pad size of 3, and the
+    file test.001001.exr will have a pad size of 6.
+
+    :param item: Item object.
+    :param frame: the frame number as a string.
+    :returns: the size of the frame pad as an int.
+    """
+
+    # strict: frame size (%d) must match between frames (default)
+    # for example: test.09.jpg, test.10.jpg, test.11.jpg
+    if strict_pad:
+        return item.pad or len(frame)
+
+    # not strict: frame size can change between frames
+    # for example: test.9.jpg, test.10.jpg, test.11.jpg
+    else:
+        return item.pad or len(frame) if frame.startswith("0") else 0
+
+
 class Item(str):
-    """Sequence member file class
+    """Sequence member file class.
 
     :param item: Path to file.
     """
@@ -286,16 +309,6 @@ class Item(str):
         if not isinstance(item, Item):
             item = Item(item)
 
-        # strict: frame size (%d) must match between frames (default)
-        # for example: test.09.jpg, test.10.jpg, test.11.jpg
-        if strict_pad:
-            padsize = lambda x: item.pad or len(x)
-
-        # not strict: frame size can change between frames
-        # for example: test.9.jpg, test.10.jpg, test.11.jpg
-        else:
-            padsize = lambda x: item.pad or len(x) if x.startswith("0") else 0
-
         # diff these two items to determine siblinghood
         d = diff(self, item)
         is_sibling = (len(d) == 1) and (self.parts == item.parts)
@@ -305,14 +318,14 @@ class Item(str):
         if is_sibling:
             frame = d[0]["frames"][0]
             self.frame = int(frame)
-            self.pad = padsize(frame)
+            self.pad = padsize(item, frame)
             self.head = self.name[: d[0]["start"]]
-            self.tail = self.name[d[0]["end"] :]
+            self.tail = self.name[d[0]["end"] :]  # noqa
             frame = d[0]["frames"][1]
             item.frame = int(frame)
             item.pad = self.pad
             item.head = item.name[: d[0]["start"]]
-            item.tail = item.name[d[0]["end"] :]
+            item.tail = item.name[d[0]["end"] :]  # noqa
 
         return is_sibling
 
@@ -505,7 +518,7 @@ class Sequence(list):
             pad = m.group("pad")
             try:
                 fmt_char = format_char_types[var]
-            except KeyError as err:
+            except KeyError:
                 raise FormatError("Bad directive: %%%s" % var)
             _old = "%s%s" % (pad or "", var)
             _new = "(%s)%s%s" % (var, pad or "", fmt_char)
@@ -769,7 +782,7 @@ class Sequence(list):
 
         for i in range(0, len(frames)):
             frame = frames[i]
-            if type(frame) == range:
+            if isinstance(frame, range):
                 frange.append("%s-%s" % (frame[0], frame[-1]))
                 continue
             prev = frames[i - 1]
@@ -840,9 +853,9 @@ def diff(f1, f2):
     :return: Dictionary with keys: frames, start, end.
     """
 
-    if not type(f1) == Item:
+    if not isinstance(f1, Item):
         f1 = Item(f1)
-    if not type(f2) == Item:
+    if not isinstance(f2, Item):
         f2 = Item(f2)
 
     l1 = [m for m in digits_re.finditer(f1.name)]
@@ -904,16 +917,16 @@ def uncompress(seq_string, fmt=global_format):
 
     # map of directives to regex
     remap = {
-        "s": "\d+",
-        "e": "\d+",
-        "l": "\d+",
-        "h": "(\S+)?",
-        "t": "(\S+)?",
-        "r": "\d+-\d+",
-        "R": "\[[\d\s?\-%s?]+\]" % re.escape(range_join),
-        "p": "%\d+d",
-        "m": "\[.*\]",
-        "f": "\[.*\]",
+        "s": r"\d+",
+        "e": r"\d+",
+        "l": r"\d+",
+        "h": r"(\S+)?",
+        "t": r"(\S+)?",
+        "r": r"\d+-\d+",
+        "R": r"\[[\d\s?\-%s?]+\]" % re.escape(range_join),
+        "p": r"%\d+d",
+        "m": r"\[.*\]",
+        "f": r"\[.*\]",
     }
 
     # escape any re chars in format
@@ -924,7 +937,7 @@ def uncompress(seq_string, fmt=global_format):
 
     for m in format_re.finditer(fmt):
         _old = "%%%s%s" % (m.group("pad") or "", m.group("var"))
-        _new = "(?P<%s>%s)" % (m.group("var"), remap.get(m.group("var"), "\w+"))
+        _new = "(?P<%s>%s)" % (m.group("var"), remap.get(m.group("var"), r"\w+"))
         fmt = fmt.replace(_old, _new)
 
     regex = re.compile(fmt)
