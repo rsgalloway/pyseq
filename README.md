@@ -101,3 +101,18 @@ Uncompression, or deserialization, of compressed sequences strings:
 >>> print(s.format('%04l %h%p%t %R'))
 1001 012_vb_110_v001.%04d.png [1-1001]
 ```
+
+Testing
+-------
+
+To run the unit tests, simply run `pytest` in a shell:
+
+```bash
+$ pytest
+```
+
+Or if you don't have `pytest`, you can run:
+
+```bash
+$ python tests/test_pyseq.py
+```

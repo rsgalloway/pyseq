@@ -359,9 +359,58 @@ class SequenceTestCase(unittest.TestCase):
                 missing.append(i)
 
         # remove ending random frames
-        while missing[-1] > int(re.search("file\.(\d{4})\.jpg", seq[-1]).group(1)):
+        while missing[-1] > int(re.search(r"file\.(\d{4})\.jpg", seq[-1]).group(1)):
             missing.pop(-1)
         self.assertEqual(seq._get_missing(), missing)
+
+
+class PadSizeTestCase(unittest.TestCase):
+    def test_padsize_with_default_padding(self):
+        item = Item("file.001.exr")
+        frame = "001"
+        expected_padsize = 3
+
+        result = pyseq.padsize(item, frame)
+
+        self.assertEqual(result, expected_padsize)
+
+    def test_padsize_with_custom_padding(self):
+        item = Item("file.001001.exr")
+        frame = "001001"
+        expected_padsize = 6
+
+        result = pyseq.padsize(item, frame)
+
+        self.assertEqual(result, expected_padsize)
+
+    def test_padsize_with_no_padding(self):
+        item = Item("file.9.jpg")
+        frame = "9"
+        expected_padsize = 0
+
+        result = pyseq.padsize(item, frame)
+
+        self.assertEqual(result, expected_padsize)
+
+    def test_padsize_with_strict_padding_disabled(self):
+        pyseq.strict_pad = False
+        item = Item("file.9.jpg")
+        frame = "9"
+        expected_padsize = 0
+
+        result = pyseq.padsize(item, frame)
+
+        self.assertEqual(result, expected_padsize)
+
+    def test_padsize_with_strict_padding_enabled(self):
+        pyseq.strict_pad = True
+        item = Item("file.09.jpg")
+        frame = "09"
+        expected_padsize = 2
+
+        result = pyseq.padsize(item, frame)
+
+        self.assertEqual(result, expected_padsize)
 
 
 class HelperFunctionsTestCase(unittest.TestCase):
