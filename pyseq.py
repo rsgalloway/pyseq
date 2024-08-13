@@ -53,6 +53,7 @@ import re
 import logging
 import warnings
 import functools
+from collections import deque
 from glob import glob
 from glob import iglob
 from datetime import datetime
@@ -136,20 +137,17 @@ def natural_sort(items):
 
 
 class SequenceError(Exception):
-    """Special exception for Sequence errors
-    """
+    """Special exception for Sequence errors."""
     pass
 
 
 class FormatError(Exception):
-    """Special exception for Sequence format errors
-    """
+    """Special exception for Sequence format errors."""
     pass
 
 
 def deprecated(func):
-    """Deprecation warning decorator
-    """
+    """Deprecation warning decorator."""
     def inner(*args, **kwargs):
         warnings.warn("Call to deprecated method {}".format(func.__name__),
                       category=DeprecationWarning, stacklevel=2)
@@ -212,65 +210,55 @@ class Item(str):
 
     @property
     def path(self):
-        """Item absolute path, if a filesystem item.
-        """
+        """Item absolute path, if a filesystem item."""
         return self.__path
 
     @property
     def name(self):
-        """Item base name attribute
-        """
+        """Item base name attribute."""
         return self.__filename
 
     @property
     def dirname(self):
-        """"Item directory name, if a filesystem item."
-        """
+        """"Item directory name, if a filesystem item."""
         return self.__dirname
 
     @property
     def digits(self):
-        """Numerical components of item name.
-        """
+        """Numerical components of item name."""
         return self.__digits
 
     @property
     def parts(self):
-        """Non-numerical components of item name
-        """
+        """Non-numerical components of item name."""
         return self.__parts
 
     @property
     def exists(self):
-        """Returns True if this item exists on disk
-        """
+        """Returns True if this item exists on disk."""
         return os.path.isfile(self.__path)
 
     @property
     def size(self):
-        """Returns the size of the Item, reported by os.stat
-        """
+        """Returns the size of the Item, reported by os.stat."""
         return self.stat.st_size
 
     @property
     def mtime(self):
-        """Returns the modification time of the Item
-        """
+        """Returns the modification time of the Item."""
         return self.stat.st_mtime
 
     @property
     @functools.lru_cache(maxsize=None)
     def stat(self):
-        """ Returns the os.stat object for this file.
-        """
+        """ Returns the os.stat object for this file."""
         if self.__stat is None:
             self.__stat = os.stat(self.__path)
         return self.__stat
 
     @deprecated
     def isSibling(self, item):
-        """Deprecated: use is_sibling instead
-        """
+        """Deprecated: use is_sibling instead."""
         return self.is_sibling(item)
 
     def is_sibling(self, item):
@@ -520,8 +508,7 @@ class Sequence(list):
 
     @property
     def mtime(self):
-        """Returns the latest mtime of all items
-        """
+        """Returns the latest mtime of all items."""
         maxDate = list()
         for i in self:
             maxDate.append(i.mtime)
@@ -529,8 +516,7 @@ class Sequence(list):
 
     @property
     def size(self):
-        """Returns the size all items (divide by 1024*1024 for MBs)
-        """
+        """Returns the size all items (divide by 1024*1024 for MBs)."""
         tempSize = list()
         for i in self:
             tempSize.append(i.size)
@@ -551,16 +537,14 @@ class Sequence(list):
         return self.__frames
 
     def start(self):
-        """:return: First index number in sequence
-        """
+        """:return: First index number in sequence."""
         try:
             return self.frames()[0]
         except IndexError:
             return 0
 
     def end(self):
-        """:return: Last index number in sequence
-        """
+        """:return: Last index number in sequence."""
         try:
             return self.frames()[-1]
         except IndexError:
@@ -586,8 +570,8 @@ class Sequence(list):
         return os.path.join(_dirname, str(self))
 
     def includes(self, item):
-        """Checks if the item can be contained in this sequence that is if it
-        is a sibling of any of the items in the list
+        """Checks if the item can be contained in this sequence, i.e. if it
+        is a sibling of any of the items in the list.
 
         For example:
 
@@ -598,21 +582,26 @@ class Sequence(list):
             True
             >>> s.includes('fileB.0003.jpg')
             False
+
+        :param item: pyseq.Item class object.
+        :return: True if item is a sequence member.
         """
 
-        if len(self) > 0:
-            if not isinstance(item, Item):
-                item = Item(item)
-            if self[-1] != item:
-                return self[-1].is_sibling(item)
-            elif self[0] != item:
-                return self[0].is_sibling(item)
-            else:
-                # it should be the only item in the list
-                if self[0] == item:
-                    return True
+        if not self:
+            return True
 
-        return True
+        if not isinstance(item, Item):
+            item = Item(item)
+
+        if self[-1] != item:
+            return self[-1].is_sibling(item)
+        elif self[0] != item:
+            return self[0].is_sibling(item)
+        elif self[0] == item:
+            return True
+
+        return False
+
 
     def contains(self, item):
         """Checks for sequence membership. Calls Item.is_sibling() and returns
@@ -629,7 +618,6 @@ class Sequence(list):
             False
 
         :param item: pyseq.Item class object.
-
         :return: True if item is a sequence member.
         """
 
@@ -751,7 +739,6 @@ class Sequence(list):
         
         :param frames: list of ints like [1,4,8,12,15].
         :param missing: Expand sequence to exclude missing sequence indices.
-
         :return: formatted frame range string.
         """
 
@@ -791,12 +778,11 @@ class Sequence(list):
         return "[%s]" % range_join.join(frange)
 
     def _get_frames(self):
-        """finds the sequence indexes from item names
-        """
+        """Finds the sequence indexes from item names."""
         return [f.frame for f in self if f.frame is not None]
 
     def _get_missing(self, max_size=100000):
-        """looks for missing sequence indexes in sequence
+        """Looks for missing sequence indexes in sequence
 
         :param max_size: maximum missing frame sequence size for
             returning explcit frames, otherwise use ranges
@@ -891,7 +877,6 @@ def uncompress(seq_string, fmt=global_format):
 
     :param seq_string: Compressed sequence string.
     :param fmt: Format of sequence string.
-
     :return: :class:`.Sequence` instance.
     """
 
@@ -1076,9 +1061,11 @@ def get_sequences(source):
     else:
         raise TypeError('Unsupported format for source argument')
 
+    items = deque(items)
+
     # organize the items into sequences
     while items:
-        item = Item(items.pop(0))
+        item = Item(items.popleft())
         found = False
         for seq in seqs[::-1]:
             if seq.includes(item):
