@@ -87,7 +87,6 @@ __all__ = [
     "Sequence",
     "diff",
     "uncompress",
-    "getSequences",
     "get_sequences",
     "walk",
 ]
@@ -194,7 +193,7 @@ class Item(str):
         if self.__path is None:
             self.__path = os.path.abspath(str(item))
         self.__dirname, self.__filename = os.path.split(self.__path)
-        self.__digits = digits_re.findall(self.name)
+        self.__number_matches = []
         self.__parts = digits_re.split(self.name)
         self.__stat = None
 
@@ -251,12 +250,19 @@ class Item(str):
 
     @property
     def digits(self):
-        """Numerical components of item name."""
-        return self.__digits
+        """Returns numerical components as a list of strings."""
+        return digits_re.findall(self.name)
+
+    @property
+    def number_matches(self):
+        """Returns numerical components as a list of regex match objects."""
+        if not self.__number_matches:
+            self.__number_matches = [m for m in digits_re.finditer(self.__filename)]
+        return self.__number_matches
 
     @property
     def parts(self):
-        """Non-numerical components of item name."""
+        """Returns non-numerical components."""
         return self.__parts
 
     @property
@@ -281,11 +287,6 @@ class Item(str):
         if self.__stat is None:
             self.__stat = os.stat(self.__path)
         return self.__stat
-
-    @deprecated
-    def isSibling(self, item):
-        """Deprecated: use is_sibling instead."""
-        return self.is_sibling(item)
 
     def is_sibling(self, item):
         """Determines if this and item are part of the same sequence.
@@ -315,7 +316,6 @@ class Item(str):
             item.pad = self.pad
             item.head = item.name[: d[0]["start"]]
             item.tail = item.name[d[0]["end"] :]  # noqa
-
         return is_sibling
 
 
@@ -583,6 +583,7 @@ class Sequence(list):
         _dirname = str(os.path.dirname(os.path.abspath(self[0].path)))
         return os.path.join(_dirname, str(self))
 
+    # @functools.lru_cache(maxsize=None)
     def includes(self, item):
         """Checks if the item can be contained in this sequence, i.e. if it
         is a sibling of any of the items in the list.
@@ -616,6 +617,7 @@ class Sequence(list):
 
         return False
 
+    # @functools.lru_cache(maxsize=None)
     def contains(self, item):
         """Checks for sequence membership. Calls Item.is_sibling() and returns
         True if item is part of the sequence.
@@ -641,6 +643,7 @@ class Sequence(list):
 
         return False
 
+    # @functools.lru_cache(maxsize=None)
     def append(self, item):
         """Adds another member to the sequence.
 
@@ -847,14 +850,14 @@ def diff(f1, f2):
     if not isinstance(f2, Item):
         f2 = Item(f2)
 
-    l1 = deque([m for m in digits_re.finditer(f1.name)])
-    l2 = deque([m for m in digits_re.finditer(f2.name)])
+    f1_number_matches = deque(f1.number_matches)
+    f2_number_matches = deque(f2.number_matches)
 
     d = []
-    if len(l1) == len(l2):
-        for _ in range(0, len(l1)):
-            m1 = l1.popleft()
-            m2 = l2.popleft()
+    if len(f1_number_matches) == len(f2_number_matches):
+        for _ in range(0, len(f1_number_matches)):
+            m1 = f1_number_matches.popleft()
+            m2 = f2_number_matches.popleft()
             if (m1.start() == m2.start()) and (m1.group() != m2.group()):
                 if strict_pad is True and (len(m1.group()) != len(m2.group())):
                     continue
@@ -1017,12 +1020,6 @@ def uncompress(seq_string, fmt=global_format):
     return seqs
 
 
-@deprecated
-def getSequences(source):
-    """Deprecated: use get_sequences instead"""
-    return get_sequences(source)
-
-
 def get_sequences(source):
     """Returns a list of Sequence objects given a directory or list that contain
     sequential members.
@@ -1173,18 +1170,13 @@ def walk(source, level=-1, topdown=True, onerror=None, followlinks=False, hidden
     """Generator that traverses a directory structure starting at
     source looking for sequences.
 
-    :param source: valid folder path to traverse
-    :param level: int, if < 0 traverse entire structure otherwise
-                  traverse to given depth
-    :param topdown: walk from the top down
-    :param onerror: callable to handle os.listdir errors
-    :param followlinks: whether to follow links
-    :param hidden: include hidden files and dirs
+    :param source: Valid folder path to traverse.
+    :param level: int, if < 0 traverse entire structure otherwise traverse to given depth.
+    :param topdown: Walk from the top down.
+    :param onerror: Callable to handle os.listdir errors.
+    :param followlinks: Whether to follow links.
+    :param hidden: Include hidden files and dirs.
     """
-
-    assert isinstance(source, str) is True
-    assert os.path.exists(source) is True
-    source = os.path.abspath(source)
 
     for root, dirs, files in os.walk(source, topdown, onerror, followlinks):
         if not hidden:
