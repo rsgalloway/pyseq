@@ -53,11 +53,29 @@ Recursive:
 
 ```bash
 $ lss -r tests
-    tests
-    ├── test_pyseq.py
-    └── files
-        ├── 012_vb_110_v001.1-10.png
-        └── 012_vb_110_v002.1-10.png
+tests
+├── test_pyseq.py
+└── files
+    ├── 012_vb_110_v001.1-10.png
+    ├── 012_vb_110_v002.1-10.png
+    ├── a.1-14.tga
+    ├── alpha.txt
+    ├── bnc01_TinkSO_tx_0_ty_0.101-105.tif
+    ├── bnc01_TinkSO_tx_0_ty_1.101-105.tif
+    ├── bnc01_TinkSO_tx_1_ty_0.101-105.tif
+    ├── bnc01_TinkSO_tx_1_ty_1.101-105.tif
+    ├── file.1-2.tif
+    ├── file.info.03.rgb
+    ├── file01.1-4.j2k
+    ├── file01_40-43.rgb
+    ├── file02_44-47.rgb
+    ├── file1-4.03.rgb
+    ├── fileA.1-3.jpg
+    ├── fileA.1-3.png
+    ├── file_02.tif
+    ├── z1_001_v1.1-4.png
+    ├── z1_002_v1.1-4.png
+    └── z1_002_v2.9-12.png
 ```
 
 

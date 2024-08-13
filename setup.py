@@ -10,7 +10,7 @@ from pyseq import __version__
 
 from os import path
 this_directory = path.abspath(path.dirname(__file__))
-with open(path.join(this_directory, 'README.rst')) as f:
+with open(path.join(this_directory, 'README.md')) as f:
     long_description = f.read()
 
 setup(
@@ -18,7 +18,7 @@ setup(
     version=__version__,
     description='Compressed Sequence String Module',
     long_description=long_description,
-    long_description_content_type='text/x-rst',
+    long_description_content_type='text/markdown',
     author='Ryan Galloway',
     author_email='ryan@rsgalloway.com',
     url='http://github.com/rsgalloway/pyseq',
