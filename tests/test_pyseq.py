@@ -324,7 +324,7 @@ class SequenceTestCase(unittest.TestCase):
         )
 
     def test_format_directory_attribute(self):
-        dir_name = os.path.dirname(os.path.abspath(self.files[0])) + os.sep
+        dir_name = os.path.dirname(self.files[0]) + os.sep
         seq = Sequence(self.files)
         self.assertEqual(seq.format("%D"), dir_name)
 

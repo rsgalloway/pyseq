@@ -191,7 +191,7 @@ class Item(str):
         self.item = item
         self.__path = getattr(item, "path", None)
         if self.__path is None:
-            self.__path = os.path.abspath(str(item))
+            self.__path = str(item)
         self.__dirname, self.__filename = os.path.split(self.__path)
         self.__number_matches = []
         self.__parts = digits_re.split(self.name)
@@ -580,7 +580,7 @@ class Sequence(list):
 
     def path(self):
         """:return: Absolute path to sequence."""
-        _dirname = str(os.path.dirname(os.path.abspath(self[0].path)))
+        _dirname = str(os.path.dirname(self[0].path))
         return os.path.join(_dirname, str(self))
 
     # @functools.lru_cache(maxsize=None)
