@@ -48,15 +48,13 @@ Docs and latest version available for download at
    http://github.com/rsgalloway/pyseq
 """
 
+import functools
+import logging
 import os
 import re
-import logging
 import warnings
-import functools
 from collections import deque
-from glob import glob
-from glob import iglob
-from datetime import datetime
+from glob import glob, iglob
 
 __version__ = "0.6.1"
 
