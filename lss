@@ -30,12 +30,13 @@
 # POSSIBILITY OF SUCH DAMAGE.
 # -----------------------------------------------------------------------------
 
-import os
-import sys
 import glob
-import pyseq
 import logging
 import optparse
+import os
+import sys
+
+import pyseq
 
 
 def tree(source, level, seq_format):
@@ -89,9 +90,9 @@ def tree(source, level, seq_format):
             print("".join([sp, "├── ", "%s%s%s" % (blue, base, endc)]))
             sp += "│   "
 
-        l = len(seqs)
+        sequence_length = len(seqs)
         for i, seq in enumerate(seqs):
-            if i == (l - 1) and len(dirs) == 0:
+            if i == (sequence_length - 1) and len(dirs) == 0:
                 print("".join([sp, "└── ", seq.format(seq_format)]))
             else:
                 print("".join([sp, "├── ", seq.format(seq_format)]))
@@ -99,8 +100,7 @@ def tree(source, level, seq_format):
 
 
 def _recur_cb(option, opt_str, value, parser):
-    """Callback for the `recursive` argument.
-    """
+    """Callback for the `recursive` argument."""
     if value is None:
         value = -1
     else:
@@ -109,10 +109,10 @@ def _recur_cb(option, opt_str, value, parser):
 
 
 def main():
-    """Command-line interface.
-    """
+    """Command-line interface."""
 
-    usage = """
+    usage = (
+        """
 lss [path] [-f format] [-d] [-r]
 
 Formatting options:
@@ -136,18 +136,38 @@ Formatting options:
         %%t   string after the sequence number
 
     Format directives support padding, for example: "%%04l".
-    """ % pyseq.global_format
+    """
+        % pyseq.global_format
+    )
 
-    parser = optparse.OptionParser(usage=usage,
-        version="%prog " + pyseq.__version__)
-    parser.add_option("-f", "--format", dest="format",
-        default=None, help="format the output string")
-    parser.add_option("-d", "--debug", dest="debug", action="store_true",
-        default=False, help="set logging level to debug")
-    parser.add_option("-r", "--recursive", dest="recursive", action="callback",
-        callback=_recur_cb, help="Walks the entire directory structure.")
-    parser.add_option("-s", "--strict", dest="strict", action="store_true",
-        default=pyseq.strict_pad, help="strict padding (default false)")
+    parser = optparse.OptionParser(usage=usage, version="%prog " + pyseq.__version__)
+    parser.add_option(
+        "-f", "--format", dest="format", default=None, help="format the output string"
+    )
+    parser.add_option(
+        "-d",
+        "--debug",
+        dest="debug",
+        action="store_true",
+        default=False,
+        help="set logging level to debug",
+    )
+    parser.add_option(
+        "-r",
+        "--recursive",
+        dest="recursive",
+        action="callback",
+        callback=_recur_cb,
+        help="Walks the entire directory structure.",
+    )
+    parser.add_option(
+        "-s",
+        "--strict",
+        dest="strict",
+        action="store_true",
+        default=pyseq.strict_pad,
+        help="strict padding (default false)",
+    )
     (options, args) = parser.parse_args()
 
     if options.debug:
@@ -181,5 +201,5 @@ Formatting options:
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

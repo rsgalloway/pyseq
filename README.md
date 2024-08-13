@@ -27,7 +27,6 @@ $ ls tests/files/z1*
 tests/files/z1_001_v1.1.png  tests/files/z1_001_v1.4.png  tests/files/z1_002_v1.3.png   tests/files/z1_002_v2.11.png
 tests/files/z1_001_v1.2.png  tests/files/z1_002_v1.1.png  tests/files/z1_002_v1.4.png   tests/files/z1_002_v2.12.png
 tests/files/z1_001_v1.3.png  tests/files/z1_002_v1.2.png  tests/files/z1_002_v2.10.png  tests/files/z1_002_v2.9.png
-
 ```
 
 Now we list the same directory contents using `lss`, which will find the sequences and display them
