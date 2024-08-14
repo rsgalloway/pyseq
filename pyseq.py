@@ -489,6 +489,7 @@ class Sequence(list):
             "m": self.missing,
             "M": functools.partial(self._get_framerange, self.missing(), missing=True),
             "d": lambda *x: self.size,
+            "H": lambda *x: self.human,
             "D": self.directory,
             "p": self._get_padding,
             "r": functools.partial(self._get_framerange, self.frames(), missing=False),
@@ -588,6 +589,8 @@ class Sequence(list):
         +-----------+--------------------------------------+
         | ``%d``    | disk usage                           |
         +-----------+--------------------------------------+
+        | ``%H``    | disk usage (human readable)          |
+        +-----------+--------------------------------------+
         | ``%D``    | parent directory                     |
         +-----------+--------------------------------------+
         | ``%h``    | string preceding sequence number     |
@@ -610,6 +613,7 @@ class Sequence(list):
             "r": "s",
             "R": "s",
             "d": "s",
+            "H": "s",
             "D": "s",
             "h": "s",
             "t": "s",
@@ -644,11 +648,22 @@ class Sequence(list):
 
     @property
     def size(self):
-        """Returns the size all items (divide by 1024*1024 for MBs)."""
+        """Returns the size all items in bytes."""
         tempSize = list()
         for i in self:
             tempSize.append(i.size)
         return sum(tempSize)
+
+    @property
+    def human(self):
+        """Returns the size of all items in human-readable format."""
+        total_size = self.size
+        units = ["B", "K", "M", "G", "T"]
+        unit_index = 0
+        while total_size >= 1024 and unit_index < len(units) - 1:
+            total_size /= 1024
+            unit_index += 1
+        return f"{total_size:7.1f}{units[unit_index]}"
 
     def directory(self):
         return self[0].dirname + os.sep
@@ -973,6 +988,7 @@ def diff(f1, f2):
                 )
 
     return d
+
 
 def uncompress(seq_string, fmt=global_format):
     """Basic uncompression or deserialization of a compressed sequence string.
