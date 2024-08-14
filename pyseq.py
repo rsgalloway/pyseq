@@ -98,21 +98,28 @@ log.setLevel(int(os.environ.get("PYSEQ_LOG_LEVEL", logging.INFO)))
 
 
 def _natural_key(x):
-    """Splits a string into characters and digits.  This helps in sorting file
-    names in a 'natural' way."""
+    """Splits a string into characters and digits.
+
+    :param x: The string to be split.
+    :return: A list of characters and digits.
+    """
     return [int(c) if c.isdigit() else c.lower() for c in re.split(r"(\d+)", x)]
 
 
 def _ext_key(x):
-    """Similar to '_natural_key' except this one uses the file extension at
+    """Similar to `_natural_key` except this one uses the file extension at
     the head of split string.  This fixes issues with files that are named
     similar but with different file extensions:
+
     This example:
+
         file.001.jpg
         file.001.tiff
         file.002.jpg
         file.002.tiff
+
     Would get properly sorted into:
+
         file.001.jpg
         file.002.jpg
         file.001.tiff
@@ -124,6 +131,12 @@ def _ext_key(x):
 
 @functools.lru_cache(maxsize=None)
 def natural_sort(items):
+    """
+    Sorts a list of items in natural order.
+
+    :param items: The list of items to be sorted.
+    :return: The sorted list of items.
+    """
     return sorted(items, key=_natural_key)
 
 
@@ -181,12 +194,16 @@ def padsize(item, frame):
 
 
 class Item(str):
-    """Sequence member file class.
-
-    :param item: Path to file.
+    """
+    Represents a file in a sequence.
     """
 
     def __init__(self, item):
+        """
+        Initializes a new instance of the Item class.
+
+        :param item: Path to the file.
+        """
         super(Item, self).__init__()
         self.item = item
         self.__path = getattr(item, "path", None)
@@ -204,98 +221,195 @@ class Item(str):
         self.pad = None
 
     def __eq__(self, other):
+        """
+        Checks if this Item is equal to another Item.
+
+        :param other: Another Item instance.
+        :return: True if the Items are equal, False otherwise.
+        """
         return self.path == other.path
 
     def __ne__(self, other):
+        """
+        Checks if this Item is not equal to another Item.
+
+        :param other: Another Item instance.
+        :return: True if the Items are not equal, False otherwise.
+        """
         return self.path != other.path
 
     def __lt__(self, other):
+        """
+        Checks if this Item is less than another Item.
+
+        :param other: Another Item instance.
+        :return: True if this Item is less than the other Item, False otherwise.
+        """
         return self.frame < other.frame
 
     def __gt__(self, other):
+        """
+        Checks if this Item is greater than another Item.
+
+        :param other: Another Item instance.
+        :return: True if this Item is greater than the other Item, False otherwise.
+        """
         return self.frame > other.frame
 
     def __ge__(self, other):
+        """
+        Checks if this Item is greater than or equal to another Item.
+
+        :param other: Another Item instance.
+        :return: True if this Item is greater than or equal to the other Item, False otherwise.
+        """
         return self.frame >= other.frame
 
     def __le__(self, other):
+        """
+        Checks if this Item is less than or equal to another Item.
+
+        :param other: Another Item instance.
+        :return: True if this Item is less than or equal to the other Item, False otherwise.
+        """
         return self.frame <= other.frame
 
     def __hash__(self):
+        """
+        Returns the hash value of this Item.
+
+        :return: The hash value.
+        """
         return hash(self.path)
 
     def __str__(self):
+        """
+        Returns the string representation of this Item.
+
+        :return: The string representation.
+        """
         return str(self.name)
 
     def __repr__(self):
+        """
+        Returns the official string representation of this Item.
+
+        :return: The official string representation.
+        """
         return '<pyseq.Item "%s">' % self.name
 
     def __getattr__(self, key):
+        """
+        Retrieves the value of the specified attribute.
+
+        :param key: The name of the attribute.
+        :return: The value of the attribute.
+        """
         return getattr(self.item, key)
 
     @property
     def path(self):
-        """Item absolute path, if a filesystem item."""
+        """
+        Gets the absolute path of the Item, if it is a filesystem item.
+
+        :return: The absolute path.
+        """
         return self.__path
 
     @property
     def name(self):
-        """Item base name attribute."""
+        """
+        Gets the base name of the Item.
+
+        :return: The base name.
+        """
         return self.__filename
 
     @property
     def dirname(self):
-        """ "Item directory name, if a filesystem item."""
+        """
+        Gets the directory name of the Item, if it is a filesystem item.
+
+        :return: The directory name.
+        """
         return self.__dirname
 
     @property
     def digits(self):
-        """Returns numerical components as a list of strings."""
+        """
+        Returns the numerical components of the Item as a list of strings.
+
+        :return: The numerical components.
+        """
         return digits_re.findall(self.name)
 
     @property
     def number_matches(self):
-        """Returns numerical components as a list of regex match objects."""
+        """
+        Returns the numerical components of the Item as a list of regex match objects.
+
+        :return: The numerical components.
+        """
         if not self.__number_matches:
             self.__number_matches = [m for m in digits_re.finditer(self.__filename)]
         return self.__number_matches
 
     @property
     def parts(self):
-        """Returns non-numerical components."""
+        """
+        Returns the non-numerical components of the Item.
+
+        :return: The non-numerical components.
+        """
         return self.__parts
 
     @property
     def exists(self):
-        """Returns True if this item exists on disk."""
+        """
+        Checks if this Item exists on disk.
+
+        :return: True if the Item exists, False otherwise.
+        """
         return os.path.isfile(self.__path)
 
     @property
     def size(self):
-        """Returns the size of the Item, reported by os.stat."""
+        """
+        Returns the size of the Item, reported by os.stat.
+
+        :return: The size of the Item.
+        """
         return self.stat.st_size
 
     @property
     def mtime(self):
-        """Returns the modification time of the Item."""
+        """
+        Returns the modification time of the Item.
+
+        :return: The modification time.
+        """
         return self.stat.st_mtime
 
     @property
     @functools.lru_cache(maxsize=None)
     def stat(self):
-        """Returns the os.stat object for this file."""
+        """
+        Returns the os.stat object for this file.
+
+        :return: The os.stat object.
+        """
         if self.__stat is None:
             self.__stat = os.stat(self.__path)
         return self.__stat
 
     def is_sibling(self, item):
-        """Determines if this and item are part of the same sequence.
-
-        :param item: An :class:`.Item` instance.
-
-        :return: True if this and item are sequential siblings.
         """
+        Determines if this Item and another Item are part of the same sequence.
 
+        :param item: Another Item instance.
+
+        :return: True if this Item and the other Item are sequential siblings, False otherwise.
+        """
         if not isinstance(item, Item):
             item = Item(item)
 
@@ -303,8 +417,7 @@ class Item(str):
         d = diff(self, item)
         is_sibling = (len(d) == 1) and (self.parts == item.parts)
 
-        # if these items are in the same sequence, set some common
-        # attributes on both items
+        # if these items are in the same sequence, set some common attributes on both items
         if is_sibling:
             frame = d[0]["frames"][0]
             self.frame = int(frame)
@@ -316,6 +429,7 @@ class Item(str):
             item.pad = self.pad
             item.head = item.name[: d[0]["start"]]
             item.tail = item.name[d[0]["end"] :]  # noqa
+
         return is_sibling
 
 
@@ -404,7 +518,7 @@ class Sequence(list):
                 item = Sequence([item])
             super(Sequence, self).__setitem__(index, item)
             return
-        if type(item) is not Item:
+        if not isinstance(item, Item):
             item = Item(item)
         if self.includes(item):
             super(Sequence, self).__setitem__(index, item)
@@ -438,7 +552,7 @@ class Sequence(list):
         return ns
 
     def __iadd__(self, item):
-        if isinstance(item, str) or type(item) is Item:
+        if isinstance(item, str) or isinstance(item, Item):
             item = [item]
         if isinstance(item, list) is False:
             raise TypeError("Invalid type to add to sequence")
@@ -583,7 +697,6 @@ class Sequence(list):
         _dirname = str(os.path.dirname(self[0].path))
         return os.path.join(_dirname, str(self))
 
-    # @functools.lru_cache(maxsize=None)
     def includes(self, item):
         """Checks if the item can be contained in this sequence, i.e. if it
         is a sibling of any of the items in the list.
@@ -617,7 +730,6 @@ class Sequence(list):
 
         return False
 
-    # @functools.lru_cache(maxsize=None)
     def contains(self, item):
         """Checks for sequence membership. Calls Item.is_sibling() and returns
         True if item is part of the sequence.
@@ -643,16 +755,14 @@ class Sequence(list):
 
         return False
 
-    # @functools.lru_cache(maxsize=None)
     def append(self, item):
         """Adds another member to the sequence.
 
         :param item: pyseq.Item object.
-
         :exc:`SequenceError` raised if item is not a sequence member.
         """
 
-        if type(item) is not Item:
+        if not isinstance(item, Item):
             item = Item(item)
 
         if self.includes(item):
@@ -664,11 +774,12 @@ class Sequence(list):
 
     def insert(self, index, item):
         """Add another member to the sequence at the given index.
+
         :param item: pyseq.Item object.
-        :exc: `SequenceError` raised if item is not a sequence member.
+        :exc: `SequenceError` Raised if item is not a sequence member.
         """
 
-        if type(item) is not Item:
+        if not isinstance(item, Item):
             item = Item(item)
 
         if self.includes(item):
@@ -680,23 +791,20 @@ class Sequence(list):
 
     def extend(self, items):
         """Add members to the sequence.
-        :param items: list of pyseq.Item objects.
-        :exc: `SequenceError` raised if any items are not a sequence
-              member.
+
+        :param items: List of pyseq.Item objects.
+        :exc: `SequenceError` Raised if any items are not a sequence member.
         """
 
         for item in items:
-            if type(item) is not Item:
+            if not isinstance(item, Item):
                 item = Item(item)
-
             if self.includes(item):
                 super(Sequence, self).append(item)
                 self.__frames = None
                 self.__missing = None
             else:
-                raise SequenceError(
-                    "Item (%s) is not a member of this " "sequence." % item
-                )
+                raise SequenceError(f"Item {item} is not a member of this sequence.")
 
     def reIndex(self, offset, padding=None):
         """Renames and reindexes the items in the sequence, e.g. ::
@@ -706,8 +814,8 @@ class Sequence(list):
         will add a 100 frame offset to each Item in `seq`, and rename
         the files on disk.
 
-        :param offset: the frame offset to apply to each item
-        :param padding: change the padding
+        :param offset: The frame offset to apply to each item.
+        :param padding: Change the padding.
         """
 
         if not padding:
@@ -741,7 +849,7 @@ class Sequence(list):
             self.frames()
 
     def _get_padding(self):
-        """:return: padding string, e.g. %07d"""
+        """:return: Padding string (e.g. %07d)."""
         try:
             pad = min([i.pad for i in self])
             if pad is None:
@@ -755,9 +863,9 @@ class Sequence(list):
     def _get_framerange(self, frames, missing=True):
         """Returns frame range string, e.g. [1-500].
 
-        :param frames: list of ints like [1,4,8,12,15].
+        :param frames: List of ints like [1,4,8,12,15].
         :param missing: Expand sequence to exclude missing sequence indices.
-        :return: formatted frame range string.
+        :return: Formatted frame range string.
         """
 
         frange = []
@@ -828,7 +936,6 @@ class Sequence(list):
             return missing
 
 
-# @functools.lru_cache(maxsize=None)
 def diff(f1, f2):
     """Examines diffs between f1 and f2 and deduces numerical sequence number.
 
