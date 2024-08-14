@@ -341,7 +341,7 @@ class Item(str):
 
         :return: The numerical components.
         """
-        return digits_re.findall(self.name)
+        return digits_re.findall(self.__filename)
 
     @property
     def number_matches(self):
@@ -351,7 +351,7 @@ class Item(str):
         :return: The numerical components.
         """
         if not self.__number_matches:
-            self.__number_matches = [m for m in digits_re.finditer(self.__filename)]
+            self.__number_matches = list(digits_re.finditer(self.__filename))
         return self.__number_matches
 
     @property
@@ -755,56 +755,57 @@ class Sequence(list):
 
         return False
 
-    def append(self, item):
+    def append(self, item, check_membership=True):
         """Adds another member to the sequence.
 
         :param item: pyseq.Item object.
+        :param check_membership: Check if `item` is a member. Can be useful if membership
+            is checked prior to appending.
         :exc:`SequenceError` raised if item is not a sequence member.
         """
 
         if not isinstance(item, Item):
             item = Item(item)
 
-        if self.includes(item):
+        if not check_membership:
             super(Sequence, self).append(item)
-            self.__frames = None
-            self.__missing = None
         else:
-            raise SequenceError("Item is not a member of this sequence")
+            if self.includes(item):
+                super(Sequence, self).append(item)
+            else:
+                raise SequenceError(f"Item {item} is not a member of this sequence.")
 
-    def insert(self, index, item):
+    def insert(self, index, item, check_membership=True):
         """Add another member to the sequence at the given index.
 
         :param item: pyseq.Item object.
+        :param check_membership: Check if `item` is a member. Can be useful if membership
+            is checked prior to appending.
         :exc: `SequenceError` Raised if item is not a sequence member.
         """
 
         if not isinstance(item, Item):
             item = Item(item)
 
-        if self.includes(item):
+        if not check_membership:
             super(Sequence, self).insert(index, item)
-            self.__frames = None
-            self.__missing = None
         else:
-            raise SequenceError("Item is not a member of this sequence.")
+            if self.includes(item):
+                super(Sequence, self).insert(index, item)
+            else:
+                raise SequenceError(f"Item {item} is not a member of this sequence.")
 
-    def extend(self, items):
+    def extend(self, items, check_membership=True):
         """Add members to the sequence.
 
         :param items: List of pyseq.Item objects.
+        :param check_membership: Check if `item` is a member. Can be useful if membership
+            is checked prior to appending.
         :exc: `SequenceError` Raised if any items are not a sequence member.
         """
 
         for item in items:
-            if not isinstance(item, Item):
-                item = Item(item)
-            if self.includes(item):
-                super(Sequence, self).append(item)
-                self.__frames = None
-                self.__missing = None
-            else:
-                raise SequenceError(f"Item {item} is not a member of this sequence.")
+            self.append(item, check_membership=check_membership)
 
     def reIndex(self, offset, padding=None):
         """Renames and reindexes the items in the sequence, e.g. ::
@@ -1188,7 +1189,7 @@ def get_sequences(source):
         found = False
         for seq in reversed(seqs):
             if seq.includes(item):
-                seq.append(item)
+                seq.append(item, check_membership=False)
                 found = True
                 break
         if not found:
@@ -1264,7 +1265,7 @@ def iget_sequences(source):
         if seq is None:
             seq = Sequence([item])
         elif seq.includes(item):
-            seq.append(item)
+            seq.append(item, check_membership=False)
         else:
             yield seq
             seq = Sequence([item])
