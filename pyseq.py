@@ -209,7 +209,7 @@ class Item(str):
         self.__path = getattr(item, "path", None)
         if self.__path is None:
             self.__path = str(item)
-        self.__dirname, self.__filename = os.path.split(self.__path)
+        self.__filename = os.path.basename(self.__path)
         self.__number_matches = []
         self.__parts = digits_re.split(self.name)
         self.__stat = None
@@ -332,7 +332,7 @@ class Item(str):
 
         :return: The directory name.
         """
-        return self.__dirname
+        return os.path.dirname(self.__path)
 
     @property
     def digits(self):
