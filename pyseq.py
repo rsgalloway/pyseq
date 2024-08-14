@@ -958,14 +958,9 @@ def diff(f1, f2):
     if not isinstance(f2, Item):
         f2 = Item(f2)
 
-    f1_number_matches = deque(f1.number_matches)
-    f2_number_matches = deque(f2.number_matches)
-
     d = []
-    if len(f1_number_matches) == len(f2_number_matches):
-        for _ in range(0, len(f1_number_matches)):
-            m1 = f1_number_matches.popleft()
-            m2 = f2_number_matches.popleft()
+    if len(f1.number_matches) == len(f2.number_matches):
+        for m1, m2 in zip(f1.number_matches, f2.number_matches):
             if (m1.start() == m2.start()) and (m1.group() != m2.group()):
                 if strict_pad is True and (len(m1.group()) != len(m2.group())):
                     continue
@@ -978,7 +973,6 @@ def diff(f1, f2):
                 )
 
     return d
-
 
 def uncompress(seq_string, fmt=global_format):
     """Basic uncompression or deserialization of a compressed sequence string.
