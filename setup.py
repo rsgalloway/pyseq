@@ -5,7 +5,7 @@
 # This module is part of Shotman and is released under
 # the BSD License: http://www.opensource.org/licenses/bsd-license.php
 
-from distutils.core import setup
+from setuptools import setup
 from pyseq import __version__
 
 from os import path
@@ -25,4 +25,6 @@ setup(
     url="http://github.com/rsgalloway/pyseq",
     py_modules=["pyseq"],
     scripts=["lss"],
+    python_requires=">=3.6",
+    zip_safe=False,
 )
