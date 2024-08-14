@@ -909,12 +909,12 @@ class Sequence(list):
         return [f.frame for f in self if f.frame is not None]
 
     def _get_missing(self, max_size=100000):
-        """Looks for missing sequence indexes in sequence
+        """Looks for missing sequence indexes in the sequence.
 
         :param max_size: maximum missing frame sequence size for
-            returning explcit frames, otherwise use ranges
+            returning explcit frames, otherwise use ranges.
         :return: List of missing frames, or ranges of frames if
-            sequence size is greater than max_size
+            sequence size is greater than max_size.
         """
 
         missing = []
