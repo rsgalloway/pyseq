@@ -56,7 +56,7 @@ import warnings
 from collections import deque
 from glob import glob, iglob
 
-__version__ = "0.6.1"
+__version__ = "0.7.0"
 
 # default serialization format string
 global_format = "%4l %h%p%t %R"
