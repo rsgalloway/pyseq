@@ -1,92 +1,98 @@
-
-
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en">
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>pyseq - Python sequence string module &mdash; PySeq 0.5.1 documentation</title>
-  
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyseq - Python sequence string module &mdash; PySeq 0.7.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
   
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
-  
-  
-
-  
-
-  
-  
-    
-
-  
-
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=dc072ff8"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
-
-  
-  <script src="_static/js/modernizr.min.js"></script>
-
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
-          
+        <div class="wy-side-nav-search" >
 
           
-            <a href="#" class="icon icon-home"> PySeq
           
-
-          
+          <a href="#" class="icon icon-home">
+            PySeq
           </a>
-
-          
-            
-            
               <div class="version">
-                0.5.1
+                0.7.0
               </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">pyseq</span></code> - Python sequence string module</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyseq</span></code> - Python sequence string module</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#source-code">Source Code</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#api-examples">API Examples</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#api-reference">API Reference</a><ul class="simple">
+<li class="toctree-l2"><a class="reference internal" href="#api-reference">API Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pyseq.FormatError"><code class="docutils literal notranslate"><span class="pre">FormatError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pyseq.Item"><code class="docutils literal notranslate"><span class="pre">Item</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pyseq.Item.digits"><code class="docutils literal notranslate"><span class="pre">Item.digits</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyseq.Item.dirname"><code class="docutils literal notranslate"><span class="pre">Item.dirname</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyseq.Item.exists"><code class="docutils literal notranslate"><span class="pre">Item.exists</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyseq.Item.is_sibling"><code class="docutils literal notranslate"><span class="pre">Item.is_sibling()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyseq.Item.mtime"><code class="docutils literal notranslate"><span class="pre">Item.mtime</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyseq.Item.name"><code class="docutils literal notranslate"><span class="pre">Item.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyseq.Item.number_matches"><code class="docutils literal notranslate"><span class="pre">Item.number_matches</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyseq.Item.parts"><code class="docutils literal notranslate"><span class="pre">Item.parts</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyseq.Item.path"><code class="docutils literal notranslate"><span class="pre">Item.path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyseq.Item.size"><code class="docutils literal notranslate"><span class="pre">Item.size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyseq.Item.stat"><code class="docutils literal notranslate"><span class="pre">Item.stat</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#pyseq.Sequence"><code class="docutils literal notranslate"><span class="pre">Sequence</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pyseq.Sequence.append"><code class="docutils literal notranslate"><span class="pre">Sequence.append()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyseq.Sequence.contains"><code class="docutils literal notranslate"><span class="pre">Sequence.contains()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyseq.Sequence.end"><code class="docutils literal notranslate"><span class="pre">Sequence.end()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyseq.Sequence.extend"><code class="docutils literal notranslate"><span class="pre">Sequence.extend()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyseq.Sequence.format"><code class="docutils literal notranslate"><span class="pre">Sequence.format()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyseq.Sequence.frames"><code class="docutils literal notranslate"><span class="pre">Sequence.frames()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyseq.Sequence.head"><code class="docutils literal notranslate"><span class="pre">Sequence.head()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyseq.Sequence.human"><code class="docutils literal notranslate"><span class="pre">Sequence.human</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyseq.Sequence.includes"><code class="docutils literal notranslate"><span class="pre">Sequence.includes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyseq.Sequence.insert"><code class="docutils literal notranslate"><span class="pre">Sequence.insert()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyseq.Sequence.length"><code class="docutils literal notranslate"><span class="pre">Sequence.length()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyseq.Sequence.missing"><code class="docutils literal notranslate"><span class="pre">Sequence.missing()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyseq.Sequence.mtime"><code class="docutils literal notranslate"><span class="pre">Sequence.mtime</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyseq.Sequence.path"><code class="docutils literal notranslate"><span class="pre">Sequence.path()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyseq.Sequence.reIndex"><code class="docutils literal notranslate"><span class="pre">Sequence.reIndex()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyseq.Sequence.size"><code class="docutils literal notranslate"><span class="pre">Sequence.size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyseq.Sequence.start"><code class="docutils literal notranslate"><span class="pre">Sequence.start()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyseq.Sequence.tail"><code class="docutils literal notranslate"><span class="pre">Sequence.tail()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#pyseq.SequenceError"><code class="docutils literal notranslate"><span class="pre">SequenceError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pyseq.diff"><code class="docutils literal notranslate"><span class="pre">diff()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pyseq.get_sequences"><code class="docutils literal notranslate"><span class="pre">get_sequences()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pyseq.uncompress"><code class="docutils literal notranslate"><span class="pre">uncompress()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pyseq.walk"><code class="docutils literal notranslate"><span class="pre">walk()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -94,90 +100,60 @@
 <li class="toctree-l1"><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
 </ul>
 
-            
-          
         </div>
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="#">PySeq</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="#">Docs</a> &raquo;</li>
-        
-      <li><code class="docutils literal notranslate"><span class="pre">pyseq</span></code> - Python sequence string module</li>
-    
-    
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyseq</span></code> - Python sequence string module</li>
       <li class="wy-breadcrumbs-aside">
-        
-            
             <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="pyseq-python-sequence-string-module">
-<h1><a class="reference internal" href="#module-pyseq" title="pyseq"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyseq</span></code></a> - Python sequence string module<a class="headerlink" href="#pyseq-python-sequence-string-module" title="Permalink to this headline">¶</a></h1>
+             
+  <section id="pyseq-python-sequence-string-module">
+<h1><a class="reference internal" href="#module-pyseq" title="pyseq"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyseq</span></code></a> - Python sequence string module<a class="headerlink" href="#pyseq-python-sequence-string-module" title="Permalink to this heading"></a></h1>
 <p>PySeq is a python module that finds groups of items that follow a naming
 convention containing a numerical sequence index, e.g.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fileA</span><span class="o">.</span><span class="mf">001.</span><span class="n">png</span><span class="p">,</span> <span class="n">fileA</span><span class="o">.</span><span class="mf">002.</span><span class="n">png</span><span class="p">,</span> <span class="n">fileA</span><span class="o">.</span><span class="mf">003.</span><span class="n">png</span><span class="o">...</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fileA</span><span class="mf">.001</span><span class="o">.</span><span class="n">png</span><span class="p">,</span> <span class="n">fileA</span><span class="mf">.002</span><span class="o">.</span><span class="n">png</span><span class="p">,</span> <span class="n">fileA</span><span class="mf">.003</span><span class="o">.</span><span class="n">png</span><span class="o">...</span>
 </pre></div>
 </div>
 <p>and serializes them into a compressed sequence string representing the entire
 sequence, e.g.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fileA</span><span class="o">.</span><span class="mi">1</span><span class="o">-</span><span class="mf">3.</span><span class="n">png</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fileA</span><span class="mf">.1</span><span class="o">-</span><span class="mf">3.</span><span class="n">png</span>
 </pre></div>
 </div>
 <p>It should work regardless of where the numerical sequence index is embedded
 in the name.</p>
 <div class="toctree-wrapper compound">
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">pyseq</span></code> - Python sequence string module</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyseq</span></code> - Python sequence string module</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#source-code">Source Code</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#api-examples">API Examples</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#api-reference">API Reference</a><ul class="simple">
+<li class="toctree-l2"><a class="reference internal" href="#api-reference">API Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pyseq.FormatError"><code class="docutils literal notranslate"><span class="pre">FormatError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pyseq.Item"><code class="docutils literal notranslate"><span class="pre">Item</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pyseq.Sequence"><code class="docutils literal notranslate"><span class="pre">Sequence</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pyseq.SequenceError"><code class="docutils literal notranslate"><span class="pre">SequenceError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pyseq.diff"><code class="docutils literal notranslate"><span class="pre">diff()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pyseq.get_sequences"><code class="docutils literal notranslate"><span class="pre">get_sequences()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pyseq.uncompress"><code class="docutils literal notranslate"><span class="pre">uncompress()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pyseq.walk"><code class="docutils literal notranslate"><span class="pre">walk()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -185,38 +161,38 @@ in the name.</p>
 <li class="toctree-l1"><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
 </ul>
 </div>
-<div class="section" id="source-code">
-<h2>Source Code<a class="headerlink" href="#source-code" title="Permalink to this headline">¶</a></h2>
+<section id="source-code">
+<h2>Source Code<a class="headerlink" href="#source-code" title="Permalink to this heading"></a></h2>
 <p>PySeq’s git repo is available on GitHub, which can be browsed at:</p>
 <blockquote>
 <div><ul class="simple">
-<li><a class="reference external" href="https://github.com/rsgalloway/pyseq">https://github.com/rsgalloway/pyseq</a></li>
+<li><p><a class="reference external" href="https://github.com/rsgalloway/pyseq">https://github.com/rsgalloway/pyseq</a></p></li>
 </ul>
 </div></blockquote>
 <p>and cloned using:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ git clone git://github.com/rsgalloway/pyseq.git pyseq
 </pre></div>
 </div>
-</div>
-<div class="section" id="installation">
-<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this heading"></a></h2>
 <p>Installing PySeq is easily done using <a class="reference external" href="http://peak.telecommunity.com/DevCenter/setuptools">setuptools</a>. Assuming it is
 installed, just run the following from the command-line:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ pip install pyseq
 </pre></div>
 </div>
 <ul class="simple">
-<li><a class="reference external" href="http://peak.telecommunity.com/DevCenter/setuptools">setuptools</a></li>
-<li><a class="reference external" href="http://peak.telecommunity.com/DevCenter/EasyInstall#installation-instructions">install setuptools</a></li>
+<li><p><a class="reference external" href="http://peak.telecommunity.com/DevCenter/setuptools">setuptools</a></p></li>
+<li><p><a class="reference external" href="http://peak.telecommunity.com/DevCenter/EasyInstall#installation-instructions">install setuptools</a></p></li>
 </ul>
 <p>Alternatively, you can install from the distribution using the <code class="docutils literal notranslate"><span class="pre">setup.py</span></code>
 script:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ python setup.py install
 </pre></div>
 </div>
-</div>
-<div class="section" id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this heading"></a></h2>
 <p>PySeq comes with a command-line script called <code class="docutils literal notranslate"><span class="pre">lss</span></code>.</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ lss [path] [-f format] [-d]
 </pre></div>
@@ -241,9 +217,9 @@ z1_002_v1.1-4.png
 z1_002_v2.1-4.png
 </pre></div>
 </div>
-</div>
-<div class="section" id="api-examples">
-<h2>API Examples<a class="headerlink" href="#api-examples" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="api-examples">
+<h2>API Examples<a class="headerlink" href="#api-examples" title="Permalink to this heading"></a></h2>
 <p><strong>Sequence compression</strong></p>
 <p>Example using getSequences to compress filesystem sequences starting with “bnc”. The getSequences
 function will return a list of all sequences found using the given input, which can be either a path
@@ -290,7 +266,7 @@ of the sequence.</p>
 </pre></div>
 </div>
 <p><strong>Sequence expansion</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">pyseq</span><span class="o">.</span><span class="n">uncompress</span><span class="p">(</span><span class="s1">&#39;012_vb_110_v002.1-150.dpx&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%h%</span><span class="s2">r%t&quot;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">pyseq</span><span class="o">.</span><span class="n">uncompress</span><span class="p">(</span><span class="s1">&#39;012_vb_110_v002.1-150.dpx&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%h%</span><span class="s2">r%t&quot;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
 <span class="go">150</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">seq</span> <span class="o">=</span> <span class="n">pyseq</span><span class="o">.</span><span class="n">uncompress</span><span class="p">(</span><span class="s1">&#39;./tests/012_vb_110_v001.</span><span class="si">%04d</span><span class="s1">.png 1-10&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%h%</span><span class="s1">p%t </span><span class="si">%r</span><span class="s1">&#39;</span><span class="p">)</span>
@@ -298,134 +274,169 @@ of the sequence.</p>
 <span class="go">  10 012_vb_110_v001.%04d.png 1-10</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="api-reference">
-<h2>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="api-reference">
+<h2>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this heading"></a></h2>
 <div class="toctree-wrapper compound">
 </div>
 <span class="target" id="module-pyseq"></span><p>PySeq is a python module that finds groups of items that follow a naming
 convention containing a numerical sequence index, e.g.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fileA</span><span class="o">.</span><span class="mf">001.</span><span class="n">png</span><span class="p">,</span> <span class="n">fileA</span><span class="o">.</span><span class="mf">002.</span><span class="n">png</span><span class="p">,</span> <span class="n">fileA</span><span class="o">.</span><span class="mf">003.</span><span class="n">png</span><span class="o">...</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fileA</span><span class="mf">.001</span><span class="o">.</span><span class="n">png</span><span class="p">,</span> <span class="n">fileA</span><span class="mf">.002</span><span class="o">.</span><span class="n">png</span><span class="p">,</span> <span class="n">fileA</span><span class="mf">.003</span><span class="o">.</span><span class="n">png</span><span class="o">...</span>
 </pre></div>
 </div>
 <p>and serializes them into a compressed sequence string representing the entire
 sequence, e.g.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fileA</span><span class="o">.</span><span class="mi">1</span><span class="o">-</span><span class="mf">3.</span><span class="n">png</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fileA</span><span class="mf">.1</span><span class="o">-</span><span class="mf">3.</span><span class="n">png</span>
 </pre></div>
 </div>
-<p>It should work regardless of where the numerical sequence index is embedded 
+<p>It should work regardless of where the numerical sequence index is embedded
 in the name.</p>
 <p>Docs and latest version available for download at</p>
 <blockquote>
-<div><a class="reference external" href="http://github.com/rsgalloway/pyseq">http://github.com/rsgalloway/pyseq</a></div></blockquote>
-<dl class="exception">
-<dt id="pyseq.SequenceError">
-<em class="property">exception </em><code class="descclassname">pyseq.</code><code class="descname">SequenceError</code><a class="headerlink" href="#pyseq.SequenceError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Special exception for Sequence errors</p>
+<div><p><a class="reference external" href="http://github.com/rsgalloway/pyseq">http://github.com/rsgalloway/pyseq</a></p>
+</div></blockquote>
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyseq.FormatError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyseq.</span></span><span class="sig-name descname"><span class="pre">FormatError</span></span><a class="headerlink" href="#pyseq.FormatError" title="Permalink to this definition"></a></dt>
+<dd><p>Special exception for Sequence format errors.</p>
 </dd></dl>
 
-<dl class="exception">
-<dt id="pyseq.FormatError">
-<em class="property">exception </em><code class="descclassname">pyseq.</code><code class="descname">FormatError</code><a class="headerlink" href="#pyseq.FormatError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Special exception for Sequence format errors</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyseq.Item">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyseq.</span></span><span class="sig-name descname"><span class="pre">Item</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Item" title="Permalink to this definition"></a></dt>
+<dd><p>Represents a file in a sequence.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="pyseq.Item.digits">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">digits</span></span><a class="headerlink" href="#pyseq.Item.digits" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the numerical components of the Item as a list of strings.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The numerical components.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="class">
-<dt id="pyseq.Item">
-<em class="property">class </em><code class="descclassname">pyseq.</code><code class="descname">Item</code><span class="sig-paren">(</span><em>item</em><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Item" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sequence member file class</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>item</strong> – Path to file.</td>
-</tr>
-</tbody>
-</table>
-<dl class="attribute">
-<dt id="pyseq.Item.digits">
-<code class="descname">digits</code><a class="headerlink" href="#pyseq.Item.digits" title="Permalink to this definition">¶</a></dt>
-<dd><p>Numerical components of item name.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="pyseq.Item.dirname">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dirname</span></span><a class="headerlink" href="#pyseq.Item.dirname" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the directory name of the Item, if it is a filesystem item.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The directory name.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyseq.Item.dirname">
-<code class="descname">dirname</code><a class="headerlink" href="#pyseq.Item.dirname" title="Permalink to this definition">¶</a></dt>
-<dd><p>“Item directory name, if a filesystem item.”</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="pyseq.Item.exists">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">exists</span></span><a class="headerlink" href="#pyseq.Item.exists" title="Permalink to this definition"></a></dt>
+<dd><p>Checks if this Item exists on disk.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True if the Item exists, False otherwise.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyseq.Item.exists">
-<code class="descname">exists</code><a class="headerlink" href="#pyseq.Item.exists" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns True if this item exists on disk</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyseq.Item.is_sibling">
+<span class="sig-name descname"><span class="pre">is_sibling</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Item.is_sibling" title="Permalink to this definition"></a></dt>
+<dd><p>Determines if this Item and another Item are part of the same sequence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>item</strong> – Another Item instance.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if this Item and the other Item are sequential siblings, False otherwise.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyseq.Item.isSibling">
-<code class="descname">isSibling</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Item.isSibling" title="Permalink to this definition">¶</a></dt>
-<dd><p>Deprecated: use is_sibling instead</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="pyseq.Item.mtime">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mtime</span></span><a class="headerlink" href="#pyseq.Item.mtime" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the modification time of the Item.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The modification time.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyseq.Item.is_sibling">
-<code class="descname">is_sibling</code><span class="sig-paren">(</span><em>item</em><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Item.is_sibling" title="Permalink to this definition">¶</a></dt>
-<dd><p>Determines if this and item are part of the same sequence.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>item</strong> – An <a class="reference internal" href="#pyseq.Item" title="pyseq.Item"><code class="xref py py-class docutils literal notranslate"><span class="pre">Item</span></code></a> instance.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True if this and item are sequential siblings.</td>
-</tr>
-</tbody>
-</table>
+<dl class="py property">
+<dt class="sig sig-object py" id="pyseq.Item.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#pyseq.Item.name" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the base name of the Item.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The base name.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyseq.Item.mtime">
-<code class="descname">mtime</code><a class="headerlink" href="#pyseq.Item.mtime" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the modification time of the Item</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="pyseq.Item.number_matches">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">number_matches</span></span><a class="headerlink" href="#pyseq.Item.number_matches" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the numerical components of the Item as a list of regex match objects.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The numerical components.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyseq.Item.name">
-<code class="descname">name</code><a class="headerlink" href="#pyseq.Item.name" title="Permalink to this definition">¶</a></dt>
-<dd><p>Item base name attribute</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="pyseq.Item.parts">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parts</span></span><a class="headerlink" href="#pyseq.Item.parts" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the non-numerical components of the Item.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The non-numerical components.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyseq.Item.parts">
-<code class="descname">parts</code><a class="headerlink" href="#pyseq.Item.parts" title="Permalink to this definition">¶</a></dt>
-<dd><p>Non-numerical components of item name</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="pyseq.Item.path">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">path</span></span><a class="headerlink" href="#pyseq.Item.path" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the absolute path of the Item, if it is a filesystem item.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The absolute path.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyseq.Item.path">
-<code class="descname">path</code><a class="headerlink" href="#pyseq.Item.path" title="Permalink to this definition">¶</a></dt>
-<dd><p>Item absolute path, if a filesystem item.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="pyseq.Item.size">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">size</span></span><a class="headerlink" href="#pyseq.Item.size" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the size of the Item, reported by os.stat.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The size of the Item.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyseq.Item.size">
-<code class="descname">size</code><a class="headerlink" href="#pyseq.Item.size" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the size of the Item, reported by os.stat</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pyseq.Item.stat">
-<code class="descname">stat</code><a class="headerlink" href="#pyseq.Item.stat" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="pyseq.Item.stat">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">stat</span></span><a class="headerlink" href="#pyseq.Item.stat" title="Permalink to this definition"></a></dt>
 <dd><p>Returns the os.stat object for this file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The os.stat object.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="class">
-<dt id="pyseq.Sequence">
-<em class="property">class </em><code class="descclassname">pyseq.</code><code class="descname">Sequence</code><span class="sig-paren">(</span><em>items</em><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Sequence" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyseq.Sequence">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyseq.</span></span><span class="sig-name descname"><span class="pre">Sequence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">items</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Sequence" title="Permalink to this definition"></a></dt>
 <dd><p>Extends list class with methods that handle item sequentialness.</p>
 <p>For example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">Sequence</span><span class="p">([</span><span class="s1">&#39;file.0001.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;file.0002.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;file.0003.jpg&#39;</span><span class="p">])</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">Sequence</span><span class="p">([</span><span class="s1">&#39;file.0001.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;file.0002.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;file.0003.jpg&#39;</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
 <span class="go">file.1-3.jpg</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;file.0006.jpg&#39;</span><span class="p">)</span>
@@ -441,28 +452,29 @@ in the name.</p>
 <span class="go">file.%04d.jpg 1-6 (1-3 6)</span>
 </pre></div>
 </div>
-<dl class="method">
-<dt id="pyseq.Sequence.append">
-<code class="descname">append</code><span class="sig-paren">(</span><em>item</em><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Sequence.append" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyseq.Sequence.append">
+<span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_membership</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Sequence.append" title="Permalink to this definition"></a></dt>
 <dd><p>Adds another member to the sequence.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>item</strong> – pyseq.Item object.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>item</strong> – pyseq.Item object.</p></li>
+<li><p><strong>check_membership</strong> – Check if <cite>item</cite> is a member. Can be useful if membership
+is checked prior to appending.</p></li>
+</ul>
+</dd>
+</dl>
 <p><a class="reference internal" href="#pyseq.SequenceError" title="pyseq.SequenceError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">SequenceError</span></code></a> raised if item is not a sequence member.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyseq.Sequence.contains">
-<code class="descname">contains</code><span class="sig-paren">(</span><em>item</em><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Sequence.contains" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyseq.Sequence.contains">
+<span class="sig-name descname"><span class="pre">contains</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Sequence.contains" title="Permalink to this definition"></a></dt>
 <dd><p>Checks for sequence membership. Calls Item.is_sibling() and returns
 True if item is part of the sequence.</p>
 <p>For example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">Sequence</span><span class="p">([</span><span class="s1">&#39;fileA.0001.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;fileA.0002.jpg&#39;</span><span class="p">])</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">Sequence</span><span class="p">([</span><span class="s1">&#39;fileA.0001.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;fileA.0002.jpg&#39;</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
 <span class="go">fileA.1-2.jpg</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="s1">&#39;fileA.0003.jpg&#39;</span><span class="p">)</span>
@@ -471,144 +483,144 @@ True if item is part of the sequence.</p>
 <span class="go">False</span>
 </pre></div>
 </div>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>item</strong> – pyseq.Item class object.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True if item is a sequence member.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>item</strong> – pyseq.Item class object.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if item is a sequence member.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyseq.Sequence.end">
-<code class="descname">end</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Sequence.end" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Last index number in sequence</td>
-</tr>
-</tbody>
-</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyseq.Sequence.end">
+<span class="sig-name descname"><span class="pre">end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Sequence.end" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Last index number in sequence.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyseq.Sequence.extend">
-<code class="descname">extend</code><span class="sig-paren">(</span><em>items</em><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Sequence.extend" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add members to the sequence.
-:param items: list of pyseq.Item objects.
-:exc: <cite>SequenceError</cite> raised if any items are not a sequence</p>
-<blockquote>
-<div>member.</div></blockquote>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyseq.Sequence.extend">
+<span class="sig-name descname"><span class="pre">extend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">items</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_membership</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Sequence.extend" title="Permalink to this definition"></a></dt>
+<dd><p>Add members to the sequence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>items</strong> – List of pyseq.Item objects.</p></li>
+<li><p><strong>check_membership</strong> – Check if <cite>item</cite> is a member. Can be useful if membership
+is checked prior to appending.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Exc<span class="colon">:</span></dt>
+<dd class="field-even"><p><cite>SequenceError</cite> Raised if any items are not a sequence member.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyseq.Sequence.format">
-<code class="descname">format</code><span class="sig-paren">(</span><em>fmt='%4l %h%p%t %R'</em><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Sequence.format" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyseq.Sequence.format">
+<span class="sig-name descname"><span class="pre">format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fmt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'%4l</span> <span class="pre">%h%p%t</span> <span class="pre">%R'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Sequence.format" title="Permalink to this definition"></a></dt>
 <dd><p>Format the stdout string.</p>
 <p>The following directives can be embedded in the format string.
 Format directives support padding, for example: “%04l”.</p>
-<table border="1" class="docutils">
-<colgroup>
-<col width="22%" />
-<col width="78%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Directive</th>
-<th class="head">Meaning</th>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Directive</p></th>
+<th class="head"><p>Meaning</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">%s</span></code></td>
-<td>sequence start</td>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">%s</span></code></p></td>
+<td><p>sequence start</p></td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">%e</span></code></td>
-<td>sequence end</td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">%e</span></code></p></td>
+<td><p>sequence end</p></td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">%l</span></code></td>
-<td>sequence length</td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">%l</span></code></p></td>
+<td><p>sequence length</p></td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">%f</span></code></td>
-<td>list of found files</td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">%f</span></code></p></td>
+<td><p>list of found files</p></td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">%m</span></code></td>
-<td>list of missing files</td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">%m</span></code></p></td>
+<td><p>list of missing files</p></td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">%M</span></code></td>
-<td>explicit missingfiles [11-14,19-21]</td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">%M</span></code></p></td>
+<td><p>explicit missingfiles [11-14,19-21]</p></td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">%p</span></code></td>
-<td>padding, e.g. %06d</td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">%p</span></code></p></td>
+<td><p>padding, e.g. %06d</p></td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">%r</span></code></td>
-<td>implied range, start-end</td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">%r</span></code></p></td>
+<td><p>implied range, start-end</p></td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">%R</span></code></td>
-<td>explicit broken range, [1-10, 15-20]</td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">%R</span></code></p></td>
+<td><p>explicit broken range, [1-10, 15-20]</p></td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">%d</span></code></td>
-<td>disk usage</td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">%d</span></code></p></td>
+<td><p>disk usage</p></td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">%D</span></code></td>
-<td>parent directory</td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">%H</span></code></p></td>
+<td><p>disk usage (human readable)</p></td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">%h</span></code></td>
-<td>string preceding sequence number</td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">%D</span></code></p></td>
+<td><p>parent directory</p></td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">%t</span></code></td>
-<td>string after the sequence number</td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">%h</span></code></p></td>
+<td><p>string preceding sequence number</p></td>
 </tr>
-</tbody>
-</table>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fmt</strong> – Format string. Default is ‘%4l %h%p%t %R’.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Formatted string.</td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">%t</span></code></p></td>
+<td><p>string after the sequence number</p></td>
 </tr>
 </tbody>
 </table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>fmt</strong> – Format string. Default is ‘%4l %h%p%t %R’.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Formatted string.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyseq.Sequence.frames">
-<code class="descname">frames</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Sequence.frames" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">List of files in sequence.</td>
-</tr>
-</tbody>
-</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyseq.Sequence.frames">
+<span class="sig-name descname"><span class="pre">frames</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Sequence.frames" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List of files in sequence.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyseq.Sequence.head">
-<code class="descname">head</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Sequence.head" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">String before the sequence index number.</td>
-</tr>
-</tbody>
-</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyseq.Sequence.head">
+<span class="sig-name descname"><span class="pre">head</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Sequence.head" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>String before the sequence index number.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyseq.Sequence.includes">
-<code class="descname">includes</code><span class="sig-paren">(</span><em>item</em><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Sequence.includes" title="Permalink to this definition">¶</a></dt>
-<dd><p>Checks if the item can be contained in this sequence that is if it
-is a sibling of any of the items in the list</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="pyseq.Sequence.human">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">human</span></span><a class="headerlink" href="#pyseq.Sequence.human" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the size of all items in human-readable format.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyseq.Sequence.includes">
+<span class="sig-name descname"><span class="pre">includes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Sequence.includes" title="Permalink to this definition"></a></dt>
+<dd><p>Checks if the item can be contained in this sequence, i.e. if it
+is a sibling of any of the items in the list.</p>
 <p>For example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">Sequence</span><span class="p">([</span><span class="s1">&#39;fileA.0001.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;fileA.0002.jpg&#39;</span><span class="p">])</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">Sequence</span><span class="p">([</span><span class="s1">&#39;fileA.0001.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;fileA.0002.jpg&#39;</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
 <span class="go">fileA.1-2.jpg</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">includes</span><span class="p">(</span><span class="s1">&#39;fileA.0003.jpg&#39;</span><span class="p">)</span>
@@ -617,121 +629,126 @@ is a sibling of any of the items in the list</p>
 <span class="go">False</span>
 </pre></div>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>item</strong> – pyseq.Item class object.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if item is a sequence member.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyseq.Sequence.insert">
-<code class="descname">insert</code><span class="sig-paren">(</span><em>index</em>, <em>item</em><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Sequence.insert" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add another member to the sequence at the given index.
-:param item: pyseq.Item object.
-:exc: <cite>SequenceError</cite> raised if item is not a sequence member.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyseq.Sequence.insert">
+<span class="sig-name descname"><span class="pre">insert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">item</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_membership</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Sequence.insert" title="Permalink to this definition"></a></dt>
+<dd><p>Add another member to the sequence at the given index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>item</strong> – pyseq.Item object.</p></li>
+<li><p><strong>check_membership</strong> – Check if <cite>item</cite> is a member. Can be useful if membership
+is checked prior to appending.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Exc<span class="colon">:</span></dt>
+<dd class="field-even"><p><cite>SequenceError</cite> Raised if item is not a sequence member.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyseq.Sequence.length">
-<code class="descname">length</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Sequence.length" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The length of the sequence.</td>
-</tr>
-</tbody>
-</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyseq.Sequence.length">
+<span class="sig-name descname"><span class="pre">length</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Sequence.length" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The length of the sequence.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyseq.Sequence.missing">
-<code class="descname">missing</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Sequence.missing" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">List of missing files.</td>
-</tr>
-</tbody>
-</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyseq.Sequence.missing">
+<span class="sig-name descname"><span class="pre">missing</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Sequence.missing" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List of missing files.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyseq.Sequence.mtime">
-<code class="descname">mtime</code><a class="headerlink" href="#pyseq.Sequence.mtime" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the latest mtime of all items</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="pyseq.Sequence.mtime">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mtime</span></span><a class="headerlink" href="#pyseq.Sequence.mtime" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the latest mtime of all items.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyseq.Sequence.path">
-<code class="descname">path</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Sequence.path" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Absolute path to sequence.</td>
-</tr>
-</tbody>
-</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyseq.Sequence.path">
+<span class="sig-name descname"><span class="pre">path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Sequence.path" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Absolute path to sequence.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyseq.Sequence.reIndex">
-<code class="descname">reIndex</code><span class="sig-paren">(</span><em>offset</em>, <em>padding=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Sequence.reIndex" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyseq.Sequence.reIndex">
+<span class="sig-name descname"><span class="pre">reIndex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Sequence.reIndex" title="Permalink to this definition"></a></dt>
 <dd><p>Renames and reindexes the items in the sequence, e.g.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">seq</span><span class="o">.</span><span class="n">reIndex</span><span class="p">(</span><span class="n">offset</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>will add a 100 frame offset to each Item in <cite>seq</cite>, and rename
 the files on disk.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>offset</strong> – the frame offset to apply to each item</li>
-<li><strong>padding</strong> – change the padding</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>offset</strong> – The frame offset to apply to each item.</p></li>
+<li><p><strong>padding</strong> – Change the padding.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyseq.Sequence.size">
-<code class="descname">size</code><a class="headerlink" href="#pyseq.Sequence.size" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the size all items (divide by 1024*1024 for MBs)</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="pyseq.Sequence.size">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">size</span></span><a class="headerlink" href="#pyseq.Sequence.size" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the size all items in bytes.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyseq.Sequence.start">
-<code class="descname">start</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Sequence.start" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">First index number in sequence</td>
-</tr>
-</tbody>
-</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyseq.Sequence.start">
+<span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Sequence.start" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>First index number in sequence.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyseq.Sequence.tail">
-<code class="descname">tail</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Sequence.tail" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">String after the sequence index number.</td>
-</tr>
-</tbody>
-</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyseq.Sequence.tail">
+<span class="sig-name descname"><span class="pre">tail</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.Sequence.tail" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>String after the sequence index number.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="function">
-<dt id="pyseq.diff">
-<code class="descclassname">pyseq.</code><code class="descname">diff</code><span class="sig-paren">(</span><em>f1</em>, <em>f2</em><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.diff" title="Permalink to this definition">¶</a></dt>
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyseq.SequenceError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyseq.</span></span><span class="sig-name descname"><span class="pre">SequenceError</span></span><a class="headerlink" href="#pyseq.SequenceError" title="Permalink to this definition"></a></dt>
+<dd><p>Special exception for Sequence errors.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyseq.diff">
+<span class="sig-prename descclassname"><span class="pre">pyseq.</span></span><span class="sig-name descname"><span class="pre">diff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.diff" title="Permalink to this definition"></a></dt>
 <dd><p>Examines diffs between f1 and f2 and deduces numerical sequence number.</p>
 <p>For example</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">diff</span><span class="p">(</span><span class="s1">&#39;file01_0040.rgb&#39;</span><span class="p">,</span> <span class="s1">&#39;file01_0041.rgb&#39;</span><span class="p">)</span>
@@ -741,76 +758,26 @@ the files on disk.</p>
 <span class="go">[{&#39;frames&#39;: (&#39;3&#39;, &#39;4&#39;), &#39;start&#39;: 4, &#39;end&#39;: 5}]</span>
 </pre></div>
 </div>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>f1</strong> – pyseq.Item object.</li>
-<li><strong>f2</strong> – pyseq.Item object, for comparison.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>f1</strong> – pyseq.Item object.</p></li>
+<li><p><strong>f2</strong> – pyseq.Item object to diff.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Dictionary with keys: frames, start, end.</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary with keys ‘frames’, ‘start’, and ‘end’.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pyseq.uncompress">
-<code class="descclassname">pyseq.</code><code class="descname">uncompress</code><span class="sig-paren">(</span><em>seq_string</em>, <em>fmt='%4l %h%p%t %R'</em><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.uncompress" title="Permalink to this definition">¶</a></dt>
-<dd><p>Basic uncompression or deserialization of a compressed sequence string.</p>
-<p>For example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">seq</span> <span class="o">=</span> <span class="n">uncompress</span><span class="p">(</span><span class="s1">&#39;./tests/files/012_vb_110_v001.</span><span class="si">%04d</span><span class="s1">.png 1-10&#39;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%h%</span><span class="s1">p%t </span><span class="si">%r</span><span class="s1">&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span>
-<span class="go">012_vb_110_v001.1-10.png</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span>
-<span class="go">10</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">seq2</span> <span class="o">=</span> <span class="n">uncompress</span><span class="p">(</span><span class="s1">&#39;./tests/files/a.</span><span class="si">%03d</span><span class="s1">.tga [1-3, 10, 12-14]&#39;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%h%</span><span class="s1">p%t %R&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">seq2</span><span class="p">)</span>
-<span class="go">a.1-14.tga</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">seq2</span><span class="p">)</span>
-<span class="go">7</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">seq3</span> <span class="o">=</span> <span class="n">uncompress</span><span class="p">(</span><span class="s1">&#39;a.</span><span class="si">%03d</span><span class="s1">.tga 1-14 ([1-3, 10, 12-14])&#39;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%h%</span><span class="s1">p%t </span><span class="si">%r</span><span class="s1"> (%R)&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">seq3</span><span class="p">)</span>
-<span class="go">a.1-14.tga</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">seq3</span><span class="p">)</span>
-<span class="go">7</span>
-</pre></div>
-</div>
-<p>See unit tests for more examples.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>seq_string</strong> – Compressed sequence string.</li>
-<li><strong>fmt</strong> – Format of sequence string.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#pyseq.Sequence" title="pyseq.Sequence"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code></a> instance.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="pyseq.getSequences">
-<code class="descclassname">pyseq.</code><code class="descname">getSequences</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.getSequences" title="Permalink to this definition">¶</a></dt>
-<dd><p>Deprecated: use get_sequences instead</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="pyseq.get_sequences">
-<code class="descclassname">pyseq.</code><code class="descname">get_sequences</code><span class="sig-paren">(</span><em>source</em><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.get_sequences" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pyseq.get_sequences">
+<span class="sig-prename descclassname"><span class="pre">pyseq.</span></span><span class="sig-name descname"><span class="pre">get_sequences</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.get_sequences" title="Permalink to this definition"></a></dt>
 <dd><p>Returns a list of Sequence objects given a directory or list that contain
 sequential members.</p>
 <p>Get sequences in a directory:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">seqs</span> <span class="o">=</span> <span class="n">get_sequences</span><span class="p">(</span><span class="s1">&#39;./tests/files/&#39;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">seqs</span> <span class="o">=</span> <span class="n">get_sequences</span><span class="p">(</span><span class="s1">&#39;tests/files/&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">seqs</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
 <span class="gp">...</span>
 <span class="go">012_vb_110_v001.1-10.png</span>
@@ -833,110 +800,111 @@ sequential members.</p>
 </pre></div>
 </div>
 <p>Get sequences from a list of file names:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">seqs</span> <span class="o">=</span> <span class="n">get_sequences</span><span class="p">([</span><span class="s1">&#39;fileA.1.rgb&#39;</span><span class="p">,</span> <span class="s1">&#39;fileA.2.rgb&#39;</span><span class="p">,</span> <span class="s1">&#39;fileB.1.rgb&#39;</span><span class="p">])</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">seqs</span> <span class="o">=</span> <span class="n">get_sequences</span><span class="p">([</span><span class="s1">&#39;fileA.1.rgb&#39;</span><span class="p">,</span> <span class="s1">&#39;fileA.2.rgb&#39;</span><span class="p">,</span> <span class="s1">&#39;fileB.1.rgb&#39;</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">seqs</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
 <span class="gp">...</span>
 <span class="go">fileA.1-2.rgb</span>
 <span class="go">fileB.1.rgb</span>
 </pre></div>
 </div>
-<p>Get sequences from a list of objects, preserving object attrs:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">seqs</span> <span class="o">=</span> <span class="n">get_sequences</span><span class="p">(</span><span class="n">repo</span><span class="o">.</span><span class="n">files</span><span class="p">())</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">seqs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">date</span>
-<span class="go">datetime.datetime(2011, 3, 21, 17, 31, 24)</span>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>source</strong> – Can be directory path, list of strings, or sortable list of objects.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of pyseq.Sequence class objects.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyseq.uncompress">
+<span class="sig-prename descclassname"><span class="pre">pyseq.</span></span><span class="sig-name descname"><span class="pre">uncompress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seq_string</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'%4l</span> <span class="pre">%h%p%t</span> <span class="pre">%R'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.uncompress" title="Permalink to this definition"></a></dt>
+<dd><p>Basic uncompression or deserialization of a compressed sequence string.</p>
+<p>For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">seq</span> <span class="o">=</span> <span class="n">uncompress</span><span class="p">(</span><span class="s1">&#39;./tests/files/012_vb_110_v001.</span><span class="si">%04d</span><span class="s1">.png 1-10&#39;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%h%</span><span class="s1">p%t </span><span class="si">%r</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span>
+<span class="go">012_vb_110_v001.1-10.png</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span>
+<span class="go">10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">seq2</span> <span class="o">=</span> <span class="n">uncompress</span><span class="p">(</span><span class="s1">&#39;./tests/files/a.</span><span class="si">%03d</span><span class="s1">.tga [1-3, 10, 12-14]&#39;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%h%</span><span class="s1">p%t %R&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">seq2</span><span class="p">)</span>
+<span class="go">a.1-14.tga</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">seq2</span><span class="p">)</span>
+<span class="go">7</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">seq3</span> <span class="o">=</span> <span class="n">uncompress</span><span class="p">(</span><span class="s1">&#39;a.</span><span class="si">%03d</span><span class="s1">.tga 1-14 ([1-3, 10, 12-14])&#39;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%h%</span><span class="s1">p%t </span><span class="si">%r</span><span class="s1"> (%R)&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">seq3</span><span class="p">)</span>
+<span class="go">a.1-14.tga</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">seq3</span><span class="p">)</span>
+<span class="go">7</span>
 </pre></div>
 </div>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>source</strong> – Can be directory path, list of strings, or sortable list of objects.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">List of pyseq.Sequence class objects.</td>
-</tr>
-</tbody>
-</table>
+<p>See unit tests for more examples.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>seq_string</strong> – Compressed sequence string.</p></li>
+<li><p><strong>fmt</strong> – Format of sequence string.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#pyseq.Sequence" title="pyseq.Sequence"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code></a> instance.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pyseq.walk">
-<code class="descclassname">pyseq.</code><code class="descname">walk</code><span class="sig-paren">(</span><em>source</em>, <em>level=-1</em>, <em>topdown=True</em>, <em>onerror=None</em>, <em>followlinks=False</em>, <em>hidden=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.walk" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pyseq.walk">
+<span class="sig-prename descclassname"><span class="pre">pyseq.</span></span><span class="sig-name descname"><span class="pre">walk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topdown</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">onerror</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">followlinks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyseq.walk" title="Permalink to this definition"></a></dt>
 <dd><p>Generator that traverses a directory structure starting at
 source looking for sequences.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>source</strong> – valid folder path to traverse</li>
-<li><strong>level</strong> – int, if &lt; 0 traverse entire structure otherwise
-traverse to given depth</li>
-<li><strong>topdown</strong> – walk from the top down</li>
-<li><strong>onerror</strong> – callable to handle os.listdir errors</li>
-<li><strong>followlinks</strong> – whether to follow links</li>
-<li><strong>hidden</strong> – include hidden files and dirs</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> – Valid folder path to traverse.</p></li>
+<li><p><strong>level</strong> – int, if &lt; 0 traverse entire structure otherwise traverse to given depth.</p></li>
+<li><p><strong>topdown</strong> – Walk from the top down.</p></li>
+<li><p><strong>onerror</strong> – Callable to handle os.listdir errors.</p></li>
+<li><p><strong>followlinks</strong> – Whether to follow links.</p></li>
+<li><p><strong>hidden</strong> – Include hidden files and dirs.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
-</div>
-</div>
-<div class="section" id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+</section>
+</section>
+<section id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this heading"></a></h1>
 <ul class="simple">
-<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
-<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
-<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
 </ul>
-</div>
+</section>
 
 
            </div>
-           
           </div>
           <footer>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &copy; Copyright 2011-2018, Ryan Galloway (ryangalloway.com)
-
-    </p>
+    <p>&#169; Copyright 2011-2018, Ryan Galloway (ryangalloway.com).</p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-
-  
-
-    
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-        <script type="text/javascript" src="_static/language_data.js"></script>
-    
-
-  
-
-  <script type="text/javascript" src="_static/js/theme.js"></script>
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
