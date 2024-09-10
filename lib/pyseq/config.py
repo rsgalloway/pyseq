@@ -34,9 +34,9 @@ Contains default configs and settings.
 """
 
 import os
+import platform
 import re
 import sys
-import platform
 
 # default serialization format string
 global_format = "%4l %h%p%t %R"

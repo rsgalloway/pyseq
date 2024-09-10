@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# 
+#
 # Copyright (c) 2011-2024, Ryan Galloway (ryan@rsgalloway.com)
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,10 +29,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 # -----------------------------------------------------------------------------
 
-from setuptools import setup
-from pyseq import __version__
-
 from os import path
+from setuptools import setup, find_packages
 
 this_directory = path.abspath(path.dirname(__file__))
 with open(path.join(this_directory, "README.md")) as f:
@@ -40,15 +38,20 @@ with open(path.join(this_directory, "README.md")) as f:
 
 setup(
     name="pyseq",
-    version=__version__,
+    version="0.7.0",
     description="Compressed File Sequence String Module",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="Ryan Galloway",
     author_email="ryan@rsgalloway.com",
     url="http://github.com/rsgalloway/pyseq",
-    py_modules=["pyseq"],
-    scripts=["lss"],
+    package_dir={"": "lib"},
+    packages=find_packages("lib"),
+    entry_points={
+        "console_scripts": [
+            "lss = pyseq.lss:main",
+        ],
+    },
     python_requires=">=3.6",
     zip_safe=False,
 )

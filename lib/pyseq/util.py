@@ -29,9 +29,9 @@
 # POSSIBILITY OF SUCH DAMAGE.
 # -----------------------------------------------------------------------------
 
+import functools
 import os
 import re
-import functools
 import warnings
 
 
