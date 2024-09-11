@@ -572,10 +572,6 @@ class LSSTestCase(unittest.TestCase):
         test_files = os.path.join(os.path.dirname(os.path.realpath(__file__)), "files")
 
         result = self.run_command(self.lss, test_files)
-        print("-"*50)
-        print(test_files)
-        print(result)
-        print("-"*50)
 
         self.assertEqual(
             """  10 012_vb_110_v001.%04d.png [1-10]
