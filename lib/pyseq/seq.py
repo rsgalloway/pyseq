@@ -29,22 +29,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 # -----------------------------------------------------------------------------
 
-__doc__ = """PySeq is a python module that finds groups of items that follow a naming
-convention containing a numerical sequence index, e.g. ::
-
-    fileA.001.png, fileA.002.png, fileA.003.png...
-
-and serializes them into a compressed sequence string representing the entire
-sequence, e.g. ::
-
-    fileA.1-3.png
-
-It should work regardless of where the numerical sequence index is embedded
-in the name.
-
-Docs and latest version available for download at
-
-   http://github.com/rsgalloway/pyseq
+__doc__ = """
+Contains the main pyseq classes and functions.
 """
 
 import functools

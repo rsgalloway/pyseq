@@ -29,6 +29,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 # -----------------------------------------------------------------------------
 
+__doc__ = """
+Contains the main lss function for the pyseq module.
+"""
+
 import glob
 import logging
 import optparse
