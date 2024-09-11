@@ -32,6 +32,4 @@
 __author__ = "Ryan Galloway"
 __version__ = "0.7.0"
 
-from .pyseq import Item, Sequence
-from .pyseq import SequenceError, FormatError
-from .pyseq import diff, get_sequences, padsize, uncompress, walk
+from .seq import *

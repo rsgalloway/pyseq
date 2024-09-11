@@ -35,11 +35,12 @@ import optparse
 import os
 import sys
 
-from pyseq import __version__, get_sequences, walk
-from pyseq.logger import setup_stream_handler
-from pyseq import pyseq
+from pyseq import __version__, get_sequences
+from pyseq import seq as pyseq
+from pyseq import walk
+from pyseq.logger import log, setup_stream_handler
 
-log = setup_stream_handler()
+setup_stream_handler()
 
 
 def tree(source, level, seq_format):

@@ -29,7 +29,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 # -----------------------------------------------------------------------------
 
-"""PySeq is a python module that finds groups of items that follow a naming
+__doc__ = """PySeq is a python module that finds groups of items that follow a naming
 convention containing a numerical sequence index, e.g. ::
 
     fileA.001.png, fileA.002.png, fileA.003.png...
@@ -53,9 +53,8 @@ import re
 from collections import deque
 from glob import glob, iglob
 
-from pyseq.logger import setup_stream_handler
-from pyseq.util import _ext_key
-
+from .logger import log
+from .util import _ext_key
 
 # default serialization format string
 global_format = "%4l %h%p%t %R"
@@ -78,9 +77,6 @@ format_re = re.compile(r"%(?P<pad>\d+)?(?P<var>\w+)")
 
 # character to join explicit frame ranges on
 range_join = os.environ.get("PYSEQ_RANGE_SEP", ", ")
-
-
-log = setup_stream_handler()
 
 
 class SequenceError(Exception):

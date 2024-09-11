@@ -29,8 +29,13 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-import os
+__doc__ = """
+Contains logging functionality for the pyseq module. By default, this creates
+a null handler so that importing application can set up their own stream hanlder.
+"""
+
 import logging
+import os
 
 LOG_LEVEL = int(os.environ.get("LOG_LEVEL", 20))
 
