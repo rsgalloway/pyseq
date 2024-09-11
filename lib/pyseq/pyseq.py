@@ -53,10 +53,32 @@ import re
 from collections import deque
 from glob import glob, iglob
 
-from .config import (default_format, digits_re, format_re, global_format,
-                     range_join, strict_pad)
-from .logger import setup_stream_handler
-from .util import _ext_key
+from pyseq.logger import setup_stream_handler
+from pyseq.util import _ext_key
+
+
+# default serialization format string
+global_format = "%4l %h%p%t %R"
+default_format = "%h%r%t"
+
+# use strict padding on sequences (pad length must match)
+#    $ export PYSEQ_STRICT_PAD=1 or
+#    $ export PYSEQ_NOT_STRICT=1
+# to enable/disable. disabled by default.
+strict_pad = (
+    int(os.getenv("PYSEQ_STRICT_PAD", 0)) == 1
+    or int(os.getenv("PYSEQ_NOT_STRICT", 1)) == 0
+)
+
+# regex for matching numerical characters
+digits_re = re.compile(r"\d+")
+
+# regex for matching format directives
+format_re = re.compile(r"%(?P<pad>\d+)?(?P<var>\w+)")
+
+# character to join explicit frame ranges on
+range_join = os.environ.get("PYSEQ_RANGE_SEP", ", ")
+
 
 log = setup_stream_handler()
 

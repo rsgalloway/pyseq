@@ -29,9 +29,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+import os
 import logging
 
-from pyseq.config import LOG_LEVEL
+LOG_LEVEL = int(os.environ.get("LOG_LEVEL", 20))
 
 log = logging.Logger("pyseq")
 log.setLevel(LOG_LEVEL)

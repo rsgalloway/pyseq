@@ -34,4 +34,4 @@ __version__ = "0.7.0"
 
 from .pyseq import Item, Sequence
 from .pyseq import SequenceError, FormatError
-from .pyseq import diff, get_sequences, uncompress, walk
+from .pyseq import diff, get_sequences, padsize, uncompress, walk

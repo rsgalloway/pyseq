@@ -35,8 +35,9 @@ import optparse
 import os
 import sys
 
-from pyseq import __version__, config, get_sequences, walk
+from pyseq import __version__, get_sequences, walk
 from pyseq.logger import setup_stream_handler
+from pyseq import pyseq
 
 log = setup_stream_handler()
 
@@ -139,7 +140,7 @@ Formatting options:
 
     Format directives support padding, for example: "%%04l".
     """
-        % config.global_format
+        % pyseq.global_format
     )
 
     parser = optparse.OptionParser(usage=usage, version="%prog " + __version__)
@@ -167,7 +168,7 @@ Formatting options:
         "--strict",
         dest="strict",
         action="store_true",
-        default=config.strict_pad,
+        default=pyseq.strict_pad,
         help="strict padding (default false)",
     )
     (options, args) = parser.parse_args()
@@ -175,7 +176,7 @@ Formatting options:
     if options.debug:
         log.setLevel(logging.DEBUG)
 
-    config.strict_pad = options.strict
+    pyseq.strict_pad = options.strict
 
     if len(args) == 0:
         args = [os.getcwd()]
@@ -190,7 +191,7 @@ Formatting options:
 
     if options.recursive is None:
         for seq in get_sequences(items):
-            print(seq.format(options.format or config.global_format))
+            print(seq.format(options.format or pyseq.global_format))
     else:
         level = options.recursive
         for path in args:

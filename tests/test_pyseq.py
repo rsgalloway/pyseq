@@ -39,7 +39,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from pyseq import Item, Sequence, diff, uncompress, get_sequences
 from pyseq import SequenceError
-import pyseq
+from pyseq import pyseq
 
 pyseq.default_format = "%h%r%t"
 
@@ -563,14 +563,19 @@ class LSSTestCase(unittest.TestCase):
 
     def setUp(self):
         """ """
+        self.maxDiff = None
         self.here = os.path.dirname(__file__)
-        self.lss = os.path.realpath(os.path.join(os.path.dirname(self.here), "lss"))
+        self.lss = os.path.realpath(os.path.join(os.path.dirname(self.here), "lib", "pyseq", "lss.py"))
 
     def test_lss_is_working_properly_1(self):
         """testing if the lss command is working properly"""
         test_files = os.path.join(os.path.dirname(os.path.realpath(__file__)), "files")
 
         result = self.run_command(self.lss, test_files)
+        print("-"*50)
+        print(test_files)
+        print(result)
+        print("-"*50)
 
         self.assertEqual(
             """  10 012_vb_110_v001.%04d.png [1-10]
