@@ -39,8 +39,8 @@ import re
 from collections import deque
 from glob import glob, iglob
 
-from .logger import log
-from .util import _ext_key
+from pyseq.logger import log
+from pyseq.util import _ext_key
 
 # default serialization format string
 global_format = "%4l %h%p%t %R"
