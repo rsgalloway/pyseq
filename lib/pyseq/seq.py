@@ -36,10 +36,11 @@ Contains the main pyseq classes and functions.
 import functools
 import os
 import re
+import traceback
+import warnings
 from collections import deque
 from glob import glob, iglob
 
-from pyseq.logger import log
 from pyseq.util import _ext_key
 
 # default serialization format string
@@ -384,7 +385,7 @@ class Sequence(list):
             except SequenceError:
                 continue
             except KeyboardInterrupt:
-                log.info("Stopping.")
+                print("Stopping.")
                 break
 
     def __attrs__(self):
@@ -764,7 +765,15 @@ class Sequence(list):
 
                 shutil.move(oldName, newName)
             except Exception as err:
-                log.error(err)
+                warnings.warn(
+                    "%s during reIndex %s -> %s: \n%s"
+                    % (
+                        err.__class__.__name__,
+                        oldName,
+                        newName,
+                        traceback.format_exc(),
+                    )
+                )
             else:
                 self.__dirty = True
                 image.frame = int(newFrame)

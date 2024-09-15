@@ -34,7 +34,6 @@ Contains the main lss function for the pyseq module.
 """
 
 import glob
-import logging
 import optparse
 import os
 import sys
@@ -42,9 +41,6 @@ import sys
 from pyseq import __version__, get_sequences
 from pyseq import seq as pyseq
 from pyseq import walk
-from pyseq.logger import log, setup_stream_handler
-
-setup_stream_handler()
 
 
 def tree(source, level, seq_format):
@@ -153,14 +149,6 @@ Formatting options:
         "-f", "--format", dest="format", default=None, help="format the output string"
     )
     parser.add_option(
-        "-d",
-        "--debug",
-        dest="debug",
-        action="store_true",
-        default=False,
-        help="set logging level to debug",
-    )
-    parser.add_option(
         "-r",
         "--recursive",
         dest="recursive",
@@ -177,9 +165,6 @@ Formatting options:
         help="strict padding (default false)",
     )
     (options, args) = parser.parse_args()
-
-    if options.debug:
-        log.setLevel(logging.DEBUG)
 
     pyseq.strict_pad = options.strict
 
