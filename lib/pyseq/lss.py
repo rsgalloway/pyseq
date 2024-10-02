@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# 
+#
 # Copyright (c) 2011-2024, Ryan Galloway (ryan@rsgalloway.com)
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,13 +29,18 @@
 # POSSIBILITY OF SUCH DAMAGE.
 # -----------------------------------------------------------------------------
 
+__doc__ = """
+Contains the main lss function for the pyseq module.
+"""
+
 import glob
-import logging
 import optparse
 import os
 import sys
 
-import pyseq
+from pyseq import __version__, get_sequences
+from pyseq import seq as pyseq
+from pyseq import walk
 
 
 def tree(source, level, seq_format):
@@ -54,7 +59,7 @@ def tree(source, level, seq_format):
 
     print("{0}{1}".format(blue, os.path.relpath(source)))
 
-    for root, dirs, seqs in pyseq.walk(source, level):
+    for root, dirs, seqs in walk(source, level):
         if len(dirs) > 0:
             ends[root] = dirs[-1]
         else:
@@ -139,17 +144,9 @@ Formatting options:
         % pyseq.global_format
     )
 
-    parser = optparse.OptionParser(usage=usage, version="%prog " + pyseq.__version__)
+    parser = optparse.OptionParser(usage=usage, version="%prog " + __version__)
     parser.add_option(
         "-f", "--format", dest="format", default=None, help="format the output string"
-    )
-    parser.add_option(
-        "-d",
-        "--debug",
-        dest="debug",
-        action="store_true",
-        default=False,
-        help="set logging level to debug",
     )
     parser.add_option(
         "-r",
@@ -169,10 +166,6 @@ Formatting options:
     )
     (options, args) = parser.parse_args()
 
-    if options.debug:
-        pyseq.log.setLevel(logging.DEBUG)
-
-    # strict padding
     pyseq.strict_pad = options.strict
 
     if len(args) == 0:
@@ -187,7 +180,7 @@ Formatting options:
             items.extend(glob.glob(path))
 
     if options.recursive is None:
-        for seq in pyseq.get_sequences(items):
+        for seq in get_sequences(items):
             print(seq.format(options.format or pyseq.global_format))
     else:
         level = options.recursive

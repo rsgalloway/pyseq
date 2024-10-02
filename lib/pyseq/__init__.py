@@ -29,34 +29,25 @@
 # POSSIBILITY OF SUCH DAMAGE.
 # -----------------------------------------------------------------------------
 
-import sys
-from os import path
+__doc__ = """PySeq is a python module that finds groups of items that follow a naming
+convention containing a numerical sequence index, e.g. ::
 
-from setuptools import find_packages, setup
+    fileA.001.png, fileA.002.png, fileA.003.png...
 
-this_directory = path.abspath(path.dirname(__file__))
-with open(path.join(this_directory, "README.md")) as f:
-    long_description = f.read()
+and serializes them into a compressed sequence string representing the entire
+sequence, e.g. ::
 
-sys.path.insert(0, "lib")
-from pyseq import __version__
+    fileA.1-3.png
 
-setup(
-    name="pyseq",
-    version=__version__,
-    description="Compressed File Sequence String Module",
-    long_description=long_description,
-    long_description_content_type="text/markdown",
-    author="Ryan Galloway",
-    author_email="ryan@rsgalloway.com",
-    url="http://github.com/rsgalloway/pyseq",
-    package_dir={"": "lib"},
-    packages=find_packages("lib"),
-    entry_points={
-        "console_scripts": [
-            "lss = pyseq.lss:main",
-        ],
-    },
-    python_requires=">=3.6",
-    zip_safe=False,
-)
+It should work regardless of where the numerical sequence index is embedded
+in the name.
+
+Docs and latest version available for download at
+
+   http://github.com/rsgalloway/pyseq
+"""
+
+__author__ = "Ryan Galloway"
+__version__ = "0.8.0"
+
+from .seq import *

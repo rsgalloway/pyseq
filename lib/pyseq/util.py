@@ -29,34 +29,67 @@
 # POSSIBILITY OF SUCH DAMAGE.
 # -----------------------------------------------------------------------------
 
-import sys
-from os import path
+import functools
+import os
+import re
+import warnings
 
-from setuptools import find_packages, setup
 
-this_directory = path.abspath(path.dirname(__file__))
-with open(path.join(this_directory, "README.md")) as f:
-    long_description = f.read()
+def deprecated(func):
+    """Deprecation warning decorator."""
 
-sys.path.insert(0, "lib")
-from pyseq import __version__
+    def inner(*args, **kwargs):
+        warnings.warn(
+            "Call to deprecated method {}".format(func.__name__),
+            category=DeprecationWarning,
+            stacklevel=2,
+        )
+        return func(*args, **kwargs)
 
-setup(
-    name="pyseq",
-    version=__version__,
-    description="Compressed File Sequence String Module",
-    long_description=long_description,
-    long_description_content_type="text/markdown",
-    author="Ryan Galloway",
-    author_email="ryan@rsgalloway.com",
-    url="http://github.com/rsgalloway/pyseq",
-    package_dir={"": "lib"},
-    packages=find_packages("lib"),
-    entry_points={
-        "console_scripts": [
-            "lss = pyseq.lss:main",
-        ],
-    },
-    python_requires=">=3.6",
-    zip_safe=False,
-)
+    inner.__name__ = func.__name__
+    inner.__doc__ = func.__doc__
+    inner.__dict__.update(func.__dict__)
+    return inner
+
+
+def _natural_key(x):
+    """Splits a string into characters and digits.
+
+    :param x: The string to be split.
+    :return: A list of characters and digits.
+    """
+    return [int(c) if c.isdigit() else c.lower() for c in re.split(r"(\d+)", x)]
+
+
+def _ext_key(x):
+    """Similar to `_natural_key` except this one uses the file extension at
+    the head of split string.  This fixes issues with files that are named
+    similar but with different file extensions:
+
+    This example:
+
+        file.001.jpg
+        file.001.tiff
+        file.002.jpg
+        file.002.tiff
+
+    Would get properly sorted into:
+
+        file.001.jpg
+        file.002.jpg
+        file.001.tiff
+        file.002.tiff
+    """
+    name, ext = os.path.splitext(x)
+    return [ext] + _natural_key(name)
+
+
+@functools.lru_cache(maxsize=None)
+def natural_sort(items):
+    """
+    Sorts a list of items in natural order.
+
+    :param items: The list of items to be sorted.
+    :return: The sorted list of items.
+    """
+    return sorted(items, key=_natural_key)

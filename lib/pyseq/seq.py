@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# 
+#
 # Copyright (c) 2011-2024, Ryan Galloway (ryan@rsgalloway.com)
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,33 +29,19 @@
 # POSSIBILITY OF SUCH DAMAGE.
 # -----------------------------------------------------------------------------
 
-"""PySeq is a python module that finds groups of items that follow a naming
-convention containing a numerical sequence index, e.g. ::
-
-    fileA.001.png, fileA.002.png, fileA.003.png...
-
-and serializes them into a compressed sequence string representing the entire
-sequence, e.g. ::
-
-    fileA.1-3.png
-
-It should work regardless of where the numerical sequence index is embedded
-in the name.
-
-Docs and latest version available for download at
-
-   http://github.com/rsgalloway/pyseq
+__doc__ = """
+Contains the main pyseq classes and functions.
 """
 
 import functools
-import logging
 import os
 import re
+import traceback
 import warnings
 from collections import deque
 from glob import glob, iglob
 
-__version__ = "0.7.0"
+from pyseq.util import _ext_key
 
 # default serialization format string
 global_format = "%4l %h%p%t %R"
@@ -79,65 +65,6 @@ format_re = re.compile(r"%(?P<pad>\d+)?(?P<var>\w+)")
 # character to join explicit frame ranges on
 range_join = os.environ.get("PYSEQ_RANGE_SEP", ", ")
 
-__all__ = [
-    "SequenceError",
-    "FormatError",
-    "Item",
-    "Sequence",
-    "diff",
-    "uncompress",
-    "get_sequences",
-    "walk",
-]
-
-# logging handlers
-log = logging.getLogger("pyseq")
-log.addHandler(logging.StreamHandler())
-log.setLevel(int(os.environ.get("PYSEQ_LOG_LEVEL", logging.INFO)))
-
-
-def _natural_key(x):
-    """Splits a string into characters and digits.
-
-    :param x: The string to be split.
-    :return: A list of characters and digits.
-    """
-    return [int(c) if c.isdigit() else c.lower() for c in re.split(r"(\d+)", x)]
-
-
-def _ext_key(x):
-    """Similar to `_natural_key` except this one uses the file extension at
-    the head of split string.  This fixes issues with files that are named
-    similar but with different file extensions:
-
-    This example:
-
-        file.001.jpg
-        file.001.tiff
-        file.002.jpg
-        file.002.tiff
-
-    Would get properly sorted into:
-
-        file.001.jpg
-        file.002.jpg
-        file.001.tiff
-        file.002.tiff
-    """
-    name, ext = os.path.splitext(x)
-    return [ext] + _natural_key(name)
-
-
-@functools.lru_cache(maxsize=None)
-def natural_sort(items):
-    """
-    Sorts a list of items in natural order.
-
-    :param items: The list of items to be sorted.
-    :return: The sorted list of items.
-    """
-    return sorted(items, key=_natural_key)
-
 
 class SequenceError(Exception):
     """Special exception for Sequence errors."""
@@ -149,23 +76,6 @@ class FormatError(Exception):
     """Special exception for Sequence format errors."""
 
     pass
-
-
-def deprecated(func):
-    """Deprecation warning decorator."""
-
-    def inner(*args, **kwargs):
-        warnings.warn(
-            "Call to deprecated method {}".format(func.__name__),
-            category=DeprecationWarning,
-            stacklevel=2,
-        )
-        return func(*args, **kwargs)
-
-    inner.__name__ = func.__name__
-    inner.__doc__ = func.__doc__
-    inner.__dict__.update(func.__dict__)
-    return inner
 
 
 def padsize(item, frame):
@@ -475,7 +385,7 @@ class Sequence(list):
             except SequenceError:
                 continue
             except KeyboardInterrupt:
-                log.info("Stopping.")
+                print("Stopping.")
                 break
 
     def __attrs__(self):
@@ -855,7 +765,15 @@ class Sequence(list):
 
                 shutil.move(oldName, newName)
             except Exception as err:
-                log.error(err)
+                warnings.warn(
+                    "%s during reIndex %s -> %s: \n%s"
+                    % (
+                        err.__class__.__name__,
+                        oldName,
+                        newName,
+                        traceback.format_exc(),
+                    )
+                )
             else:
                 self.__dirty = True
                 image.frame = int(newFrame)
