@@ -7,17 +7,28 @@ them into a compressed sequence string representing the entire sequence (e.g. fi
 should work regardless of where the numerical sequence index is embedded in the name. For examples,
 see basic usage below or http://rsgalloway.github.io/pyseq
 
-Installation
-------------
+## Installation
 
 The easiest way to install pyseq:
 
 ```bash
-$ pip install pyseq
+$ pip install -U pyseq
 ```
 
-Basic Usage
------------
+#### distman
+
+If installing from source to a network location, you can use
+[distman](https://github.com/rsgalloway/distman) to
+install pyseq using the provided `dist.json` file:
+
+```bash
+$ distman [-d]
+```
+
+Using distman will deploy the targets defined in the `dist.json` file to the
+root folder defined by `$DEPLOY_ROOT`.
+
+## Basic Usage
 
 Using the "z1" file sequence example in the "tests" directory, we start by listing the directory
 contents using `ls`:
@@ -78,8 +89,7 @@ tests
 ```
 
 
-API Examples
-------------
+## API Examples
 
 Compression, or serialization, of lists of items:
 
@@ -102,13 +112,12 @@ Uncompression, or deserialization, of compressed sequences strings:
 1001 012_vb_110_v001.%04d.png [1-1001]
 ```
 
-Testing
--------
+## Testing
 
 To run the unit tests, simply run `pytest` in a shell:
 
 ```bash
-$ pytest
+$ pytest test/ -s
 ```
 
 Or if you don't have `pytest`, you can run:

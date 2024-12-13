@@ -48,6 +48,13 @@ Docs and latest version available for download at
 """
 
 __author__ = "Ryan Galloway"
-__version__ = "0.8.0"
+__version__ = "0.8.1"
+
+try:
+    import envstack
+
+    envstack.init("pyseq")
+except Exception:
+    pass
 
 from .seq import *
