@@ -112,6 +112,52 @@ Uncompression, or deserialization, of compressed sequences strings:
 1001 012_vb_110_v001.%04d.png [1-1001]
 ```
 
+## Formatting
+
+The following directives can be embedded in the format string.
+
+| Directive | Meaning                              |
+|-----------|--------------------------------------|
+| `%s`      | sequence start                       |
+| `%e`      | sequence end                         |
+| `%l`      | sequence length                      |
+| `%f`      | list of found files                  |
+| `%m`      | list of missing files                |
+| `%M`      | explicit missing files [11-14,19-21] |
+| `%p`      | padding, e.g. %06d                   |
+| `%r`      | implied range, start-end             |
+| `%R`      | explicit broken range, [1-10, 15-20] |
+| `%d`      | disk usage                           |
+| `%H`      | disk usage (human readable)          |
+| `%D`      | parent directory                     |
+| `%h`      | string preceding sequence number     |
+| `%t`      | string after the sequence number     |
+
+Here are some examples using `lss -f <format>` and `seq.format(..)`:
+
+Using `lss -f <format>`:
+
+```bash
+$ $ lss tests/files/a*.tga -f "%h%r%t"
+a.1-14.tga
+$ lss tests/files/a*.tga -f "%l %h%r%t"
+7 a.1-14.tga
+$ lss tests/files/a*.tga -f "%l %h%r%t %M"
+7 a.1-14.tga [4-9, 11]
+```
+
+In Python, using `seq.format(..)`:
+
+```python
+>>> s = pyseq.get_sequences("tests/files/a*.tga")[0]
+>>> print(s.format("%h%r%t"))
+a.1-14.tga
+>>> print(s.format("%l %h%r%t"))
+7 a.1-14.tga
+>>> print(s.format("%l %h%r%t %M"))
+7 a.1-14.tga [4-9, 11]
+```
+
 ## Testing
 
 To run the unit tests, simply run `pytest` in a shell:
