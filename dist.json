@@ -12,6 +12,10 @@
         "lib": {
             "source": "lib/pyseq",
             "destination": "{DEPLOY_ROOT}/lib/python/pyseq"
+        },
+        "env": {
+            "source": "pyseq.env",
+            "destination": "{DEPLOY_ROOT}/env/pyseq.env"
         }
     }
 }

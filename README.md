@@ -28,6 +28,18 @@ $ distman [-d]
 Using distman will deploy the targets defined in the `dist.json` file to the
 root folder defined by `$DEPLOY_ROOT`.
 
+#### envstack
+
+PySeq uses [envstack](https://github.com/rsgalloway/envstack) to manage configs
+via environment variables.
+
+```bash
+$ envstack pyseq
+PYSEQ_RANGE_SEP=, 
+PYSEQ_STRICT_PAD=0
+STACK=pyseq
+```
+
 ## Basic Usage
 
 Using the "z1" file sequence example in the "tests" directory, we start by
