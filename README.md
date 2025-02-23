@@ -1,25 +1,49 @@
 PySeq
 =====
 
-PySeq is a python module that finds groups of items that follow a naming convention containing 
-a numerical sequence index (e.g. fileA.001.png, fileA.002.png, fileA.003.png...) and serializes
-them into a compressed sequence string representing the entire sequence (e.g. fileA.1-3.png). It 
-should work regardless of where the numerical sequence index is embedded in the name. For examples,
-see basic usage below or http://rsgalloway.github.io/pyseq
+PySeq is a python module that finds groups of items that follow a naming
+convention containing  a numerical sequence index (e.g. fileA.001.png,
+fileA.002.png, fileA.003.png...) and serializes them into a compressed sequence
+string representing the entire sequence (e.g. fileA.1-3.png). It should work
+regardless of where the numerical sequence index is embedded in the name. For
+examples, see basic usage below or http://rsgalloway.github.io/pyseq
 
-Installation
-------------
+## Installation
 
 The easiest way to install pyseq:
 
 ```bash
-$ pip install pyseq
+$ pip install -U pyseq
 ```
 
-Basic Usage
------------
+#### distman
 
-Using the "z1" file sequence example in the "tests" directory, we start by listing the directory
+If installing from source you can use [distman](https://github.com/rsgalloway/distman)
+to install pyseq using the provided `dist.json` file:
+
+```bash
+$ distman [-d]
+```
+
+Using distman will deploy the targets defined in the `dist.json` file to the
+root folder defined by `$DEPLOY_ROOT`.
+
+#### envstack
+
+PySeq uses [envstack](https://github.com/rsgalloway/envstack) to manage configs
+via environment variables.
+
+```bash
+$ envstack pyseq
+PYSEQ_RANGE_SEP=, 
+PYSEQ_STRICT_PAD=0
+STACK=pyseq
+```
+
+## Basic Usage
+
+Using the "z1" file sequence example in the "tests" directory, we start by
+listing the directory
 contents using `ls`:
 
 ```bash
@@ -29,8 +53,8 @@ tests/files/z1_001_v1.2.png  tests/files/z1_002_v1.1.png  tests/files/z1_002_v1.
 tests/files/z1_001_v1.3.png  tests/files/z1_002_v1.2.png  tests/files/z1_002_v2.10.png  tests/files/z1_002_v2.9.png
 ```
 
-Now we list the same directory contents using `lss`, which will find the sequences and display them
-in the default compressed format:
+Now we list the same directory contents using `lss`, which will find the
+sequences and display them in the default compressed format:
 
 ```bash
 $ lss tests/files/z1*
@@ -77,9 +101,7 @@ tests
     └── z1_002_v2.9-12.png
 ```
 
-
-API Examples
-------------
+## API Examples
 
 Compression, or serialization, of lists of items:
 
@@ -102,13 +124,58 @@ Uncompression, or deserialization, of compressed sequences strings:
 1001 012_vb_110_v001.%04d.png [1-1001]
 ```
 
-Testing
--------
+## Formatting
+
+The following directives can be embedded in the format string.
+
+| Directive | Meaning                              |
+|-----------|--------------------------------------|
+| `%s`      | sequence start                       |
+| `%e`      | sequence end                         |
+| `%l`      | sequence length                      |
+| `%f`      | list of found files                  |
+| `%m`      | list of missing files                |
+| `%M`      | explicit missing files [11-14,19-21] |
+| `%p`      | padding, e.g. %06d                   |
+| `%r`      | implied range, start-end             |
+| `%R`      | explicit broken range, [1-10, 15-20] |
+| `%d`      | disk usage                           |
+| `%H`      | disk usage (human readable)          |
+| `%D`      | parent directory                     |
+| `%h`      | string preceding sequence number     |
+| `%t`      | string after the sequence number     |
+
+Here are some examples using `lss -f <format>` and `seq.format(..)`:
+
+Using `lss -f <format>`:
+
+```bash
+$ $ lss tests/files/a*.tga -f "%h%r%t"
+a.1-14.tga
+$ lss tests/files/a*.tga -f "%l %h%r%t"
+7 a.1-14.tga
+$ lss tests/files/a*.tga -f "%l %h%r%t %M"
+7 a.1-14.tga [4-9, 11]
+```
+
+In Python, using `seq.format(..)`:
+
+```python
+>>> s = pyseq.get_sequences("tests/files/a*.tga")[0]
+>>> print(s.format("%h%r%t"))
+a.1-14.tga
+>>> print(s.format("%l %h%r%t"))
+7 a.1-14.tga
+>>> print(s.format("%l %h%r%t %M"))
+7 a.1-14.tga [4-9, 11]
+```
+
+## Testing
 
 To run the unit tests, simply run `pytest` in a shell:
 
 ```bash
-$ pytest
+$ pytest test/ -s
 ```
 
 Or if you don't have `pytest`, you can run:

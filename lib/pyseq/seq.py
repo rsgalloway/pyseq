@@ -63,7 +63,7 @@ digits_re = re.compile(r"\d+")
 format_re = re.compile(r"%(?P<pad>\d+)?(?P<var>\w+)")
 
 # character to join explicit frame ranges on
-range_join = os.environ.get("PYSEQ_RANGE_SEP", ", ")
+range_join = os.getenv("PYSEQ_RANGE_SEP", ", ")
 
 
 class SequenceError(Exception):
@@ -488,7 +488,7 @@ class Sequence(list):
         +-----------+--------------------------------------+
         | ``%m``    | list of missing files                |
         +-----------+--------------------------------------+
-        | ``%M``    | explicit missingfiles [11-14,19-21]  |
+        | ``%M``    | explicit missing files [11-14,19-21] |
         +-----------+--------------------------------------+
         | ``%p``    | padding, e.g. %06d                   |
         +-----------+--------------------------------------+

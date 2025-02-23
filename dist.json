@@ -1,0 +1,21 @@
+{
+    "author": "ryan@rsg.io",
+    "targets": {
+        "bin": {
+            "source": "bin/lss",
+            "destination": "{DEPLOY_ROOT}/bin/lss"
+        },
+        "bat": {
+            "source": "bin/lss.bat",
+            "destination": "{DEPLOY_ROOT}/bin/lss.bat"
+        },
+        "lib": {
+            "source": "lib/pyseq",
+            "destination": "{DEPLOY_ROOT}/lib/python/pyseq"
+        },
+        "env": {
+            "source": "pyseq.env",
+            "destination": "{DEPLOY_ROOT}/env/pyseq.env"
+        }
+    }
+}
