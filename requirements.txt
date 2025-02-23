@@ -1,1 +1,1 @@
-envstack==0.7.1
+envstack==0.8.0
