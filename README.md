@@ -1,11 +1,12 @@
 PySeq
 =====
 
-PySeq is a python module that finds groups of items that follow a naming convention containing 
-a numerical sequence index (e.g. fileA.001.png, fileA.002.png, fileA.003.png...) and serializes
-them into a compressed sequence string representing the entire sequence (e.g. fileA.1-3.png). It 
-should work regardless of where the numerical sequence index is embedded in the name. For examples,
-see basic usage below or http://rsgalloway.github.io/pyseq
+PySeq is a python module that finds groups of items that follow a naming
+convention containing  a numerical sequence index (e.g. fileA.001.png,
+fileA.002.png, fileA.003.png...) and serializes them into a compressed sequence
+string representing the entire sequence (e.g. fileA.1-3.png). It should work
+regardless of where the numerical sequence index is embedded in the name. For
+examples, see basic usage below or http://rsgalloway.github.io/pyseq
 
 ## Installation
 
@@ -17,9 +18,8 @@ $ pip install -U pyseq
 
 #### distman
 
-If installing from source to a network location, you can use
-[distman](https://github.com/rsgalloway/distman) to
-install pyseq using the provided `dist.json` file:
+If installing from source you can use [distman](https://github.com/rsgalloway/distman)
+to install pyseq using the provided `dist.json` file:
 
 ```bash
 $ distman [-d]
@@ -30,7 +30,8 @@ root folder defined by `$DEPLOY_ROOT`.
 
 ## Basic Usage
 
-Using the "z1" file sequence example in the "tests" directory, we start by listing the directory
+Using the "z1" file sequence example in the "tests" directory, we start by
+listing the directory
 contents using `ls`:
 
 ```bash
@@ -40,8 +41,8 @@ tests/files/z1_001_v1.2.png  tests/files/z1_002_v1.1.png  tests/files/z1_002_v1.
 tests/files/z1_001_v1.3.png  tests/files/z1_002_v1.2.png  tests/files/z1_002_v2.10.png  tests/files/z1_002_v2.9.png
 ```
 
-Now we list the same directory contents using `lss`, which will find the sequences and display them
-in the default compressed format:
+Now we list the same directory contents using `lss`, which will find the
+sequences and display them in the default compressed format:
 
 ```bash
 $ lss tests/files/z1*
@@ -87,7 +88,6 @@ tests
     ├── z1_002_v1.1-4.png
     └── z1_002_v2.9-12.png
 ```
-
 
 ## API Examples
 
