@@ -1,1 +1,1 @@
-envstack==0.8.0
+envstack>=0.8.3

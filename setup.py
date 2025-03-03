@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2011-2024, Ryan Galloway (ryan@rsgalloway.com)
+# Copyright (c) 2011-2025, Ryan Galloway (ryan@rsgalloway.com)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -57,7 +57,7 @@ setup(
             "lss = pyseq.lss:main",
         ],
     },
-    install_requires=["envstack==0.8.0"],
+    install_requires=["envstack>=0.8.3"],
     python_requires=">=3.6",
     zip_safe=False,
 )
