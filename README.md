@@ -124,6 +124,17 @@ Uncompression, or deserialization, of compressed sequences strings:
 1001 012_vb_110_v001.%04d.png [1-1001]
 ```
 
+Walk a directory tree and print disk usage for file sequences:
+
+```python
+>>> for root, dirs, seqs in pyseq.walk(folder):
+...     for seq in seqs:
+...         print(seq.format("%h%r%t %H"))
+012_vb_110_v001.1000-1321.exr   123.5G
+012_vb_110_v002.1000-1163.exr    40.2G
+012_vb_110_v003.1000-1027.exr    72.2G
+```
+
 ## Formatting
 
 The following directives can be embedded in the format string.
