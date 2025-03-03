@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2011-2024, Ryan Galloway (ryan@rsgalloway.com)
+# Copyright (c) 2011-2025, Ryan Galloway (ryan@rsgalloway.com)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -48,7 +48,7 @@ Docs and latest version available for download at
 """
 
 __author__ = "Ryan Galloway"
-__version__ = "0.8.1"
+__version__ = "0.8.2"
 
 try:
     import envstack
