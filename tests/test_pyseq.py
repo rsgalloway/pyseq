@@ -582,7 +582,7 @@ class LSSTestCase(unittest.TestCase):
    5 bnc01_TinkSO_tx_0_ty_1.%04d.tif [101-105]
    5 bnc01_TinkSO_tx_1_ty_0.%04d.tif [101-105]
    5 bnc01_TinkSO_tx_1_ty_1.%04d.tif [101-105]
-   2 file.%02d.tif [1-2]
+   4 file.%02d.tif [1-2, 98-99]
    1 file.info.03.rgb 
    3 file01.%03d.j2k [1-2, 4]
    4 file01_%04d.rgb [40-43]
