@@ -848,7 +848,7 @@ class TestIssues(unittest.TestCase):
         # test padded frames
         seqs = get_sequences(padded)
         self.assertEqual(len(seqs), 1)
-        self.assertEqual(seqs[0].format(seqformat), "   4 file.%d.jpg [8-11]")
+        self.assertEqual(seqs[0].format(seqformat), "   4 file.%02d.jpg [8-11]")
 
         # test unpadded frames
         seqs = get_sequences(unpadded)

@@ -330,7 +330,7 @@ class Item(str):
         if is_sibling:
             frame = d[0]["frames"][0]
             self.frame = int(frame)
-            self.pad = padsize(item, frame)
+            self.pad = padsize(item, frame) if self.pad is None else self.pad
             self.head = self.name[: d[0]["start"]]
             self.tail = self.name[d[0]["end"] :]  # noqa
             frame = d[0]["frames"][1]
