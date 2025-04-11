@@ -87,7 +87,7 @@ tests
     ├── bnc01_TinkSO_tx_0_ty_1.101-105.tif
     ├── bnc01_TinkSO_tx_1_ty_0.101-105.tif
     ├── bnc01_TinkSO_tx_1_ty_1.101-105.tif
-    ├── file.1-2.tif
+    ├── file.1-99.tif
     ├── file.info.03.rgb
     ├── file01.1-4.j2k
     ├── file01_40-43.rgb
