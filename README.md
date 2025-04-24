@@ -43,8 +43,7 @@ STACK=pyseq
 ## Basic Usage
 
 Using the "z1" file sequence example in the "tests" directory, we start by
-listing the directory
-contents using `ls`:
+listing the directory contents using `ls`:
 
 ```bash
 $ ls tests/files/z1*
@@ -63,7 +62,7 @@ $ lss tests/files/z1*
    4 z1_002_v2.%d.png [9-12]
 ```
 
-With a custom format:
+With a custom sequence string format:
 
 ```bash
 $ lss tests/files/z1* -f "%h%r%t"
@@ -72,7 +71,7 @@ z1_002_v1.1-4.png
 z1_002_v2.9-12.png
 ```
 
-Recursive:
+Recursivly walk a folder and find all the sequences:
 
 ```bash
 $ lss -r tests
@@ -99,6 +98,18 @@ tests
     ├── z1_001_v1.1-4.png
     ├── z1_002_v1.1-4.png
     └── z1_002_v2.9-12.png
+```
+
+Piping the output of `find` to `lss`, for example finding all the png sequences:
+
+```bash
+$ find ./tests/ -name *.png | xargs lss
+  10 012_vb_110_v001.%04d.png [1-10]
+  10 012_vb_110_v002.%04d.png [1-10]
+   3 fileA.%04d.png [1-3]
+   4 z1_001_v1.%d.png [1-4]
+   4 z1_002_v1.%d.png [1-4]
+   4 z1_002_v2.%d.png [9-12]
 ```
 
 ## API Examples
