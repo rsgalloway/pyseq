@@ -62,15 +62,6 @@ $ lss tests/files/z1*
    4 z1_002_v2.%d.png [9-12]
 ```
 
-With a custom sequence string format:
-
-```bash
-$ lss tests/files/z1* -f "%h%r%t"
-z1_001_v1.1-4.png
-z1_002_v1.1-4.png
-z1_002_v2.9-12.png
-```
-
 Recursivly walk a folder and find all the sequences:
 
 ```bash
@@ -110,6 +101,18 @@ $ find ./tests/ -name *.png | xargs lss
    4 z1_001_v1.%d.png [1-4]
    4 z1_002_v1.%d.png [1-4]
    4 z1_002_v2.%d.png [9-12]
+```
+
+Use the `--format` option to retain the relative path:
+
+```bash
+$ find tests/ -name "*.png" | xargs lss -f "%D%h%r%t"
+tests/files/012_vb_110_v001.1-10.png
+tests/files/012_vb_110_v002.1-10.png
+tests/files/fileA.1-3.png
+tests/files/z1_001_v1.1-4.png
+tests/files/z1_002_v1.1-4.png
+tests/files/z1_002_v2.9-12.png
 ```
 
 ## API Examples
