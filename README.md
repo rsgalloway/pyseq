@@ -16,29 +16,31 @@ The easiest way to install pyseq:
 $ pip install -U pyseq
 ```
 
-#### distman
+#### Environment
 
-If installing from source you can use [distman](https://github.com/rsgalloway/distman)
-to install pyseq using the provided `dist.json` file:
+PySeq uses [envstack](https://github.com/rsgalloway/envstack) to externalize
+settings and looks for a `pyseq.env` file to source environment variables:
 
 ```bash
+$ pip install -U envstack
+$ envstack pyseq -r
+PYSEQ_FRAMES_PATTERN=\d+
+PYSEQ_RANGE_SEP=, 
+PYSEQ_STRICT_PAD=0
+```
+
+#### Distribution
+
+If installing from source you can use [distman](https://github.com/rsgalloway/distman)
+to install PySeq using the provided `dist.json` file:
+
+```bash
+$ pip install -U distman
 $ distman [-d]
 ```
 
 Using distman will deploy the targets defined in the `dist.json` file to the
-root folder defined by `$DEPLOY_ROOT`.
-
-#### envstack
-
-PySeq uses [envstack](https://github.com/rsgalloway/envstack) to manage configs
-via environment variables.
-
-```bash
-$ envstack pyseq
-PYSEQ_RANGE_SEP=, 
-PYSEQ_STRICT_PAD=0
-STACK=pyseq
-```
+root folder defined by `${DEPLOY_ROOT}`:
 
 ## Basic Usage
 

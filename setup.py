@@ -57,7 +57,6 @@ setup(
             "lss = pyseq.lss:main",
         ],
     },
-    install_requires=["envstack>=0.8.3"],
     python_requires=">=3.6",
     zip_safe=False,
 )
