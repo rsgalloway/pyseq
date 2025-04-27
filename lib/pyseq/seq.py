@@ -42,28 +42,15 @@ from collections import deque
 from glob import glob, iglob
 
 from pyseq.util import _ext_key
-
-# default serialization format string
-global_format = "%4l %h%p%t %R"
-default_format = "%h%r%t"
-
-# use strict padding on sequences (pad length must match)
-#    $ export PYSEQ_STRICT_PAD=1 or
-#    $ export PYSEQ_NOT_STRICT=1
-# to enable/disable. disabled by default.
-strict_pad = (
-    int(os.getenv("PYSEQ_STRICT_PAD", 0)) == 1
-    or int(os.getenv("PYSEQ_NOT_STRICT", 1)) == 0
+from pyseq.config import (
+    default_format,
+    digits_re,
+    format_re,
+    frames_re,
+    global_format,
+    range_join,
+    strict_pad,
 )
-
-# regex for matching numerical characters
-digits_re = re.compile(r"\d+")
-
-# regex for matching format directives
-format_re = re.compile(r"%(?P<pad>\d+)?(?P<var>\w+)")
-
-# character to join explicit frame ranges on
-range_join = os.getenv("PYSEQ_RANGE_SEP", ", ")
 
 
 class SequenceError(Exception):
@@ -120,7 +107,7 @@ class Item(str):
             self.__path = str(item)
         self.__filename = os.path.basename(self.__path)
         self.__number_matches = []
-        self.__parts = digits_re.split(self.name)
+        self.__parts = frames_re.split(self.name)
         self.__stat = None
 
         # modified by self.is_sibling()
@@ -250,7 +237,7 @@ class Item(str):
 
         :return: The numerical components.
         """
-        return digits_re.findall(self.__filename)
+        return frames_re.findall(self.__filename)
 
     @property
     def number_matches(self):
