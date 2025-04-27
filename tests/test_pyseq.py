@@ -859,6 +859,25 @@ class TestIssues(unittest.TestCase):
         s = uncompress("file.1-150.jpg", fmt="%h%r%t")
         self.assertEqual(len(s), 150)
 
+    def test_issue_83(self):
+        """tests issue 83. externalize frame pattern."""
+
+        filenames = [
+            "file_v001.jpg",
+            "file_v002.jpg",
+            "file_v003.jpg",
+            "file_v004.jpg",
+        ]
+
+        # test using default frame pattern
+        seqs = pyseq.get_sequences(filenames)
+        self.assertEqual(len(seqs), 1)
+
+        # test using custom frame pattern
+        pyseq.frames_re = re.compile(r"_(\d+)")
+        seqs = pyseq.get_sequences(filenames)
+        self.assertEqual(len(seqs), len(filenames))
+
 
 if __name__ == "__main__":
     unittest.main()
