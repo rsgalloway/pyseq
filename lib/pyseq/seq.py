@@ -1079,6 +1079,7 @@ def get_sequences(source, frame_pattern=config.PYSEQ_FRAME_PATTERN):
         fileB.1.rgb
 
     :param source: Can be directory path, list of strings, or sortable list of objects.
+    :param frame_pattern: Regular expression pattern for frame matching.
     :return: List of pyseq.Sequence class objects.
     """
 
@@ -1117,7 +1118,7 @@ def get_sequences(source, frame_pattern=config.PYSEQ_FRAME_PATTERN):
     return seqs
 
 
-def iget_sequences(source):
+def iget_sequences(source, frame_pattern=config.PYSEQ_FRAME_PATTERN):
     """Generator version of get_sequences.  Creates Sequences from a various
     source files.  A notable difference is the sort order of iget_sequences
     versus get_sequences.  iget_sequences uses an adaption of natural sorting
@@ -1161,8 +1162,12 @@ def iget_sequences(source):
         fileB.1.rgb
 
     :param source: Can be directory path, list of strings, or sortable list of objects.
+    :param frame_pattern: Regular expression pattern for frame matching.
     :return: List of pyseq.Sequence class objects.
     """
+
+    # TODO: pass this through to the Item class
+    config.frames_re = re.compile(frame_pattern)
 
     if isinstance(source, list):
         items = source
