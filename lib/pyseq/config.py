@@ -55,7 +55,8 @@ digits_re = re.compile(r"\d+")
 # regex pattern for matching frame numbers only
 # the default is \d+ for maximum compatibility
 DEFAULT_FRAME_PATTERN = r"\d+"
-frames_re = re.compile(os.environ.get("PYSEQ_FRAME_PATTERN", DEFAULT_FRAME_PATTERN))
+PYSEQ_FRAME_PATTERN = os.getenv("PYSEQ_FRAME_PATTERN", DEFAULT_FRAME_PATTERN)
+frames_re = re.compile(PYSEQ_FRAME_PATTERN)
 
 # regex for matching format directives
 format_re = re.compile(r"%(?P<pad>\d+)?(?P<var>\w+)")

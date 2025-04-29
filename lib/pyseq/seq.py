@@ -41,6 +41,7 @@ import warnings
 from collections import deque
 from glob import glob, iglob
 
+from pyseq import config
 from pyseq.util import _ext_key
 from pyseq.config import (
     default_format,
@@ -107,7 +108,7 @@ class Item(str):
             self.__path = str(item)
         self.__filename = os.path.basename(self.__path)
         self.__number_matches = []
-        self.__parts = frames_re.split(self.name)
+        self.__parts = config.frames_re.split(self.name)
         self.__stat = None
 
         # modified by self.is_sibling()
@@ -237,7 +238,7 @@ class Item(str):
 
         :return: The numerical components.
         """
-        return frames_re.findall(self.__filename)
+        return config.frames_re.findall(self.__filename)
 
     @property
     def number_matches(self):
@@ -247,7 +248,7 @@ class Item(str):
         :return: The numerical components.
         """
         if not self.__number_matches:
-            self.__number_matches = list(digits_re.finditer(self.__filename))
+            self.__number_matches = list(config.digits_re.finditer(self.__filename))
         return self.__number_matches
 
     @property
@@ -1042,7 +1043,7 @@ def uncompress(seq_string, fmt=global_format):
     return seqs
 
 
-def get_sequences(source):
+def get_sequences(source, frame_pattern=config.PYSEQ_FRAME_PATTERN):
     """Returns a list of Sequence objects given a directory or list that contain
     sequential members.
 
@@ -1082,6 +1083,9 @@ def get_sequences(source):
     """
 
     seqs = []
+
+    # TODO: pass this through to the Item class
+    config.frames_re = re.compile(frame_pattern)
 
     if isinstance(source, list):
         items = sorted(source, key=lambda x: str(x))

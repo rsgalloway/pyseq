@@ -35,6 +35,7 @@ import random
 import unittest
 import subprocess
 import sys
+import time
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from pyseq import Item, Sequence, diff, uncompress, get_sequences
@@ -599,6 +600,22 @@ class LSSTestCase(unittest.TestCase):
         )
 
 
+class PerformanceTests(unittest.TestCase):
+    """tests the performance of pyseq"""
+
+    def test_performance_1(self):
+        """tests performance for single 10k frame sequence"""
+        files = ["file.%03d.jpg" % i for i in range(1, 10000)]
+        s = time.time()
+        seq = Sequence(files)
+        e = time.time()
+        total_time = e - s
+        print("time taken to create sequence: %s" % (total_time))
+        self.assertEqual(str(seq), "file.1-9999.jpg")
+        self.assertEqual(len(seq), 9999)
+        self.assertEqual(total_time < 0.1, True)
+
+
 class TestIssues(unittest.TestCase):
     """tests reported issues on github"""
 
@@ -874,8 +891,7 @@ class TestIssues(unittest.TestCase):
         self.assertEqual(len(seqs), 1)
 
         # test using custom frame pattern
-        pyseq.frames_re = re.compile(r"_(\d+)")
-        seqs = pyseq.get_sequences(filenames)
+        seqs = pyseq.get_sequences(filenames, frame_pattern="_%d")
         self.assertEqual(len(seqs), len(filenames))
 
 
