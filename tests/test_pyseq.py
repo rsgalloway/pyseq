@@ -613,7 +613,7 @@ class PerformanceTests(unittest.TestCase):
         print("time taken to create sequence: %s" % (total_time))
         self.assertEqual(str(seq), "file.1-9999.jpg")
         self.assertEqual(len(seq), 9999)
-        self.assertEqual(total_time < 0.1, True)
+        self.assertTrue(total_time < 0.1)
 
 
 class TestIssues(unittest.TestCase):
