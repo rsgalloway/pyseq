@@ -24,7 +24,7 @@ settings and looks for a `pyseq.env` file to source environment variables:
 ```bash
 $ pip install -U envstack
 $ ./pyseq.env -r
-PYSEQ_FRAMES_PATTERN=\d+
+PYSEQ_FRAME_PATTERN=\d+
 PYSEQ_RANGE_SEP=, 
 PYSEQ_STRICT_PAD=0
 ```
@@ -199,7 +199,7 @@ a.1-14.tga
 
 ## Frame Patterns
 
-The environment var `${PYSEQ_FRAMES_PATTERN}` can be used to define custom regex
+The environment var `${PYSEQ_FRAME_PATTERN}` can be used to define custom regex
 patterns for identifying frame numbers. For example if frames are always preceded
 with an _, you might use:
 
@@ -209,7 +209,11 @@ $ export PYSEQ_FRAME_PATTERN="_\d+"
 
 Environment vars can be defined anywhere in your environment, or if using
 [envstack](https://github.com/rsgalloway/envstack) add it to the
-`pyseq.env` file and make sure it's found in `${ENVPATH}`.
+`pyseq.env` file and make sure it's found in `${ENVPATH}`:
+
+```bash
+$ export ENVPATH=/path/to/env/files
+```
 
 ## Testing
 
