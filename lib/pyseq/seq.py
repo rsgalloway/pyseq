@@ -1085,7 +1085,6 @@ def get_sequences(source, frame_pattern=config.PYSEQ_FRAME_PATTERN):
 
     seqs = []
 
-    # TODO: pass this through to the Item class
     config.frames_re = re.compile(frame_pattern)
 
     if isinstance(source, list):
@@ -1166,7 +1165,6 @@ def iget_sequences(source, frame_pattern=config.PYSEQ_FRAME_PATTERN):
     :return: List of pyseq.Sequence class objects.
     """
 
-    # TODO: pass this through to the Item class
     config.frames_re = re.compile(frame_pattern)
 
     if isinstance(source, list):

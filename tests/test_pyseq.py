@@ -887,12 +887,35 @@ class TestIssues(unittest.TestCase):
         ]
 
         # test using default frame pattern
-        seqs = pyseq.get_sequences(filenames)
-        self.assertEqual(len(seqs), 1)
+        seqs1 = pyseq.get_sequences(filenames)
+        self.assertEqual(len(seqs1), 1)
 
-        # test using custom frame pattern
-        seqs = pyseq.get_sequences(filenames, frame_pattern="_%d")
-        self.assertEqual(len(seqs), len(filenames))
+        # test if a new file in the sequence is included
+        item = Item("file_v005.jpg")
+        self.assertTrue(seqs1[0].includes(item))
+
+        # test using custom frame pattern, different from first sequence
+        seqs2 = pyseq.get_sequences(filenames, frame_pattern="_%d")
+
+        # should have 4 sequences, with one file each
+        self.assertEqual(len(seqs2), len(filenames))
+
+        # test that items from sequences 1 and 2 are not siblings
+        seq1item1 = seqs1[0][0]
+        seq2item1 = seqs2[0][0]
+        self.assertFalse(seq1item1.is_sibling(seq2item1))
+
+        # test that 2 items in the sequence 1 are still siblings
+        seq1item2 = seqs1[0][1]
+        self.assertTrue(seq1item1.is_sibling(seq1item2))
+
+        # test items in sequences 1 and 2 are not siblings
+        self.assertFalse(seq1item1.is_sibling(seq2item1))
+
+        # test that the new item is still included in the first sequence,
+        # and excluded from the second sequence
+        self.assertTrue(seqs1[0].includes(item))
+        self.assertFalse(seqs2[0].includes(item))
 
 
 if __name__ == "__main__":
