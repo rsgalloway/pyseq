@@ -45,9 +45,7 @@ from pyseq import config
 from pyseq.util import _ext_key
 from pyseq.config import (
     default_format,
-    digits_re,
     format_re,
-    frames_re,
     global_format,
     range_join,
     strict_pad,
