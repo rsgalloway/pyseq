@@ -146,7 +146,11 @@ Formatting options:
 
     parser = optparse.OptionParser(usage=usage, version="%prog " + __version__)
     parser.add_option(
-        "-f", "--format", dest="format", default=None, help="format the output string"
+        "-f",
+        "--format",
+        dest="format",
+        default=None,
+        help="format the output string",
     )
     parser.add_option(
         "-r",
@@ -168,7 +172,12 @@ Formatting options:
 
     pyseq.strict_pad = options.strict
 
-    if len(args) == 0:
+    # stdin is piped, read from stdin
+    if not sys.stdin.isatty():
+        args = [line.strip() for line in sys.stdin if line.strip()]
+
+    # if no args are given, use cwd
+    elif len(args) == 0:
         args = [os.getcwd()]
 
     items = []
