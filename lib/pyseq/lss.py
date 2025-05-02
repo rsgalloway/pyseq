@@ -150,7 +150,7 @@ Formatting options:
         "--format",
         dest="format",
         default=None,
-        help="format the output string",
+        help="Format the output string.",
     )
     parser.add_option(
         "-r",
@@ -166,7 +166,7 @@ Formatting options:
         dest="strict",
         action="store_true",
         default=pyseq.strict_pad,
-        help="strict padding (default false)",
+        help="Strict padding (default false).",
     )
     (options, args) = parser.parse_args()
 

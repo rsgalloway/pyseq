@@ -5,6 +5,7 @@ v0.9.0
 ======
 
 * Allows piping to lss
+* Adds initial version of stree cli tool
 
 v0.8.4
 ======

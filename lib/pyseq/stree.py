@@ -33,13 +33,65 @@ __doc__ = """
 Contains the main stree functions for the pyseq module.
 """
 
+import argparse
+import os
 import sys
+
+import pyseq
+
+
+def print_tree(root, prefix="", include_hidden=False):
+    """Recursively prints the directory tree of the given root directory.
+
+    :param root: The root directory to start printing from.
+    :param prefix: The prefix to use for each line of the tree.
+    """
+    try:
+        entries = os.listdir(root)
+    except OSError as e:
+        print(f"{prefix}[error opening {root}: {e}]", file=sys.stderr)
+        return
+
+    if not include_hidden:
+        entries = [e for e in entries if not e.startswith(".")]
+
+    files = [e for e in entries if os.path.isfile(os.path.join(root, e))]
+    dirs = [e for e in entries if os.path.isdir(os.path.join(root, e))]
+
+    seqs = pyseq.get_sequences(files)
+    total = len(dirs) + len(seqs)
+
+    for i, name in enumerate(dirs + [str(s) for s in seqs]):
+        is_last = i == total - 1
+        connector = "└── " if is_last else "├── "
+        next_prefix = prefix + ("    " if is_last else "│   ")
+        print(f"{prefix}{connector}{name}")
+
+        if name in dirs:
+            print_tree(os.path.join(root, name), next_prefix, include_hidden)
 
 
 def main():
-    """Command-line interface."""
-    pass
+    """Main function to parse cli args and print the directory tree."""
+
+    parser = argparse.ArgumentParser(description="Display tree of sequences")
+    parser.add_argument(
+        "path",
+        nargs="?",
+        default=os.getcwd(),
+        help="Root directory.",
+    )
+    parser.add_argument(
+        "-a",
+        "--all",
+        action="store_true",
+        help="All files are listed (include hidden files).",
+    )
+    args = parser.parse_args()
+
+    print(args.path)
+    print_tree(args.path, include_hidden=args.all)
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
