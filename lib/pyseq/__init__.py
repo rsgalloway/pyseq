@@ -48,7 +48,7 @@ Docs and latest version available for download at
 """
 
 __author__ = "Ryan Galloway"
-__version__ = "0.8.4"
+__version__ = "0.9.0"
 
 try:
     import envstack
