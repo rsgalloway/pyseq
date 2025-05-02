@@ -96,7 +96,7 @@ tests
 Piping the output of `find` to `lss`, for example finding all the png sequences:
 
 ```bash
-$ find ./tests/ -name *.png | xargs lss
+$ find ./tests/ -name *.png | lss
   10 012_vb_110_v001.%04d.png [1-10]
   10 012_vb_110_v002.%04d.png [1-10]
    3 fileA.%04d.png [1-3]
