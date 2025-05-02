@@ -29,38 +29,17 @@
 # POSSIBILITY OF SUCH DAMAGE.
 # -----------------------------------------------------------------------------
 
+__doc__ = """
+Contains the main scopy functions for the pyseq module.
+"""
+
 import sys
-from os import path
 
-from setuptools import find_packages, setup
 
-this_directory = path.abspath(path.dirname(__file__))
-with open(path.join(this_directory, "README.md")) as f:
-    long_description = f.read()
+def main():
+    """Command-line interface."""
+    pass
 
-sys.path.insert(0, "lib")
-from pyseq import __version__
 
-setup(
-    name="pyseq",
-    version=__version__,
-    description="Compressed File Sequence String Module",
-    long_description=long_description,
-    long_description_content_type="text/markdown",
-    author="Ryan Galloway",
-    author_email="ryan@rsgalloway.com",
-    url="http://github.com/rsgalloway/pyseq",
-    package_dir={"": "lib"},
-    packages=find_packages("lib"),
-    entry_points={
-        "console_scripts": [
-            "lss = pyseq.lss:main",
-            "stree = pyseq.stree:main",
-            "sfind = pyseq.sfind:main",
-            "scopy = pyseq.scopy:main",
-            "smove = pyseq.smove:main",
-        ],
-    },
-    python_requires=">=3.6",
-    zip_safe=False,
-)
+if __name__ == "__main__":
+    sys.exit(main())

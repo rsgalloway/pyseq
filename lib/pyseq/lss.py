@@ -30,7 +30,7 @@
 # -----------------------------------------------------------------------------
 
 __doc__ = """
-Contains the main lss function for the pyseq module.
+Contains the main lss functions for the pyseq module.
 """
 
 import glob
