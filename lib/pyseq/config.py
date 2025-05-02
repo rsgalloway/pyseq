@@ -29,32 +29,38 @@
 # POSSIBILITY OF SUCH DAMAGE.
 # -----------------------------------------------------------------------------
 
-__doc__ = """PySeq is a python module that finds groups of items that follow a naming
-convention containing a numerical sequence index, e.g. ::
-
-    fileA.001.png, fileA.002.png, fileA.003.png...
-
-and serializes them into a compressed sequence string representing the entire
-sequence, e.g. ::
-
-    fileA.1-3.png
-
-It should work regardless of where the numerical sequence index is embedded
-in the name.
-
-Docs and latest version available for download at
-
-   http://github.com/rsgalloway/pyseq
+__doc__ = """
+Contains pyseq configs and default settings.
 """
 
-__author__ = "Ryan Galloway"
-__version__ = "0.8.4"
+import os
+import re
 
-try:
-    import envstack
+# default serialization format string
+DEFAULT_FORMAT = "%h%r%t"
+default_format = os.getenv("PYSEQ_DEFAULT_FORMAT", DEFAULT_FORMAT)
 
-    envstack.init("pyseq")
-except Exception:
-    pass
+# default serialization format string for global sequences
+DEFAULT_GLOBAL_FORMAT = "%4l %h%p%t %R"
+global_format = os.getenv("PYSEQ_GLOBAL_FORMAT", DEFAULT_GLOBAL_FORMAT)
 
-from .seq import *
+# use strict padding on sequences (pad length must match)
+PYSEQ_STRICT_PAD = os.getenv("PYSEQ_STRICT_PAD", 0)
+PYSEQ_NOT_STRICT = os.getenv("PYSEQ_NOT_STRICT", 1)
+strict_pad = int(PYSEQ_STRICT_PAD) == 1 or int(PYSEQ_NOT_STRICT) == 0
+
+# regex pattern for matching all numbers in a filename
+digits_re = re.compile(r"\d+")
+
+# regex pattern for matching frame numbers only
+# the default is \d+ for maximum compatibility
+DEFAULT_FRAME_PATTERN = r"\d+"
+PYSEQ_FRAME_PATTERN = os.getenv("PYSEQ_FRAME_PATTERN", DEFAULT_FRAME_PATTERN)
+frames_re = re.compile(PYSEQ_FRAME_PATTERN)
+
+# regex for matching format directives
+format_re = re.compile(r"%(?P<pad>\d+)?(?P<var>\w+)")
+
+# character to join explicit frame ranges on
+DEFAULT_RANGE_SEP = ", "
+range_join = os.getenv("PYSEQ_RANGE_SEP", DEFAULT_RANGE_SEP)

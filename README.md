@@ -16,29 +16,31 @@ The easiest way to install pyseq:
 $ pip install -U pyseq
 ```
 
-#### distman
+#### Environment
 
-If installing from source you can use [distman](https://github.com/rsgalloway/distman)
-to install pyseq using the provided `dist.json` file:
+PySeq uses [envstack](https://github.com/rsgalloway/envstack) to externalize
+settings and looks for a `pyseq.env` file to source environment variables:
 
 ```bash
+$ pip install -U envstack
+$ ./pyseq.env -r
+PYSEQ_FRAME_PATTERN=\d+
+PYSEQ_RANGE_SEP=, 
+PYSEQ_STRICT_PAD=0
+```
+
+#### Distribution
+
+If installing from source you can use [distman](https://github.com/rsgalloway/distman)
+to install PySeq using the provided `dist.json` file:
+
+```bash
+$ pip install -U distman
 $ distman [-d]
 ```
 
 Using distman will deploy the targets defined in the `dist.json` file to the
-root folder defined by `$DEPLOY_ROOT`.
-
-#### envstack
-
-PySeq uses [envstack](https://github.com/rsgalloway/envstack) to manage configs
-via environment variables.
-
-```bash
-$ envstack pyseq
-PYSEQ_RANGE_SEP=, 
-PYSEQ_STRICT_PAD=0
-STACK=pyseq
-```
+root folder defined by `${DEPLOY_ROOT}`:
 
 ## Basic Usage
 
@@ -193,6 +195,24 @@ a.1-14.tga
 7 a.1-14.tga
 >>> print(s.format("%l %h%r%t %M"))
 7 a.1-14.tga [4-9, 11]
+```
+
+## Frame Patterns
+
+The environment var `${PYSEQ_FRAME_PATTERN}` can be used to define custom regex
+patterns for identifying frame numbers. For example if frames are always preceded
+with an _, you might use:
+
+```bash
+$ export PYSEQ_FRAME_PATTERN="_\d+"
+```
+
+Environment vars can be defined anywhere in your environment, or if using
+[envstack](https://github.com/rsgalloway/envstack) add it to the
+`pyseq.env` file and make sure it's found in `${ENVPATH}`:
+
+```bash
+$ export ENVPATH=/path/to/env/files
 ```
 
 ## Testing

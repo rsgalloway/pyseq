@@ -41,29 +41,15 @@ import warnings
 from collections import deque
 from glob import glob, iglob
 
+from pyseq import config
 from pyseq.util import _ext_key
-
-# default serialization format string
-global_format = "%4l %h%p%t %R"
-default_format = "%h%r%t"
-
-# use strict padding on sequences (pad length must match)
-#    $ export PYSEQ_STRICT_PAD=1 or
-#    $ export PYSEQ_NOT_STRICT=1
-# to enable/disable. disabled by default.
-strict_pad = (
-    int(os.getenv("PYSEQ_STRICT_PAD", 0)) == 1
-    or int(os.getenv("PYSEQ_NOT_STRICT", 1)) == 0
+from pyseq.config import (
+    default_format,
+    format_re,
+    global_format,
+    range_join,
+    strict_pad,
 )
-
-# regex for matching numerical characters
-digits_re = re.compile(r"\d+")
-
-# regex for matching format directives
-format_re = re.compile(r"%(?P<pad>\d+)?(?P<var>\w+)")
-
-# character to join explicit frame ranges on
-range_join = os.getenv("PYSEQ_RANGE_SEP", ", ")
 
 
 class SequenceError(Exception):
@@ -120,7 +106,7 @@ class Item(str):
             self.__path = str(item)
         self.__filename = os.path.basename(self.__path)
         self.__number_matches = []
-        self.__parts = digits_re.split(self.name)
+        self.__parts = config.frames_re.split(self.name)
         self.__stat = None
 
         # modified by self.is_sibling()
@@ -250,7 +236,7 @@ class Item(str):
 
         :return: The numerical components.
         """
-        return digits_re.findall(self.__filename)
+        return config.frames_re.findall(self.__filename)
 
     @property
     def number_matches(self):
@@ -260,7 +246,7 @@ class Item(str):
         :return: The numerical components.
         """
         if not self.__number_matches:
-            self.__number_matches = list(digits_re.finditer(self.__filename))
+            self.__number_matches = list(config.digits_re.finditer(self.__filename))
         return self.__number_matches
 
     @property
@@ -1055,7 +1041,7 @@ def uncompress(seq_string, fmt=global_format):
     return seqs
 
 
-def get_sequences(source):
+def get_sequences(source, frame_pattern=config.PYSEQ_FRAME_PATTERN):
     """Returns a list of Sequence objects given a directory or list that contain
     sequential members.
 
@@ -1091,10 +1077,13 @@ def get_sequences(source):
         fileB.1.rgb
 
     :param source: Can be directory path, list of strings, or sortable list of objects.
+    :param frame_pattern: Regular expression pattern for frame matching.
     :return: List of pyseq.Sequence class objects.
     """
 
     seqs = []
+
+    config.frames_re = re.compile(frame_pattern)
 
     if isinstance(source, list):
         items = sorted(source, key=lambda x: str(x))
@@ -1126,7 +1115,7 @@ def get_sequences(source):
     return seqs
 
 
-def iget_sequences(source):
+def iget_sequences(source, frame_pattern=config.PYSEQ_FRAME_PATTERN):
     """Generator version of get_sequences.  Creates Sequences from a various
     source files.  A notable difference is the sort order of iget_sequences
     versus get_sequences.  iget_sequences uses an adaption of natural sorting
@@ -1170,8 +1159,11 @@ def iget_sequences(source):
         fileB.1.rgb
 
     :param source: Can be directory path, list of strings, or sortable list of objects.
+    :param frame_pattern: Regular expression pattern for frame matching.
     :return: List of pyseq.Sequence class objects.
     """
+
+    config.frames_re = re.compile(frame_pattern)
 
     if isinstance(source, list):
         items = source

@@ -35,6 +35,7 @@ import random
 import unittest
 import subprocess
 import sys
+import time
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from pyseq import Item, Sequence, diff, uncompress, get_sequences
@@ -599,6 +600,22 @@ class LSSTestCase(unittest.TestCase):
         )
 
 
+class PerformanceTests(unittest.TestCase):
+    """tests the performance of pyseq"""
+
+    def test_performance_1(self):
+        """tests performance for single 10k frame sequence"""
+        files = ["file.%03d.jpg" % i for i in range(1, 10000)]
+        s = time.time()
+        seq = Sequence(files)
+        e = time.time()
+        total_time = e - s
+        print("time taken to create sequence: %s" % (total_time))
+        self.assertEqual(str(seq), "file.1-9999.jpg")
+        self.assertEqual(len(seq), 9999)
+        self.assertTrue(total_time < 0.1)
+
+
 class TestIssues(unittest.TestCase):
     """tests reported issues on github"""
 
@@ -858,6 +875,47 @@ class TestIssues(unittest.TestCase):
         # test uncompress without strict pad, finds all 150 frames
         s = uncompress("file.1-150.jpg", fmt="%h%r%t")
         self.assertEqual(len(s), 150)
+
+    def test_issue_83(self):
+        """tests issue 83. externalize frame pattern."""
+
+        filenames = [
+            "file_v001.jpg",
+            "file_v002.jpg",
+            "file_v003.jpg",
+            "file_v004.jpg",
+        ]
+
+        # test using default frame pattern
+        seqs1 = pyseq.get_sequences(filenames)
+        self.assertEqual(len(seqs1), 1)
+
+        # test if a new file in the sequence is included
+        item = Item("file_v005.jpg")
+        self.assertTrue(seqs1[0].includes(item))
+
+        # test using custom frame pattern, different from first sequence
+        seqs2 = pyseq.get_sequences(filenames, frame_pattern="_%d")
+
+        # should have 4 sequences, with one file each
+        self.assertEqual(len(seqs2), len(filenames))
+
+        # test that items from sequences 1 and 2 are not siblings
+        seq1item1 = seqs1[0][0]
+        seq2item1 = seqs2[0][0]
+        self.assertFalse(seq1item1.is_sibling(seq2item1))
+
+        # test that 2 items in the sequence 1 are still siblings
+        seq1item2 = seqs1[0][1]
+        self.assertTrue(seq1item1.is_sibling(seq1item2))
+
+        # test items in sequences 1 and 2 are not siblings
+        self.assertFalse(seq1item1.is_sibling(seq2item1))
+
+        # test that the new item is still included in the first sequence,
+        # and excluded from the second sequence
+        self.assertTrue(seqs1[0].includes(item))
+        self.assertFalse(seqs2[0].includes(item))
 
 
 if __name__ == "__main__":

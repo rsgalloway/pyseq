@@ -1,6 +1,30 @@
-=========
 CHANGELOG
 =========
+
+v0.8.4
+======
+
+* Allows setting the frame regex pattern as an env var
+* Adds config module with default settings
+* Resolves issue #83
+
+v0.8.3
+======
+
+* Resolves issue #79 (padded sequence changes to unpadded)
+
+v0.8.1
+======
+
+* Adds dist and env files
+
+v0.8.0
+======
+
+* Refactors module into package
+* Adds console_scripts entry point in setup (fixes lss on windows)
+* Adds util module
+* Resolves Issue #73
 
 v0.7.0
 ======
@@ -35,90 +59,68 @@ v0.5.3
 ======
 
 * Fixes bug where changes in frame size (e.g. 9 to 10) cause incorrect pad
-
 * Disables strict padding in lss by default (adds --strict option)
 
 v0.5.1
 ======
 
 * Adds %M (missing frames) and %D (parent dir) directives
-
 * lss to only use colors when stdout is tty
-
 * Fixes issue #37 (walk directory path fix)
-
 * Fixes issue #41 (adds strict padding option)
 
 v0.5.0
 ======
 
 * Major performance improvements
-
 * Bug fixes (size %d directive attr)
 
 v0.4.4
 ======
 
 * Better support for python 3 strings
-
 * Bug fixes
 
 v0.4.3
 ======
 
 * Fixes regex in ``uncompress`` (issue #19)
-
 * Adds brackets to %R directive formatting
-
 * Fixes lss to use cwd when no args/paths are given
-
 * Changes default range delimiter $PYSEQ_RANGE_SEP to a comma
 
 v0.4.2
 ======
 
 * Adds recursive walk() function, and -r option to lss.
-
 * Adds frame range separator as env var.
-
 * Adds disk usage (%d) directive to formatting.
-
 * Adds insert, extend, and magic methods.
-
 * Fixes lss to support multiple arguments.
 
 v0.4.1
 ======
 
 * Performance improvement by increasing Sequence._get_missing speed.
-
 * Adds size and mtime properties to Item and Sequence classes.
-
 * Deprecates getSequences(): use get_sequences() instead.
-
 * Deprecates Item.isSibling(): use Item.is_sibling() instead.
-
 * Additional PEP8 updates.
 
 v0.4.0
 ======
 
 * Some PEP8 and Python 3+ updates.
-
 * Added *unittests* for the whole library (requires python 2.7+).
-
 * The ``format`` parameter is renamed to ``fmt`` in ``uncompress()`` and 
 ``Sequence.format()`` to not to shadow the **Python built-in**.
-
 * Added a method called ``includes()`` to the ``Sequence`` class that does 
   what the ``contains()`` method was doing in previous versions, that is, it 
   now checks if the given Item could be contained in that particular Sequence.
-
 * Updated ``Sequence.contains()`` method behavior updated to better match its name, 
   that is, it now checks if the Item is contained inside the boundaries of the 
   Sequence.
-
-* The padding characters are now properly interpreted, as shown below::
+* The padding characters are now properly interpreted, as shown below
 
     seq = Sequence([
         'file.0001.jpg',
@@ -128,72 +130,53 @@ v0.4.0
     ])
 
     print(seq.format('%h%04s-%04e%t'))
-    # will print 'file.0001-0006.jpg'
+
+  will print 'file.0001-0006.jpg'
 
     print(seq.format('%h%4s-%4e%t'))
-    # will print 'file.   1-   6.jpg'
+
+  will print 'file.   1-   6.jpg'
 
 v0.2.2
 ======
 
 * Fixed %R in uncompress()
-
 * Fixed minor bug in getSequences() with glob
 
 v0.2.1b
 =======
 
 * supports sequences of any serializable, sortable items
-
 * fixes bug in lss
 
 v0.2.0b
 =======
 
 * Added support for wildcards in getSequence source input and in lss
-
 * Added format method to Sequence class for formatted string stdout
-
 * Sequence __str__ method now returns simplified compressed sequence string
-
 * Added SequenceError exception
-
 * Sequence qppend method raises SequenceError if file is non-sequence-member
-
 * Export diff function to get numeric differences between two sequential files
-
 * Alpha version of uncompress func for deserialization of compressed sequence
   strings.
-
 * Added additional attributes to Item class: path, frame, head, tail
-
 * Item name attribute is now base name, fixes bug where contains method didn't
   work on file paths.
-
 * Moved function 'main' to lss permanently.
-
 * Added --format and --debug options to lss
-
 * Ability to set log level with environment variable $PYSEQ_LOG_LEVEL
-
 * Simplified format directives, e.g. from %(head)s to %h, with support for
   padding, e.g. %04l.
-
 * Fixed duplicate sequence index number bug
-
 * Set logging level with PYSEQ_LOG_LEVEL environment variable.
-
 * Added 32 additional test cases.
-
 * Performance improvements.
-
 * Added html docs.
 
 v0.1.2
 ======
 
 * ``getSequences`` now takes either a directory path or a Python list of files.
-
 * Added setup.py
-
 * Added lss script
