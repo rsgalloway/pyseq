@@ -52,6 +52,7 @@ def sample_sequence(tmp_path):
 
 
 def test_copy_sequence_basic(sample_sequence):
+    """Test the basic functionality of copy_sequence."""
     src_dir, seq = sample_sequence
     with tempfile.TemporaryDirectory() as destdir:
         copy_sequence(
@@ -72,6 +73,7 @@ def test_copy_sequence_basic(sample_sequence):
 
 
 def test_scopy_cli(sample_sequence):
+    """Test the command line interface for scopy."""
     src_dir, _ = sample_sequence
     with tempfile.TemporaryDirectory() as destdir:
         pattern = os.path.join(str(src_dir), "test.%04d.exr")
