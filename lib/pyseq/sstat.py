@@ -35,6 +35,7 @@ Contains the main sstat functions for the pyseq module.
 
 import argparse
 import datetime
+import json
 import os
 import sys
 
@@ -57,7 +58,7 @@ def format_time(ts):
 def print_sstat(seq: pyseq.Sequence):
     """Prints the statistics of a sequence.
 
-    :param seq: The sequence object to print statistics for.
+    :param seq: The pyseq.Sequence object to print statistics for.
     """
 
     def stat_path(frame):
@@ -88,6 +89,42 @@ def print_sstat(seq: pyseq.Sequence):
     print(f"Change:   {format_time_range(st_first.st_ctime, st_last.st_ctime)}")
 
 
+def json_sstat(seq: pyseq.Sequence):
+    """Convert sequence statistics to JSON format.
+
+    :param seq: The sequence object to convert to JSON.
+    :return: A dictionary containing the sequence statistics.
+    """
+    st_first = os.stat(os.path.join(seq.format("%D"), seq[0].name))
+    st_last = os.stat(os.path.join(seq.format("%D"), seq[-1].name))
+
+    return {
+        "sequence": str(seq),
+        "head": seq.head(),
+        "tail": seq.tail(),
+        "start": seq.start(),
+        "end": seq.end(),
+        "length": seq.length(),
+        "pad": seq.pad,
+        "range": seq.format("%r"),
+        "missing": seq.missing(),
+        "size_bytes": seq.format("%d"),
+        "size_human": seq.format("%H").strip(),
+        "access": {
+            "first": format_time(st_first.st_atime),
+            "last": format_time(st_last.st_atime),
+        },
+        "modify": {
+            "first": format_time(st_first.st_mtime),
+            "last": format_time(st_last.st_mtime),
+        },
+        "change": {
+            "first": format_time(st_first.st_ctime),
+            "last": format_time(st_last.st_ctime),
+        },
+    }
+
+
 def main():
     """Main function to parse arguments and display sequence statistics."""
 
@@ -100,11 +137,20 @@ def main():
         "sequence",
         help="Input sequence as glob or compressed pattern (e.g. 'foo.%%04d.exr')",
     )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Output metadata as JSON",
+    )
     args = parser.parse_args()
 
     try:
         seq = resolve_sequence(args.sequence)
-        print_sstat(seq)
+        if args.json:
+            data = json_sstat(seq)
+            print(json.dumps(data, indent=4))
+        else:
+            print_sstat(seq)
     except Exception as e:
         print(f"sstat: error: {e}", file=sys.stderr)
         return 1
