@@ -43,6 +43,11 @@ from pyseq.util import resolve_sequence
 
 
 def format_time(ts):
+    """Format a timestamp into a human-readable string.
+
+    :param ts: The timestamp to format.
+    :return: A formatted string representing the timestamp.
+    """
     try:
         return datetime.datetime.fromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S %z")
     except Exception:
@@ -50,6 +55,11 @@ def format_time(ts):
 
 
 def print_sstat(seq: pyseq.Sequence):
+    """Prints the statistics of a sequence.
+
+    :param seq: The sequence object to print statistics for.
+    """
+
     def stat_path(frame):
         return os.stat(os.path.join(seq.format("%D"), frame.name))
 
@@ -79,6 +89,8 @@ def print_sstat(seq: pyseq.Sequence):
 
 
 def main():
+    """Main function to parse arguments and display sequence statistics."""
+
     parser = argparse.ArgumentParser(
         description="Display stat-like metadata about a file sequence.\n"
         "Supports compressed strings (e.g. 'foo.%04d.exr') or glob inputs.",
