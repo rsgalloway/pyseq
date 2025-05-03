@@ -172,8 +172,8 @@ Formatting options:
 
     pyseq.strict_pad = options.strict
 
-    # stdin is piped, read from stdin
-    if not sys.stdin.isatty():
+    # stdin is piped, read from stdin if no cli args provided
+    if not args and not sys.stdin.isatty():
         args = [line.strip() for line in sys.stdin if line.strip()]
 
     # if no args are given, use cwd

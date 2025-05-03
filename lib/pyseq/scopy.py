@@ -38,8 +38,8 @@ import os
 import argparse
 import shutil
 import fnmatch
-import pyseq
 
+import pyseq
 from pyseq.util import is_compressed_format_string, resolve_sequence
 
 
@@ -94,7 +94,7 @@ def main():
     """Main function to parse cli args and copy sequences."""
 
     parser = argparse.ArgumentParser(
-        description="Copy image sequences with renaming/renumbering support"
+        description="Copy image sequences with renaming/renumbering support",
     )
     parser.add_argument(
         "sources",
