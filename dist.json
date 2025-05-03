@@ -17,6 +17,14 @@
             "source": "bin/scopy.bat",
             "destination": "{DEPLOY_ROOT}/bin/scopy.bat"
         },
+        "sdiff": {
+            "source": "bin/sdiff",
+            "destination": "{DEPLOY_ROOT}/bin/sdiff"
+        },
+        "sdiff.bat": {
+            "source": "bin/sdiff.bat",
+            "destination": "{DEPLOY_ROOT}/bin/sdiff.bat"
+        },
         "sfind": {
             "source": "bin/sfind",
             "destination": "{DEPLOY_ROOT}/bin/sfind"
