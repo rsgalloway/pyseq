@@ -9,13 +9,13 @@
             "source": "bin/lss.bat",
             "destination": "{DEPLOY_ROOT}/bin/lss.bat"
         },
-        "stree": {
-            "source": "bin/stree",
-            "destination": "{DEPLOY_ROOT}/bin/stree"
+        "scopy": {
+            "source": "bin/scopy",
+            "destination": "{DEPLOY_ROOT}/bin/scopy"
         },
-        "stree.bat": {
-            "source": "bin/stree.bat",
-            "destination": "{DEPLOY_ROOT}/bin/stree.bat"
+        "scopy.bat": {
+            "source": "bin/scopy.bat",
+            "destination": "{DEPLOY_ROOT}/bin/scopy.bat"
         },
         "sfind": {
             "source": "bin/sfind",
@@ -24,6 +24,14 @@
         "sfind.bat": {
             "source": "bin/sfind.bat",
             "destination": "{DEPLOY_ROOT}/bin/sfind.bat"
+        },
+        "stree": {
+            "source": "bin/stree",
+            "destination": "{DEPLOY_ROOT}/bin/stree"
+        },
+        "stree.bat": {
+            "source": "bin/stree.bat",
+            "destination": "{DEPLOY_ROOT}/bin/stree.bat"
         },
         "lib": {
             "source": "lib/pyseq",
