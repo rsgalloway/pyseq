@@ -153,7 +153,7 @@ def main():
 
     if not os.path.isdir(args.dest):
         print(f"Error: destination {args.dest} is not a directory", file=sys.stderr)
-        sys.exit(1)
+        return 1
 
     for source in args.sources:
         try:
@@ -187,7 +187,10 @@ def main():
 
         except Exception as e:
             print(f"Error processing {source}: {e}", file=sys.stderr)
+            return 1
+
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
