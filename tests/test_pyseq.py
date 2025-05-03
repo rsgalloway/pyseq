@@ -29,6 +29,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 # 
 
+__doc__ = """
+Contains tests for the pyseq package.
+"""
+
 import os
 import re
 import random

@@ -29,6 +29,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+__doc__ = """
+Contains tests for the scopy module.
+"""
+
 import os
 import subprocess
 import tempfile
