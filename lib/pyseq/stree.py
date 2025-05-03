@@ -93,6 +93,8 @@ def main():
     print(args.path)
     print_tree(args.path, include_hidden=args.all)
 
+    return 0
+
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

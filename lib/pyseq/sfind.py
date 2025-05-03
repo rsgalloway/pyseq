@@ -62,18 +62,18 @@ def main():
     parser.add_argument(
         "paths",
         nargs="+",
-        help="Directory or directories to search",
+        help="Directory or directories to search.",
     )
     parser.add_argument(
         "-a",
         "--all",
         action="store_true",
-        help="Include hidden files",
+        help="All files are listed (include hidden files).",
     )
     parser.add_argument(
         "-name",
         metavar="PATTERN",
-        help="Glob pattern to match sequences (e.g. '*.png')",
+        help="Glob pattern to match sequences (e.g. '*.png').",
     )
     args = parser.parse_args()
 
@@ -86,6 +86,8 @@ def main():
         ):
             print(seq)
 
+    return 0
+
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

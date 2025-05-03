@@ -1,13 +1,29 @@
 {
     "author": "ryan@rsg.io",
     "targets": {
-        "bin": {
+        "lss": {
             "source": "bin/lss",
             "destination": "{DEPLOY_ROOT}/bin/lss"
         },
-        "bat": {
+        "lss.bat": {
             "source": "bin/lss.bat",
             "destination": "{DEPLOY_ROOT}/bin/lss.bat"
+        },
+        "stree": {
+            "source": "bin/stree",
+            "destination": "{DEPLOY_ROOT}/bin/stree"
+        },
+        "stree.bat": {
+            "source": "bin/stree.bat",
+            "destination": "{DEPLOY_ROOT}/bin/stree.bat"
+        },
+        "sfind": {
+            "source": "bin/sfind",
+            "destination": "{DEPLOY_ROOT}/bin/sfind"
+        },
+        "sfind.bat": {
+            "source": "bin/sfind.bat",
+            "destination": "{DEPLOY_ROOT}/bin/sfind.bat"
         },
         "lib": {
             "source": "lib/pyseq",
