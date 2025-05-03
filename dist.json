@@ -33,6 +33,14 @@
             "source": "bin/smove.bat",
             "destination": "{DEPLOY_ROOT}/bin/smove.bat"
         },
+        "sstat": {
+            "source": "bin/sstat",
+            "destination": "{DEPLOY_ROOT}/bin/sstat"
+        },
+        "sstat.bat": {
+            "source": "bin/sstat.bat",
+            "destination": "{DEPLOY_ROOT}/bin/sstat.bat"
+        },
         "stree": {
             "source": "bin/stree",
             "destination": "{DEPLOY_ROOT}/bin/stree"

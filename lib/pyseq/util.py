@@ -131,11 +131,20 @@ def resolve_sequence(sequence_string: str):
     if padding:
         pad = int(padding)
         glob_part = filename.replace(f"%0{pad}d", "?" * pad)
+        regex_pattern = re.escape(filename).replace(
+            f"%0{pad}d", r"\d{" + str(pad) + r"}"
+        )
     else:
         glob_part = filename.replace("%d", "*")
+        regex_pattern = re.escape(filename).replace("%d", r"\d+")
 
+    # glob all files in the directory using glob pattern
     glob_pattern = os.path.join(directory, glob_part)
-    matches = glob.glob(glob_pattern)
+    candidate_files = glob.glob(glob_pattern)
+
+    # filter using regex (because glob pattern is wide)
+    regex = re.compile(f"^{regex_pattern}$")
+    matches = [f for f in candidate_files if regex.match(os.path.basename(f))]
 
     if not matches:
         raise FileNotFoundError(f"No files match pattern: {sequence_string}")
@@ -145,6 +154,6 @@ def resolve_sequence(sequence_string: str):
     if not sequences:
         raise ValueError("No valid sequences found")
     elif len(sequences) > 1:
-        raise ValueError("Multiple sequences found")
+        raise ValueError("Multiple sequences found: %s" % sequences)
 
     return sequences[0]
