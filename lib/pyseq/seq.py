@@ -896,25 +896,28 @@ def diff(f1, f2):
 def uncompress(seq_string, fmt=global_format):
     """Basic uncompression or deserialization of a compressed sequence string.
 
-    For example: ::
+    For example:
 
-        >>> seq = uncompress('./tests/files/012_vb_110_v001.%04d.png 1-10', fmt='%h%p%t %r')
+        >>> seq = pyseq.uncompress('./tests/files/012_vb_110_v001.%04d.png 1-10', fmt='%h%p%t %r')
         >>> print(seq)
         012_vb_110_v001.1-10.png
         >>> len(seq)
         10
-        >>> seq2 = uncompress('./tests/files/a.%03d.tga [1-3, 10, 12-14]', fmt='%h%p%t %R')
-        >>> print(seq2)
+        >>> seq = pyseq.uncompress('./tests/files/a.%03d.tga [1-3, 10, 12-14]', fmt='%h%p%t %R')
+        >>> print(seq)
         a.1-14.tga
-        >>> len(seq2)
+        >>> len(seq)
         7
-        >>> seq3 = uncompress('a.%03d.tga 1-14 ([1-3, 10, 12-14])', fmt='%h%p%t %r (%R)')
-        >>> print(seq3)
+        >>> seq = pyseq.uncompress('a.%03d.tga 1-14 ([1-3, 10, 12-14])', fmt='%h%p%t %r (%R)')
+        >>> print(seq)
         a.1-14.tga
-        >>> len(seq3)
+        >>> len(seq)
         7
-
-    See unit tests for more examples.
+        >>> seq = pyseq.uncompress('a.1-100.exr', fmt='%h%r%t')
+        >>> print(seq)
+        a.1-100.exr
+        >>> len(seq)
+        100
 
     :param seq_string: Compressed sequence string.
     :param fmt: Format of sequence string.
