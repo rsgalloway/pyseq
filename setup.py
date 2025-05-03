@@ -55,10 +55,11 @@ setup(
     entry_points={
         "console_scripts": [
             "lss = pyseq.lss:main",
-            "stree = pyseq.stree:main",
-            "sfind = pyseq.sfind:main",
             "scopy = pyseq.scopy:main",
+            "sfind = pyseq.sfind:main",
             "smove = pyseq.smove:main",
+            "sstat = pyseq.sstat:main",
+            "stree = pyseq.stree:main",
         ],
     },
     python_requires=">=3.6",
