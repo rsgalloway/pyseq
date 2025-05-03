@@ -34,11 +34,150 @@ Contains the main smove functions for the pyseq module.
 """
 
 import sys
+import os
+import argparse
+import shutil
+import fnmatch
+
+import pyseq
+from pyseq.util import is_compressed_format_string, resolve_sequence
+
+
+def move_sequence(
+    seq,
+    src_dir,
+    dest_dir,
+    rename=None,
+    renumber=None,
+    pad=None,
+    force=False,
+    dryrun=False,
+    verbose=False,
+):
+    """Move a sequence of files from one directory to another.
+
+    :param seq: The sequence object to move.
+    :param src_dir: The source directory containing the files.
+    :param dest_dir: The destination directory to move the files to.
+    :param rename: New basename for the files.
+    :param renumber: New starting frame number.
+    :param pad: Number of digits to pad the frame number.
+    :param force: Overwrite existing files if True.
+    :param dryrun: If True, only print the actions without executing them.
+    :param verbose: If True, print detailed information about the actions.
+    """
+    dest_basename = rename or seq.head()
+    dest_pad = pad or seq.pad
+    start_frame = renumber or seq.start()
+
+    for i, frame in enumerate(seq):
+        src_path = os.path.join(src_dir, frame.name)
+        frame_num = start_frame + i
+        dest_frame_name = f"{dest_basename}{frame_num:0{dest_pad}d}{seq.tail()}"
+        dest_path = os.path.join(dest_dir, dest_frame_name)
+
+        if verbose or dryrun:
+            print(f"{src_path} -> {dest_path}")
+
+        if not dryrun:
+            os.makedirs(dest_dir, exist_ok=True)
+            if os.path.exists(dest_path) and not force:
+                print(
+                    f"File exists: {dest_path} (use --force to overwrite)",
+                    file=sys.stderr,
+                )
+                continue
+            shutil.move(src_path, dest_path)
 
 
 def main():
-    """Command-line interface."""
-    pass
+    """Main function to handle command line arguments and call the move_sequence."""
+
+    parser = argparse.ArgumentParser(
+        description="Move image sequences with renaming/renumbering support",
+    )
+    parser.add_argument(
+        "sources",
+        nargs="+",
+        help="Source sequences (wildcards or compressed format strings)",
+    )
+    parser.add_argument(
+        "dest",
+        help="Destination directory",
+    )
+    parser.add_argument(
+        "--rename",
+        help="Rename sequence basename",
+    )
+    parser.add_argument(
+        "--renumber",
+        type=int,
+        help="New starting frame",
+    )
+    parser.add_argument(
+        "--pad",
+        type=int,
+        help="Padding digits",
+    )
+    parser.add_argument(
+        "-f",
+        "--force",
+        action="store_true",
+        help="Overwrite existing files",
+    )
+    parser.add_argument(
+        "-d",
+        "--dryrun",
+        action="store_true",
+        help="Preview move without performing it",
+    )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="Verbose output",
+    )
+    args = parser.parse_args()
+
+    if not os.path.isdir(args.dest):
+        print(f"Error: destination {args.dest} is not a directory", file=sys.stderr)
+        return 1
+
+    for source in args.sources:
+        try:
+            if is_compressed_format_string(source):
+                seq = resolve_sequence(source)
+                dirname = os.path.dirname(source) or "."
+            else:
+                # treat as glob
+                dirname = os.path.dirname(source) or "."
+                basename = os.path.basename(source)
+                matches = [
+                    f for f in os.listdir(dirname) if fnmatch.fnmatchcase(f, basename)
+                ]
+                sequences = pyseq.get_sequences(matches)
+                if not sequences:
+                    print(f"No sequence found matching {source}", file=sys.stderr)
+                    continue
+                seq = sequences[0]
+
+            move_sequence(
+                seq,
+                dirname,
+                args.dest,
+                rename=args.rename,
+                renumber=args.renumber,
+                pad=args.pad,
+                force=args.force,
+                dryrun=args.dryrun,
+                verbose=args.verbose,
+            )
+
+        except Exception as e:
+            print(f"Error processing {source}: {e}", file=sys.stderr)
+            return 1
+
+    return 0
 
 
 if __name__ == "__main__":

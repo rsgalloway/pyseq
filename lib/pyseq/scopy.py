@@ -39,20 +39,8 @@ import argparse
 import shutil
 import fnmatch
 import pyseq
-import re
 
-from pyseq.util import resolve_sequence
-
-
-def is_compressed_format_string(s: str) -> bool:
-    """Check if the string is a compressed format string. A compressed format
-    string is a string that contains a format specifier for integers, such as
-    "%d" or "%0Nd", where N is a digit.
-
-    :param s: The string to check.
-    :return: True if the string is a compressed format string, False otherwise.
-    """
-    return "%d" in s or re.search(r"%0\d+d", s)
+from pyseq.util import is_compressed_format_string, resolve_sequence
 
 
 def copy_sequence(

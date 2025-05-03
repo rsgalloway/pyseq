@@ -87,6 +87,17 @@ def _ext_key(x):
     return [ext] + _natural_key(name)
 
 
+def is_compressed_format_string(s: str) -> bool:
+    """Check if the string is a compressed format string. A compressed format
+    string is a string that contains a format specifier for integers, such as
+    "%d" or "%0Nd", where N is a digit.
+
+    :param s: The string to check.
+    :return: True if the string is a compressed format string, False otherwise.
+    """
+    return "%d" in s or re.search(r"%0\d+d", s)
+
+
 @functools.lru_cache(maxsize=None)
 def natural_sort(items):
     """

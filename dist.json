@@ -25,6 +25,14 @@
             "source": "bin/sfind.bat",
             "destination": "{DEPLOY_ROOT}/bin/sfind.bat"
         },
+        "smove": {
+            "source": "bin/smove",
+            "destination": "{DEPLOY_ROOT}/bin/smove"
+        },
+        "smove.bat": {
+            "source": "bin/smove.bat",
+            "destination": "{DEPLOY_ROOT}/bin/smove.bat"
+        },
         "stree": {
             "source": "bin/stree",
             "destination": "{DEPLOY_ROOT}/bin/stree"
