@@ -33,13 +33,59 @@ __doc__ = """
 Contains the main sfind functions for the pyseq module.
 """
 
+import argparse
+import fnmatch
+import os
 import sys
+
+import pyseq
+
+
+def walk_and_collect_sequences(root, include_hidden=False, pattern=None):
+    """Recursively walk through the directory tree and collect sequences."""
+
+    for dirpath, dirnames, filenames in os.walk(root):
+        if not include_hidden:
+            filenames = [f for f in filenames if not f.startswith(".")]
+        seqs = pyseq.get_sequences(filenames)
+        for seq in seqs:
+            full_str = str(seq)
+            if pattern and not fnmatch.fnmatch(full_str, pattern):
+                continue
+            yield os.path.join(dirpath, full_str)
 
 
 def main():
-    """Command-line interface."""
-    pass
+    """Main function to parse arguments and call the sequence finder."""
+
+    parser = argparse.ArgumentParser(description="Recursively find image sequences")
+    parser.add_argument(
+        "paths",
+        nargs="+",
+        help="Directory or directories to search",
+    )
+    parser.add_argument(
+        "-a",
+        "--all",
+        action="store_true",
+        help="Include hidden files",
+    )
+    parser.add_argument(
+        "-name",
+        metavar="PATTERN",
+        help="Glob pattern to match sequences (e.g. '*.png')",
+    )
+    args = parser.parse_args()
+
+    for path in args.paths:
+        if not os.path.isdir(path):
+            print(f"sfind: {path} is not a directory", file=sys.stderr)
+            continue
+        for seq in walk_and_collect_sequences(
+            path, include_hidden=args.all, pattern=args.name
+        ):
+            print(seq)
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()

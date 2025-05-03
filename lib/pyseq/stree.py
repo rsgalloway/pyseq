@@ -46,6 +46,7 @@ def print_tree(root, prefix="", include_hidden=False):
     :param root: The root directory to start printing from.
     :param prefix: The prefix to use for each line of the tree.
     """
+
     try:
         entries = os.listdir(root)
     except OSError as e:
