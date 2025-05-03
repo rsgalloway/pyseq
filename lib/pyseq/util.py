@@ -30,9 +30,12 @@
 # -----------------------------------------------------------------------------
 
 import functools
+import glob
 import os
 import re
 import warnings
+
+import pyseq
 
 
 def deprecated(func):
@@ -93,3 +96,44 @@ def natural_sort(items):
     :return: The sorted list of items.
     """
     return sorted(items, key=_natural_key)
+
+
+def resolve_sequence(sequence_string: str):
+    """Given a compressed sequence string like 'file.%04d.png' or
+    '/path/to/file.%04d.png', return a `Sequence` object of matching files on
+    disk.
+
+    :param sequence_string: The compressed sequence string to be uncompressed.
+    :return: A pyseq.Sequence object of matching files.
+    """
+
+    # split directory and filename
+    directory = os.path.dirname(sequence_string) or "."
+    filename = os.path.basename(sequence_string)
+
+    # detect %d or %0Nd
+    match = re.search(r"%0?(\d*)d", filename)
+    if not match:
+        raise ValueError("Format string must contain '%d' or '%0Nd'")
+
+    padding = match.group(1)
+    if padding:
+        pad = int(padding)
+        glob_part = filename.replace(f"%0{pad}d", "?" * pad)
+    else:
+        glob_part = filename.replace("%d", "*")
+
+    glob_pattern = os.path.join(directory, glob_part)
+    matches = glob.glob(glob_pattern)
+
+    if not matches:
+        raise FileNotFoundError(f"No files match pattern: {sequence_string}")
+
+    # pass full paths to get_sequences
+    sequences = pyseq.get_sequences(matches)
+    if not sequences:
+        raise ValueError("No valid sequences found")
+    elif len(sequences) > 1:
+        raise ValueError("Multiple sequences found")
+
+    return sequences[0]
