@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# 
+#
 # Copyright (c) 2011-2025, Ryan Galloway (ryan@rsgalloway.com)
 #
 # Redistribution and use in source and binary forms, with or without
@@ -27,7 +27,7 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-# 
+#
 
 __doc__ = """
 Contains tests for the pyseq package.
@@ -570,7 +570,9 @@ class LSSTestCase(unittest.TestCase):
         """ """
         self.maxDiff = None
         self.here = os.path.dirname(__file__)
-        self.lss = os.path.realpath(os.path.join(os.path.dirname(self.here), "lib", "pyseq", "lss.py"))
+        self.lss = os.path.realpath(
+            os.path.join(os.path.dirname(self.here), "lib", "pyseq", "lss.py")
+        )
 
     def test_lss_is_working_properly_1(self):
         """testing if the lss command is working properly"""
