@@ -37,17 +37,15 @@ import glob
 import optparse
 import os
 import sys
+from typing import Any, Optional
 
 from pyseq import __version__, get_sequences
 from pyseq import seq as pyseq
 from pyseq import walk
 
 
-def tree(source, level, seq_format):
-    """Recusrively walk from the source and display all the the folders and
-    sequences.
-    """
-
+def tree(source: str, level: Optional[int], seq_format: str):
+    """Recursively walk from the source and display all the folders and sequences."""
     if sys.stdout.isatty():
         blue = "\033[94m"
         endc = "\033[0m"
@@ -103,7 +101,7 @@ def tree(source, level, seq_format):
     print(endc)
 
 
-def _recur_cb(option, opt_str, value, parser):
+def _recur_cb(option: Any, opt_str: str, value: Optional[str], parser: Any):
     """Callback for the `recursive` argument."""
     if value is None:
         value = -1

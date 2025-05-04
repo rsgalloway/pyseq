@@ -301,12 +301,11 @@ class Item(str):
             self.__stat = os.stat(self.__path)
         return self.__stat
 
-    def is_sibling(self, item):
+    def is_sibling(self, item: str):
         """
         Determines if this Item and another Item are part of the same sequence.
 
         :param item: Another Item instance.
-
         :return: True if this Item and the other Item are sequential siblings,
             False otherwise.
         """
