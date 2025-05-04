@@ -255,6 +255,8 @@ Environment vars can be defined anywhere in your environment, or if using
 $ export ENVPATH=/path/to/env/files
 ```
 
+Examples of regex patterns can be found in the `pyseq.env` file.
+
 ## Testing
 
 To run the unit tests, simply run `pytest` in a shell:

@@ -1120,7 +1120,7 @@ def get_sequences(source: str, frame_pattern: str = config.PYSEQ_FRAME_PATTERN):
 
     seqs = []
 
-    config.frames_re = re.compile(frame_pattern)
+    config.set_frame_pattern(frame_pattern)
 
     if isinstance(source, list):
         items = sorted(source, key=lambda x: str(x))
@@ -1201,7 +1201,7 @@ def iget_sequences(source: str, frame_pattern: str = config.PYSEQ_FRAME_PATTERN)
     :yield: pyseq.Sequence class objects.
     """
 
-    config.frames_re = re.compile(frame_pattern)
+    config.set_frame_pattern(frame_pattern)
 
     if isinstance(source, list):
         items = source
