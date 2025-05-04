@@ -40,6 +40,7 @@ import traceback
 import warnings
 from collections import deque
 from glob import glob, iglob
+from typing import List, Callable, Union
 
 from pyseq import config
 from pyseq.util import _ext_key
@@ -93,7 +94,7 @@ class Item(str):
     Represents a file in a sequence.
     """
 
-    def __init__(self, item):
+    def __init__(self, item: Union[str, os.PathLike]):
         """
         Initializes a new instance of the Item class.
 
@@ -353,12 +354,11 @@ class Sequence(list):
         file.%04d.jpg 1-6 (1-3 6)
     """
 
-    def __init__(self, items):
+    def __init__(self, items: List[str]):
         """
         Create a new Sequence class object.
 
-        :param: items: Sequential list of items.
-
+        :param items: Sequential list of items.
         :return: pyseq.Sequence class instance.
         """
         # otherwise Sequence consumes the list
@@ -403,14 +403,29 @@ class Sequence(list):
     def __repr__(self):
         return '<pyseq.Sequence "%s">' % str(self)
 
-    def __getattr__(self, key):
+    def __getattr__(self, key: str):
+        """Get the value of the specified attribute.
+
+        :param key: The name of the attribute.
+        :return: The value of the attribute.
+        """
         return getattr(self[0], key)
 
-    def __contains__(self, item):
-        super(Sequence, self).__contains__(Item(item))
+    def __contains__(self, item: Union[Item, str]):
+        """Checks if the item is in the sequence.
 
-    def __setitem__(self, index, item):
-        """Used to set a particular element in the sequence"""
+        :param item: Item or string to check.
+        :return: True if item is in the sequence.
+        """
+        return super(Sequence, self).__contains__(Item(item))
+
+    def __setitem__(self, index: Union[int, slice], item: Union[Item, str, List[str]]):
+        """Used to set a particular element in the sequence.
+
+        :param index: Index of the item to set.
+        :param item: Item or list of items to set.
+        :raises ValueError: If the step in the slice is not 1.
+        """
         if type(index) is slice:
             if index.step not in (1, None):
                 raise ValueError("only step=1 supported")
@@ -427,7 +442,13 @@ class Sequence(list):
         else:
             raise SequenceError("Item is not a member of sequence.")
 
-    def __setslice__(self, start, end, item):
+    def __setslice__(self, start: int, end: int, item: Union[Item, str, List[str]]):
+        """Used to set a slice of the sequence.
+
+        :param start: Start index.
+        :param end: End index.
+        :param item: Item or list of items to set.
+        """
         if isinstance(item, str):
             item = Sequence([item])
         if isinstance(item, list) is False:
@@ -439,9 +460,12 @@ class Sequence(list):
         self.__frames = None
         self.__missing = None
 
-    def __add__(self, item):
+    def __add__(self, item: Union[Item, str, List[str]]):
         """return a new sequence with the item appended.  Accepts an Item,
         a string, or a list.
+
+        :param item: Item or string to add to the sequence.
+        :return: Sequence object.
         """
         if isinstance(item, str):
             item = Sequence([item])
@@ -451,7 +475,12 @@ class Sequence(list):
         ns.extend(item)
         return ns
 
-    def __iadd__(self, item):
+    def __iadd__(self, item: Union[str, Item, List[str]]):
+        """Adds an item to the sequence.  Accepts an Item, a string, or a list.
+
+        :param item: Item or string to add to the sequence.
+        :return: Sequence object.
+        """
         if isinstance(item, str) or isinstance(item, Item):
             item = [item]
         if isinstance(item, list) is False:
@@ -459,7 +488,7 @@ class Sequence(list):
         self.extend(item)
         return self
 
-    def format(self, fmt=global_format):
+    def format(self, fmt: str = global_format):
         """Format the stdout string.
 
         The following directives can be embedded in the format string.
@@ -611,7 +640,7 @@ class Sequence(list):
         _dirname = str(os.path.dirname(self[0].path))
         return os.path.join(_dirname, str(self))
 
-    def includes(self, item):
+    def includes(self, item: Union[str, Item]):
         """Checks if the item can be contained in this sequence, i.e. if it
         is a sibling of any of the items in the list.
 
@@ -644,7 +673,7 @@ class Sequence(list):
 
         return False
 
-    def contains(self, item):
+    def contains(self, item: Item):
         """Checks for sequence membership. Calls Item.is_sibling() and returns
         True if item is part of the sequence.
 
@@ -669,7 +698,7 @@ class Sequence(list):
 
         return False
 
-    def append(self, item, check_membership=True):
+    def append(self, item: Item, check_membership: bool = True):
         """Adds another member to the sequence.
 
         :param item: pyseq.Item object.
@@ -689,13 +718,14 @@ class Sequence(list):
             else:
                 raise SequenceError(f"Item {item} is not a member of this sequence.")
 
-    def insert(self, index, item, check_membership=True):
+    def insert(self, index: int, item: Item, check_membership: bool = True):
         """Add another member to the sequence at the given index.
 
+        :param index: The index at which to insert the item.
         :param item: pyseq.Item object.
         :param check_membership: Check if `item` is a member. Can be useful if
             membership is checked prior to appending.
-        :exc: `SequenceError` Raised if item is not a sequence member.
+        :raises: `SequenceError` Raised if item is not a sequence member.
         """
 
         if not isinstance(item, Item):
@@ -709,7 +739,7 @@ class Sequence(list):
             else:
                 raise SequenceError(f"Item {item} is not a member of this sequence.")
 
-    def extend(self, items, check_membership=True):
+    def extend(self, items: List[Item], check_membership: bool = True):
         """Add members to the sequence.
 
         :param items: List of pyseq.Item objects.
@@ -721,7 +751,7 @@ class Sequence(list):
         for item in items:
             self.append(item, check_membership=check_membership)
 
-    def reIndex(self, offset, padding=None):
+    def reIndex(self, offset: int, padding: int = None):
         """Renames and reindexes the items in the sequence, e.g. ::
 
             >>> seq.reIndex(offset=100)
@@ -783,7 +813,7 @@ class Sequence(list):
         except IndexError:
             return ""
 
-    def _get_framerange(self, frames, missing=True):
+    def _get_framerange(self, frames: List[int], missing: bool = True):
         """Returns frame range string, e.g. [1-500].
 
         :param frames: List of ints like [1,4,8,12,15].
@@ -830,7 +860,7 @@ class Sequence(list):
         """Finds the sequence indexes from item names."""
         return [f.frame for f in self if f.frame is not None]
 
-    def _get_missing(self, max_size=100000):
+    def _get_missing(self, max_size: int = 100000):
         """Looks for missing sequence indexes in the sequence.
 
         :param max_size: maximum missing frame sequence size for
@@ -859,7 +889,7 @@ class Sequence(list):
             return missing
 
 
-def diff(f1, f2):
+def diff(f1: Union[str, Item], f2: Union[str, Item]):
     """Examines diffs between f1 and f2 and deduces numerical sequence number.
 
     For example ::
@@ -897,7 +927,7 @@ def diff(f1, f2):
     return d
 
 
-def uncompress(seq_string, fmt=global_format):
+def uncompress(seq_string: str, fmt: str = global_format):
     """Basic uncompression or deserialization of a compressed sequence string.
 
     For example:
@@ -1048,7 +1078,7 @@ def uncompress(seq_string, fmt=global_format):
     return seqs
 
 
-def get_sequences(source, frame_pattern=config.PYSEQ_FRAME_PATTERN):
+def get_sequences(source: str, frame_pattern: str = config.PYSEQ_FRAME_PATTERN):
     """Returns a list of Sequence objects given a directory or list that contain
     sequential members.
 
@@ -1123,7 +1153,7 @@ def get_sequences(source, frame_pattern=config.PYSEQ_FRAME_PATTERN):
     return seqs
 
 
-def iget_sequences(source, frame_pattern=config.PYSEQ_FRAME_PATTERN):
+def iget_sequences(source: str, frame_pattern: str = config.PYSEQ_FRAME_PATTERN):
     """Generator version of get_sequences.  Creates Sequences from a various
     source files.  A notable difference is the sort order of iget_sequences
     versus get_sequences.  iget_sequences uses an adaption of natural sorting
@@ -1203,12 +1233,12 @@ def iget_sequences(source, frame_pattern=config.PYSEQ_FRAME_PATTERN):
 
 
 def walk(
-    source,
-    level=-1,
-    topdown=True,
-    onerror=None,
-    followlinks=False,
-    hidden=False,
+    source: str,
+    level: int = -1,
+    topdown: bool = True,
+    onerror: Callable[[str, OSError], None] = None,
+    followlinks: bool = False,
+    hidden: bool = False,
 ):
     """Generator that traverses a directory structure starting at source looking
     for sequences.
