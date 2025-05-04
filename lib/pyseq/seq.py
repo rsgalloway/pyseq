@@ -156,7 +156,8 @@ class Item(str):
         Checks if this Item is greater than or equal to another Item.
 
         :param other: Another Item instance.
-        :return: True if this Item is greater than or equal to the other Item, False otherwise.
+        :return: True if this Item is greater than or equal to the other Item,
+            False otherwise.
         """
         return self.frame >= other.frame
 
@@ -165,7 +166,8 @@ class Item(str):
         Checks if this Item is less than or equal to another Item.
 
         :param other: Another Item instance.
-        :return: True if this Item is less than or equal to the other Item, False otherwise.
+        :return: True if this Item is less than or equal to the other Item,
+            False otherwise.
         """
         return self.frame <= other.frame
 
@@ -241,7 +243,8 @@ class Item(str):
     @property
     def number_matches(self):
         """
-        Returns the numerical components of the Item as a list of regex match objects.
+        Returns the numerical components of the Item as a list of regex match
+        objects.
 
         :return: The numerical components.
         """
@@ -303,7 +306,8 @@ class Item(str):
 
         :param item: Another Item instance.
 
-        :return: True if this Item and the other Item are sequential siblings, False otherwise.
+        :return: True if this Item and the other Item are sequential siblings,
+            False otherwise.
         """
         if not isinstance(item, Item):
             item = Item(item)
@@ -669,8 +673,8 @@ class Sequence(list):
         """Adds another member to the sequence.
 
         :param item: pyseq.Item object.
-        :param check_membership: Check if `item` is a member. Can be useful if membership
-            is checked prior to appending.
+        :param check_membership: Check if `item` is a member. Can be useful if
+            membership is checked prior to appending.
         :exc:`SequenceError` raised if item is not a sequence member.
         """
 
@@ -689,8 +693,8 @@ class Sequence(list):
         """Add another member to the sequence at the given index.
 
         :param item: pyseq.Item object.
-        :param check_membership: Check if `item` is a member. Can be useful if membership
-            is checked prior to appending.
+        :param check_membership: Check if `item` is a member. Can be useful if
+            membership is checked prior to appending.
         :exc: `SequenceError` Raised if item is not a sequence member.
         """
 
@@ -898,26 +902,26 @@ def uncompress(seq_string, fmt=global_format):
 
     For example:
 
-        >>> seq = pyseq.uncompress('./tests/files/012_vb_110_v001.%04d.png 1-10', fmt='%h%p%t %r')
-        >>> print(seq)
-        012_vb_110_v001.1-10.png
-        >>> len(seq)
-        10
-        >>> seq = pyseq.uncompress('./tests/files/a.%03d.tga [1-3, 10, 12-14]', fmt='%h%p%t %R')
-        >>> print(seq)
-        a.1-14.tga
-        >>> len(seq)
-        7
-        >>> seq = pyseq.uncompress('a.%03d.tga 1-14 ([1-3, 10, 12-14])', fmt='%h%p%t %r (%R)')
-        >>> print(seq)
-        a.1-14.tga
-        >>> len(seq)
-        7
-        >>> seq = pyseq.uncompress('a.1-100.exr', fmt='%h%r%t')
-        >>> print(seq)
-        a.1-100.exr
-        >>> len(seq)
-        100
+    >>> seq = pyseq.uncompress('012_vb_110_v001.%04d.png 1-10', fmt='%h%p%t %r')
+    >>> print(seq)
+    012_vb_110_v001.1-10.png
+    >>> len(seq)
+    10
+    >>> seq = pyseq.uncompress('a.%03d.tga [1-3, 10, 12-14]', fmt='%h%p%t %R')
+    >>> print(seq)
+    a.1-14.tga
+    >>> len(seq)
+    7
+    >>> seq = pyseq.uncompress('a.%03d.tga 1-14 ([1-3, 10, 12-14])', fmt='%h%p%t %r (%R)')
+    >>> print(seq)
+    a.1-14.tga
+    >>> len(seq)
+    7
+    >>> seq = pyseq.uncompress('a.1-100.exr', fmt='%h%r%t')
+    >>> print(seq)
+    a.1-100.exr
+    >>> len(seq)
+    100
 
     :param seq_string: Compressed sequence string.
     :param fmt: Format of sequence string.
@@ -1079,7 +1083,8 @@ def get_sequences(source, frame_pattern=config.PYSEQ_FRAME_PATTERN):
         fileA.1-2.rgb
         fileB.1.rgb
 
-    :param source: Can be directory path, list of strings, or sortable list of objects.
+    :param source: Can be directory path, list of strings, or sortable list of
+        objects.
     :param frame_pattern: Regular expression pattern for frame matching.
     :return: List of pyseq.Sequence class objects.
     """
@@ -1161,9 +1166,10 @@ def iget_sequences(source, frame_pattern=config.PYSEQ_FRAME_PATTERN):
         fileA.1-2.rgb
         fileB.1.rgb
 
-    :param source: Can be directory path, list of strings, or sortable list of objects.
+    :param source: Can be directory path, list of strings, or sortable list of
+        objects.
     :param frame_pattern: Regular expression pattern for frame matching.
-    :return: List of pyseq.Sequence class objects.
+    :yield: pyseq.Sequence class objects.
     """
 
     config.frames_re = re.compile(frame_pattern)
@@ -1196,16 +1202,25 @@ def iget_sequences(source, frame_pattern=config.PYSEQ_FRAME_PATTERN):
         yield seq
 
 
-def walk(source, level=-1, topdown=True, onerror=None, followlinks=False, hidden=False):
-    """Generator that traverses a directory structure starting at
-    source looking for sequences.
+def walk(
+    source,
+    level=-1,
+    topdown=True,
+    onerror=None,
+    followlinks=False,
+    hidden=False,
+):
+    """Generator that traverses a directory structure starting at source looking
+    for sequences.
 
     :param source: Valid folder path to traverse.
-    :param level: int, if < 0 traverse entire structure otherwise traverse to given depth.
+    :param level: int, if < 0 traverse entire structure otherwise traverse to
+        given depth.
     :param topdown: Walk from the top down.
     :param onerror: Callable to handle os.listdir errors.
     :param followlinks: Whether to follow links.
     :param hidden: Include hidden files and dirs.
+    :yield: Tuple of (directory, directories, sequences).
     """
 
     for root, dirs, files in os.walk(source, topdown, onerror, followlinks):
