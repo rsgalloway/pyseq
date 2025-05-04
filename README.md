@@ -199,7 +199,7 @@ a.1-14.tga
 
 ## Command-Line Tools
 
-PySeq comes with the following command-line tools:
+PySeq comes with the following sequence-aware command-line tools:
 
 | Command | Description                           | Example Usage                    |
 | ------- | ------------------------------------- | -------------------------------- |
@@ -255,12 +255,26 @@ Environment vars can be defined anywhere in your environment, or if using
 $ export ENVPATH=/path/to/env/files
 ```
 
-Examples of regex patterns can be found in the `pyseq.env` file.
+Examples of regex patterns can be found in the `pyseq.env` file:
+
+```yaml
+# matches all numbers, the most flexible
+PYSEQ_FRAME_PATTERN: \d+
+
+# excludes version numbers, e.g. file_v001.1001.exr
+PYSEQ_FRAME_PATTERN: ([^v\d])\d+
+
+# frame numbers are dot-delimited, e.g. file.v1.1001.exr
+PYSEQ_FRAME_PATTERN: \.\d+\.
+
+# frame numbers start with an underscore, e.g. file_v1_1001.exr
+PYSEQ_FRAME_PATTERN: _\d+
+```
 
 ## Testing
 
 To run the unit tests, simply run `pytest` in a shell:
 
 ```bash
-$ pytest test/
+$ pytest tests/
 ```
