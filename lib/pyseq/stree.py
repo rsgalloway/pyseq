@@ -40,7 +40,7 @@ import sys
 import pyseq
 
 
-def print_tree(root, prefix="", include_hidden=False):
+def print_tree(root: str, prefix: str = "", include_hidden: bool = False):
     """Recursively prints the directory tree of the given root directory.
 
     :param root: The root directory to start printing from.

@@ -55,7 +55,7 @@ def deprecated(func):
     return inner
 
 
-def _natural_key(x):
+def _natural_key(x: str):
     """Splits a string into characters and digits.
 
     :param x: The string to be split.
@@ -64,7 +64,7 @@ def _natural_key(x):
     return [int(c) if c.isdigit() else c.lower() for c in re.split(r"(\d+)", x)]
 
 
-def _ext_key(x):
+def _ext_key(x: str):
     """Similar to `_natural_key` except this one uses the file extension at
     the head of split string.  This fixes issues with files that are named
     similar but with different file extensions:
@@ -99,7 +99,7 @@ def is_compressed_format_string(s: str) -> bool:
 
 
 @functools.lru_cache(maxsize=None)
-def natural_sort(items):
+def natural_sort(items: list):
     """
     Sorts a list of items in natural order.
 

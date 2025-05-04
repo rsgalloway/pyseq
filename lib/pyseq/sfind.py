@@ -41,7 +41,11 @@ import sys
 import pyseq
 
 
-def walk_and_collect_sequences(root, include_hidden=False, pattern=None):
+def walk_and_collect_sequences(
+    root: str,
+    include_hidden: bool = False,
+    pattern: str = None,
+):
     """Recursively walk through the directory tree and collect sequences."""
 
     for dirpath, dirnames, filenames in os.walk(root):

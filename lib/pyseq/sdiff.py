@@ -37,10 +37,15 @@ import argparse
 import json
 import sys
 
+import pyseq
 from pyseq.util import resolve_sequence
 
 
-def diff_sequences(seq1, seq2, compare_size=False):
+def diff_sequences(
+    seq1: pyseq.Sequence,
+    seq2: pyseq.Sequence,
+    compare_size: bool = False,
+):
     """Compares two sequences and returns a dictionary of differences.
 
     :param seq1: The first sequence to compare.
@@ -77,14 +82,14 @@ def diff_sequences(seq1, seq2, compare_size=False):
     return diff
 
 
-def print_diff(diff, compare_size=False):
+def print_diff(diff: dict, compare_size: bool = False):
     """Prints the differences between two sequences.
 
     :param diff: The dictionary containing differences between sequences.
     :param compare_size: Boolean indicating whether to compare disk usage.
     """
 
-    def show(label, a, b):
+    def show(label: str, a: str, b: str):
         if a != b:
             print(f"{label} mismatch:\n  A: {a}\n  B: {b}")
 

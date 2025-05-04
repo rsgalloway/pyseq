@@ -38,21 +38,22 @@ import os
 import argparse
 import shutil
 import fnmatch
+from typing import Optional
 
 import pyseq
 from pyseq.util import is_compressed_format_string, resolve_sequence
 
 
 def move_sequence(
-    seq,
-    src_dir,
-    dest_dir,
-    rename=None,
-    renumber=None,
-    pad=None,
-    force=False,
-    dryrun=False,
-    verbose=False,
+    seq: pyseq.Sequence,
+    src_dir: str,
+    dest_dir: str,
+    rename: Optional[str] = None,
+    renumber: Optional[int] = None,
+    pad: Optional[int] = None,
+    force: bool = False,
+    dryrun: bool = False,
+    verbose: bool = False,
 ):
     """Move a sequence of files from one directory to another.
 

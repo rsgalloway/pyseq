@@ -43,7 +43,7 @@ import pyseq
 from pyseq.util import resolve_sequence
 
 
-def format_time(ts):
+def format_time(ts: int):
     """Format a timestamp into a human-readable string.
 
     :param ts: The timestamp to format.
