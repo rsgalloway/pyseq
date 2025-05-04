@@ -108,7 +108,7 @@ $ find ./tests/ -name *.png | lss
 Use the `--format` option to retain the relative path:
 
 ```bash
-$ find tests/ -name "*.png" | xargs lss -f "%D%h%r%t"
+$ find tests/ -name "*.png" | lss -f "%D%h%r%t"
 tests/files/012_vb_110_v001.1-10.png
 tests/files/012_vb_110_v002.1-10.png
 tests/files/fileA.1-3.png
@@ -177,7 +177,7 @@ Here are some examples using `lss -f <format>` and `seq.format(..)`:
 Using `lss -f <format>`:
 
 ```bash
-$ $ lss tests/files/a*.tga -f "%h%r%t"
+$ lss tests/files/a*.tga -f "%h%r%t"
 a.1-14.tga
 $ lss tests/files/a*.tga -f "%l %h%r%t"
 7 a.1-14.tga
@@ -215,26 +215,26 @@ Example commands:
 
 ```bash
 # List sequences in a folder
-lss shots/
+$ lss tests/files
 
 # Show directory structure with grouped sequences
-stree projects/
+$ stree tests/
 
 # Find all .png sequences recursively
-sfind . -name "*.png"
+$ sfind ./tests -name "*.png"
 
 # Compare two sequences and print diffs
-sdiff comp_A.%04d.exr comp_B.%04d.exr
+$ sdiff comp_A.%04d.exr comp_B.%04d.exr
 
 # Show stats for a sequence
-sstat render.%04d.exr
-sstat --json render.%04d.exr
+$ sstat render.%04d.exr
+$ sstat --json render.%04d.exr
 
 # Copy a sequence and rename it
-scopy input.%04d.exr output/ --rename scene01
+$ scopy input.%04d.exr output/ --rename scene01
 
 # Move and renumber a sequence starting at frame 1001
-smove old.%04d.exr archive/ --renumber 1001
+$ smove old.%04d.exr archive/ --renumber 1001
 ```
 
 ## Frame Patterns
