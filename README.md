@@ -197,6 +197,46 @@ a.1-14.tga
 7 a.1-14.tga [4-9, 11]
 ```
 
+## Command-Line Tools
+
+PySeq comes with the following command-line tools:
+
+| Command | Description                           | Example Usage                    |
+| ------- | ------------------------------------- | -------------------------------- |
+| `lss`   | List image sequences in a directory   | `lss shots/`                     |
+| `stree` | Display sequence-aware directory tree | `stree shots/`                   |
+| `sfind` | Recursively find image sequences      | `sfind assets/ -name "*.exr"`   |
+| `sdiff` | Compare two sequences                 | `sdiff A.%04d.exr B.%04d.exr`    |
+| `sstat` | Print detailed stats about a sequence | `sstat render.%04d.exr`          |
+| `scopy` | Copy a sequence to another directory  | `scopy a.%04d.exr /tmp/output/`  |
+| `smove` | Move a sequence to another directory  | `smove b.%04d.exr /tmp/archive/` |
+
+Example commands:
+
+```bash
+# List sequences in a folder
+lss shots/
+
+# Show directory structure with grouped sequences
+stree projects/
+
+# Find all .png sequences recursively
+sfind . -name "*.png"
+
+# Compare two sequences and print diffs
+sdiff comp_A.%04d.exr comp_B.%04d.exr
+
+# Show stats for a sequence
+sstat render.%04d.exr
+sstat --json render.%04d.exr
+
+# Copy a sequence and rename it
+scopy input.%04d.exr output/ --rename scene01
+
+# Move and renumber a sequence starting at frame 1001
+smove old.%04d.exr archive/ --renumber 1001
+```
+
 ## Frame Patterns
 
 The environment var `${PYSEQ_FRAME_PATTERN}` can be used to define custom regex
@@ -220,11 +260,5 @@ $ export ENVPATH=/path/to/env/files
 To run the unit tests, simply run `pytest` in a shell:
 
 ```bash
-$ pytest test/ -s
-```
-
-Or if you don't have `pytest`, you can run:
-
-```bash
-$ python tests/test_pyseq.py
+$ pytest test/
 ```
