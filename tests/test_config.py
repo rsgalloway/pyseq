@@ -34,30 +34,31 @@ Contains tests for the config module.
 """
 
 import re
-from pyseq.config import set_frame_pattern, frames_re, DEFAULT_FRAME_PATTERN
+
+from pyseq import config
 
 
 def test_set_frame_pattern_valid():
-    """Test that a valid regex pattern is set correctly"""
+    """Test that a valid regex pattern is set correctly."""
     pattern = r"\d+"
-    set_frame_pattern(pattern)
-    assert frames_re.pattern == pattern
-    assert isinstance(frames_re, re.Pattern)
+    config.set_frame_pattern(pattern)
+    assert config.frames_re.pattern == pattern
+    assert isinstance(config.frames_re, re.Pattern)
 
 
 def test_set_frame_pattern_invalid():
-    """Test that invalid regex pattern falls back to default pattern"""
+    """Test that invalid regex pattern falls back to default pattern."""
     # intentionally broken regex
     bad_pattern = r"("
-    set_frame_pattern(bad_pattern)
+    config.set_frame_pattern(bad_pattern)
     # expect fallback to default
-    assert frames_re.pattern == DEFAULT_FRAME_PATTERN
+    assert config.frames_re.pattern == config.DEFAULT_FRAME_PATTERN
 
 
 def test_set_frame_pattern_invalid_prints_error(capfd):
-    """Test that invalid regex prints an error and reverts to default pattern"""
+    """Test that invalid regex prints an error and reverts to default pattern."""
     bad_pattern = r"["
-    set_frame_pattern(bad_pattern)
+    config.set_frame_pattern(bad_pattern)
     out, err = capfd.readouterr()
     assert "Error: Invalid regex pattern" in out
-    assert frames_re.pattern == DEFAULT_FRAME_PATTERN
+    assert config.frames_re.pattern == config.DEFAULT_FRAME_PATTERN
