@@ -8,6 +8,15 @@ string representing the entire sequence (e.g. fileA.1-3.png). It should work
 regardless of where the numerical sequence index is embedded in the name. For
 examples, see basic usage below or http://rsgalloway.github.io/pyseq
 
+[Installation](#installation) |
+[Basic Usage](#basic-usage) |
+[API Examples](#api-examples) |
+[Formatting](#formatting) |
+[Command-Line Tools](#command-line-tools) |
+[Frame Patterns](#frame-patterns) |
+[Testing](#testing)
+
+
 ## Installation
 
 The easiest way to install pyseq:
