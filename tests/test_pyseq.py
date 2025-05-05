@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# 
+#
 # Copyright (c) 2011-2025, Ryan Galloway (ryan@rsgalloway.com)
 #
 # Redistribution and use in source and binary forms, with or without
@@ -27,7 +27,11 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-# 
+#
+
+__doc__ = """
+Contains tests for the pyseq package.
+"""
 
 import os
 import re
@@ -566,7 +570,9 @@ class LSSTestCase(unittest.TestCase):
         """ """
         self.maxDiff = None
         self.here = os.path.dirname(__file__)
-        self.lss = os.path.realpath(os.path.join(os.path.dirname(self.here), "lib", "pyseq", "lss.py"))
+        self.lss = os.path.realpath(
+            os.path.join(os.path.dirname(self.here), "lib", "pyseq", "lss.py")
+        )
 
     def test_lss_is_working_properly_1(self):
         """testing if the lss command is working properly"""
@@ -879,6 +885,8 @@ class TestIssues(unittest.TestCase):
     def test_issue_83(self):
         """tests issue 83. externalize frame pattern."""
 
+        from pyseq import config
+
         filenames = [
             "file_v001.jpg",
             "file_v002.jpg",
@@ -887,7 +895,7 @@ class TestIssues(unittest.TestCase):
         ]
 
         # test using default frame pattern
-        seqs1 = pyseq.get_sequences(filenames)
+        seqs1 = pyseq.get_sequences(filenames, frame_pattern=config.DEFAULT_FRAME_PATTERN)
         self.assertEqual(len(seqs1), 1)
 
         # test if a new file in the sequence is included

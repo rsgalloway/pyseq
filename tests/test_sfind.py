@@ -27,34 +27,61 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-# -----------------------------------------------------------------------------
+#
 
-__doc__ = """PySeq is a python module that finds groups of items that follow a naming
-convention containing a numerical sequence index, e.g. ::
-
-    fileA.001.png, fileA.002.png, fileA.003.png...
-
-and serializes them into a compressed sequence string representing the entire
-sequence, e.g. ::
-
-    fileA.1-3.png
-
-It should work regardless of where the numerical sequence index is embedded
-in the name.
-
-Docs and latest version available for download at
-
-   http://github.com/rsgalloway/pyseq
+__doc__ = """
+Contains tests for the sfind module.
 """
 
-__author__ = "Ryan Galloway"
-__version__ = "0.9.0"
+import os
+import subprocess
+import tempfile
+import pytest
 
-try:
-    import envstack
 
-    envstack.init("pyseq")
-except Exception:
-    pass
+@pytest.fixture
+def nested_sequence_tree():
+    """Create a temporary directory with a nested sequence tree for testing."""
+    with tempfile.TemporaryDirectory() as root:
+        os.makedirs(os.path.join(root, "subdir1"))
+        os.makedirs(os.path.join(root, "subdir2"))
 
-from .seq import *
+        for i in range(1, 4):
+            with open(os.path.join(root, f"shotA.{i:04d}.exr"), "w") as f:
+                f.write("A")
+            with open(os.path.join(root, "subdir1", f"shotB.{i:04d}.png"), "w") as f:
+                f.write("B")
+            with open(os.path.join(root, "subdir2", f"notes_{i}.txt"), "w") as f:
+                f.write("notes")
+
+        yield root
+
+
+def test_sfind_basic(nested_sequence_tree):
+    """Test sfind with no arguments to find all files."""
+    result = subprocess.run(
+        ["sfind", nested_sequence_tree],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+
+    assert result.returncode == 0
+    out = result.stdout
+    assert "shotA.1-3.exr" in out
+    assert "shotB.1-3.png" in out
+
+
+def test_sfind_filter(nested_sequence_tree):
+    """Test sfind with a filter to only find PNG files."""
+    result = subprocess.run(
+        ["sfind", nested_sequence_tree, "-name", "*.png"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+
+    assert result.returncode == 0
+    out = result.stdout
+    assert "shotB.1-3.png" in out
+    assert "shotA" not in out

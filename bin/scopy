@@ -29,55 +29,15 @@
 # POSSIBILITY OF SUCH DAMAGE.
 # -----------------------------------------------------------------------------
 
+
 __doc__ = """
-Contains pyseq configs and default settings.
+Contains a simple wrapper for the scopy executable.
 """
 
-import os
 import re
+import sys
+from pyseq.scopy import main
 
-# default serialization format string
-DEFAULT_FORMAT = "%h%r%t"
-default_format = os.getenv("PYSEQ_DEFAULT_FORMAT", DEFAULT_FORMAT)
-
-# default serialization format string for global sequences
-DEFAULT_GLOBAL_FORMAT = "%4l %h%p%t %R"
-global_format = os.getenv("PYSEQ_GLOBAL_FORMAT", DEFAULT_GLOBAL_FORMAT)
-
-# use strict padding on sequences (pad length must match)
-PYSEQ_STRICT_PAD = os.getenv("PYSEQ_STRICT_PAD", 0)
-PYSEQ_NOT_STRICT = os.getenv("PYSEQ_NOT_STRICT", 1)
-strict_pad = int(PYSEQ_STRICT_PAD) == 1 or int(PYSEQ_NOT_STRICT) == 0
-
-# regex pattern for matching all numbers in a filename
-digits_re = re.compile(r"\d+")
-
-# regex pattern for matching frame numbers only
-# the default is \d+ for maximum compatibility
-DEFAULT_FRAME_PATTERN = r"\d+"
-PYSEQ_FRAME_PATTERN = os.getenv("PYSEQ_FRAME_PATTERN", DEFAULT_FRAME_PATTERN)
-
-def set_frame_pattern(pattern: str = DEFAULT_FRAME_PATTERN):
-    """
-    Set the regex pattern for matching frame numbers.
-
-    :param pattern: The regex pattern to use for matching frame numbers.
-    """
-    global frames_re
-    global PYSEQ_FRAME_PATTERN
-    PYSEQ_FRAME_PATTERN = pattern
-    try:
-        frames_re = re.compile(pattern)
-    except Exception as e:
-        print("Error: Invalid regex pattern: %s" % e)
-        frames_re = re.compile(DEFAULT_FRAME_PATTERN)
-
-# set the default frame pattern
-set_frame_pattern(PYSEQ_FRAME_PATTERN)
-
-# regex for matching format directives
-format_re = re.compile(r"%(?P<pad>\d+)?(?P<var>\w+)")
-
-# character to join explicit frame ranges on
-DEFAULT_RANGE_SEP = ", "
-range_join = os.getenv("PYSEQ_RANGE_SEP", DEFAULT_RANGE_SEP)
+if __name__ == "__main__":
+    sys.argv[0] = re.sub(r"(-script\.pyw|\.exe)?$", "", sys.argv[0])
+    sys.exit(main())

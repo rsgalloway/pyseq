@@ -27,42 +27,68 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-# -----------------------------------------------------------------------------
+#
 
-import sys
-from os import path
+__doc__ = """
+Contains tests for the lss module.
+"""
 
-from setuptools import find_packages, setup
+import os
+import subprocess
+import tempfile
+import pytest
 
-this_directory = path.abspath(path.dirname(__file__))
-with open(path.join(this_directory, "README.md")) as f:
-    long_description = f.read()
 
-sys.path.insert(0, "lib")
-from pyseq import __version__
+@pytest.fixture
+def lss_fixture():
+    """Fixture to create a temporary directory with test files."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        for i in range(1, 4):
+            with open(os.path.join(tmpdir, f"shot.{i:04d}.exr"), "w") as f:
+                f.write("frame\n")
+        yield tmpdir
 
-setup(
-    name="pyseq",
-    version=__version__,
-    description="Compressed File Sequence String Module",
-    long_description=long_description,
-    long_description_content_type="text/markdown",
-    author="Ryan Galloway",
-    author_email="ryan@rsgalloway.com",
-    url="http://github.com/rsgalloway/pyseq",
-    package_dir={"": "lib"},
-    packages=find_packages("lib"),
-    entry_points={
-        "console_scripts": [
-            "lss = pyseq.lss:main",
-            "scopy = pyseq.scopy:main",
-            "sdiff = pyseq.sdiff:main",
-            "sfind = pyseq.sfind:main",
-            "smove = pyseq.smove:main",
-            "sstat = pyseq.sstat:main",
-            "stree = pyseq.stree:main",
-        ],
-    },
-    python_requires=">=3.6",
-    zip_safe=False,
-)
+
+def test_lss_with_directory(lss_fixture):
+    """Test lss with a directory input."""
+    result = subprocess.run(
+        ["lss", lss_fixture],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+
+    assert result.returncode == 0
+    out = result.stdout
+    assert "   3 shot.%04d.exr [1-3]" in out
+
+
+def test_lss_with_wildcard(lss_fixture):
+    """Test lss with a wildcard pattern."""
+    pattern = os.path.join(lss_fixture, "shot.*.exr")
+
+    result = subprocess.run(
+        ["lss", pattern],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+
+    assert result.returncode == 0
+    out = result.stdout
+    assert "   3 shot.%04d.exr [1-3]" in out
+
+
+def test_lss_stdin_input(lss_fixture):
+    """Test lss with stdin input."""
+    result = subprocess.run(
+        ["lss"],
+        input=f"{lss_fixture}\n",
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+
+    assert result.returncode == 0
+    out = result.stdout
+    assert "   3 shot.%04d.exr [1-3]" in out

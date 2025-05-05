@@ -1,13 +1,61 @@
 {
     "author": "ryan@rsg.io",
     "targets": {
-        "bin": {
+        "lss": {
             "source": "bin/lss",
             "destination": "{DEPLOY_ROOT}/bin/lss"
         },
-        "bat": {
+        "lss.bat": {
             "source": "bin/lss.bat",
             "destination": "{DEPLOY_ROOT}/bin/lss.bat"
+        },
+        "scopy": {
+            "source": "bin/scopy",
+            "destination": "{DEPLOY_ROOT}/bin/scopy"
+        },
+        "scopy.bat": {
+            "source": "bin/scopy.bat",
+            "destination": "{DEPLOY_ROOT}/bin/scopy.bat"
+        },
+        "sdiff": {
+            "source": "bin/sdiff",
+            "destination": "{DEPLOY_ROOT}/bin/sdiff"
+        },
+        "sdiff.bat": {
+            "source": "bin/sdiff.bat",
+            "destination": "{DEPLOY_ROOT}/bin/sdiff.bat"
+        },
+        "sfind": {
+            "source": "bin/sfind",
+            "destination": "{DEPLOY_ROOT}/bin/sfind"
+        },
+        "sfind.bat": {
+            "source": "bin/sfind.bat",
+            "destination": "{DEPLOY_ROOT}/bin/sfind.bat"
+        },
+        "smove": {
+            "source": "bin/smove",
+            "destination": "{DEPLOY_ROOT}/bin/smove"
+        },
+        "smove.bat": {
+            "source": "bin/smove.bat",
+            "destination": "{DEPLOY_ROOT}/bin/smove.bat"
+        },
+        "sstat": {
+            "source": "bin/sstat",
+            "destination": "{DEPLOY_ROOT}/bin/sstat"
+        },
+        "sstat.bat": {
+            "source": "bin/sstat.bat",
+            "destination": "{DEPLOY_ROOT}/bin/sstat.bat"
+        },
+        "stree": {
+            "source": "bin/stree",
+            "destination": "{DEPLOY_ROOT}/bin/stree"
+        },
+        "stree.bat": {
+            "source": "bin/stree.bat",
+            "destination": "{DEPLOY_ROOT}/bin/stree.bat"
         },
         "lib": {
             "source": "lib/pyseq",
