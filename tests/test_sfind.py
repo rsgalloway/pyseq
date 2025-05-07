@@ -38,6 +38,13 @@ import subprocess
 import tempfile
 import pytest
 
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+if os.name == "nt":
+    sfind_bin = os.path.join(project_root, "bin", "sfind.bat")
+else:
+    sfind_bin = os.path.join(project_root, "bin", "sfind")
+
 
 @pytest.fixture
 def nested_sequence_tree():
@@ -60,7 +67,7 @@ def nested_sequence_tree():
 def test_sfind_basic(nested_sequence_tree):
     """Test sfind with no arguments to find all files."""
     result = subprocess.run(
-        ["sfind", nested_sequence_tree],
+        [sfind_bin, nested_sequence_tree],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
@@ -75,7 +82,7 @@ def test_sfind_basic(nested_sequence_tree):
 def test_sfind_filter(nested_sequence_tree):
     """Test sfind with a filter to only find PNG files."""
     result = subprocess.run(
-        ["sfind", nested_sequence_tree, "-name", "*.png"],
+        [sfind_bin, nested_sequence_tree, "-name", "*.png"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,

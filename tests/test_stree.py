@@ -38,6 +38,13 @@ import subprocess
 import tempfile
 import pytest
 
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+if os.name == "nt":
+    stree_bin = os.path.join(project_root, "bin", "stree.bat")
+else:
+    stree_bin = os.path.join(project_root, "bin", "stree")
+
 
 @pytest.fixture
 def tree_fixture():
@@ -61,7 +68,7 @@ def tree_fixture():
 def test_stree_output(tree_fixture):
     """Test stree output."""
     result = subprocess.run(
-        ["stree", tree_fixture],
+        [stree_bin, tree_fixture],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
@@ -82,7 +89,7 @@ def test_stree_default_path(tree_fixture):
     try:
         os.chdir(tree_fixture)
         result = subprocess.run(
-            ["stree"],
+            [stree_bin],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,

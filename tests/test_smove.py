@@ -41,6 +41,13 @@ import pytest
 import pyseq
 from pyseq.smove import move_sequence
 
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+if os.name == "nt":
+    smove_bin = os.path.join(project_root, "bin", "smove.bat")
+else:
+    smove_bin = os.path.join(project_root, "bin", "smove")
+
 
 @pytest.fixture
 def sample_sequence():
@@ -88,7 +95,7 @@ def test_smove_cli(sample_sequence):
         pattern = os.path.join(src_dir, "test.%04d.exr")
 
         result = subprocess.run(
-            ["smove", pattern, dest_dir],
+            [smove_bin, pattern, dest_dir],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,

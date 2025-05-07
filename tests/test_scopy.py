@@ -41,6 +41,13 @@ import pytest
 import pyseq
 from pyseq.scopy import copy_sequence
 
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+if os.name == "nt":
+    scopy_bin = os.path.join(project_root, "bin", "scopy.bat")
+else:
+    scopy_bin = os.path.join(project_root, "bin", "scopy")
+
 
 @pytest.fixture
 def sample_sequence(tmp_path):
@@ -83,7 +90,7 @@ def test_scopy_cli(sample_sequence):
         pattern = os.path.join(str(src_dir), "test.%04d.exr")
 
         result = subprocess.run(
-            ["scopy", pattern, destdir],
+            [scopy_bin, pattern, destdir],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,

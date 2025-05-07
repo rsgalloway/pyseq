@@ -895,7 +895,9 @@ class TestIssues(unittest.TestCase):
         ]
 
         # test using default frame pattern
-        seqs1 = pyseq.get_sequences(filenames, frame_pattern=config.DEFAULT_FRAME_PATTERN)
+        seqs1 = pyseq.get_sequences(
+            filenames, frame_pattern=config.DEFAULT_FRAME_PATTERN
+        )
         self.assertEqual(len(seqs1), 1)
 
         # test if a new file in the sequence is included

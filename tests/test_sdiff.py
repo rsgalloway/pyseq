@@ -42,6 +42,13 @@ import pytest
 import pyseq
 from pyseq.sdiff import diff_sequences
 
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+if os.name == "nt":
+    sdiff_bin = os.path.join(project_root, "bin", "sdiff.bat")
+else:
+    sdiff_bin = os.path.join(project_root, "bin", "sdiff")
+
 
 @pytest.fixture
 def diff_test_sequences():
@@ -82,7 +89,7 @@ def test_sdiff_cli_text(diff_test_sequences):
     pattern2 = os.path.join(dir2, "bar.%04d.exr")
 
     result = subprocess.run(
-        ["sdiff", pattern1, pattern2],
+        [sdiff_bin, pattern1, pattern2],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
@@ -100,7 +107,7 @@ def test_sdiff_cli_json(diff_test_sequences):
     pattern2 = os.path.join(dir2, "bar.%04d.exr")
 
     result = subprocess.run(
-        ["sdiff", "--json", pattern1, pattern2],
+        [sdiff_bin, "--json", pattern1, pattern2],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,

@@ -38,6 +38,13 @@ import subprocess
 import tempfile
 import pytest
 
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+if os.name == "nt":
+    lss_bin = os.path.join(project_root, "bin", "lss.bat")
+else:
+    lss_bin = os.path.join(project_root, "bin", "lss")
+
 
 @pytest.fixture
 def lss_fixture():
@@ -52,7 +59,7 @@ def lss_fixture():
 def test_lss_with_directory(lss_fixture):
     """Test lss with a directory input."""
     result = subprocess.run(
-        ["lss", lss_fixture],
+        [lss_bin, lss_fixture],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
@@ -66,9 +73,8 @@ def test_lss_with_directory(lss_fixture):
 def test_lss_with_wildcard(lss_fixture):
     """Test lss with a wildcard pattern."""
     pattern = os.path.join(lss_fixture, "shot.*.exr")
-
     result = subprocess.run(
-        ["lss", pattern],
+        [lss_bin, pattern],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
@@ -82,7 +88,7 @@ def test_lss_with_wildcard(lss_fixture):
 def test_lss_stdin_input(lss_fixture):
     """Test lss with stdin input."""
     result = subprocess.run(
-        ["lss"],
+        [lss_bin],
         input=f"{lss_fixture}\n",
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,

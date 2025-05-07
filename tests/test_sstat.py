@@ -42,6 +42,13 @@ import pytest
 import pyseq
 from pyseq.sstat import json_sstat
 
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+if os.name == "nt":
+    sstat_bin = os.path.join(project_root, "bin", "sstat.bat")
+else:
+    sstat_bin = os.path.join(project_root, "bin", "sstat")
+
 
 @pytest.fixture
 def stat_sequence():
@@ -74,7 +81,7 @@ def test_sstat_cli_output(stat_sequence):
     pattern = os.path.join(tmpdir, "shotA.%04d.exr")
 
     result = subprocess.run(
-        ["sstat", pattern],
+        [sstat_bin, pattern],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
@@ -92,7 +99,7 @@ def test_sstat_cli_json(stat_sequence):
     pattern = os.path.join(tmpdir, "shotA.%04d.exr")
 
     result = subprocess.run(
-        ["sstat", "--json", pattern],
+        [sstat_bin, "--json", pattern],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
@@ -110,7 +117,7 @@ def test_sstat_missing_file():
     pattern = "not_a_real_file.%04d.exr"
 
     result = subprocess.run(
-        ["sstat", pattern], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+        [sstat_bin, pattern], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
     )
 
     assert result.returncode != 0
