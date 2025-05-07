@@ -835,7 +835,8 @@ class Sequence(list):
         for i in range(0, len(frames)):
             frame = frames[i]
             if isinstance(frame, range):
-                frange.append("%s-%s" % (frame[0], frame[-1]))
+                if frame.start != frame.stop:
+                    frange.append("%s-%s" % (frame.start, frame.stop - 1))
                 continue
             prev = frames[i - 1]
             if i != 0 and frame != prev + 1:
