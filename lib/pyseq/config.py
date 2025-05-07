@@ -57,6 +57,7 @@ digits_re = re.compile(r"\d+")
 DEFAULT_FRAME_PATTERN = r"\d+"
 PYSEQ_FRAME_PATTERN = os.getenv("PYSEQ_FRAME_PATTERN", DEFAULT_FRAME_PATTERN)
 
+
 def set_frame_pattern(pattern: str = DEFAULT_FRAME_PATTERN):
     """
     Set the regex pattern for matching frame numbers.
@@ -71,6 +72,7 @@ def set_frame_pattern(pattern: str = DEFAULT_FRAME_PATTERN):
     except Exception as e:
         print("Error: Invalid regex pattern: %s" % e)
         frames_re = re.compile(DEFAULT_FRAME_PATTERN)
+
 
 # set the default frame pattern
 set_frame_pattern(PYSEQ_FRAME_PATTERN)
