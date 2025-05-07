@@ -148,7 +148,7 @@ Formatting options:
         "--format",
         dest="format",
         default=None,
-        help="Format the output string.",
+        help="Format the sequence string.",
     )
     parser.add_option(
         "-r",
