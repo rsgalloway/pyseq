@@ -38,9 +38,15 @@ import os
 import sys
 
 import pyseq
+from pyseq import config
 
 
-def print_tree(root: str, prefix: str = "", include_hidden: bool = False):
+def print_tree(
+    root: str,
+    prefix: str = "",
+    fmt: str = config.DEFAULT_FORMAT,
+    include_hidden: bool = False,
+):
     """Recursively prints the directory tree of the given root directory.
 
     :param root: The root directory to start printing from.
@@ -62,14 +68,14 @@ def print_tree(root: str, prefix: str = "", include_hidden: bool = False):
     seqs = pyseq.get_sequences(files)
     total = len(dirs) + len(seqs)
 
-    for i, name in enumerate(dirs + [str(s) for s in seqs]):
+    for i, name in enumerate(dirs + [str(s.format(fmt)) for s in seqs]):
         is_last = i == total - 1
         connector = "└── " if is_last else "├── "
         next_prefix = prefix + ("    " if is_last else "│   ")
         print(f"{prefix}{connector}{name}")
 
         if name in dirs:
-            print_tree(os.path.join(root, name), next_prefix, include_hidden)
+            print_tree(os.path.join(root, name), next_prefix, fmt, include_hidden)
 
 
 def main():
@@ -88,10 +94,16 @@ def main():
         action="store_true",
         help="All files are listed (include hidden files).",
     )
+    parser.add_argument(
+        "-f",
+        "--format",
+        default=config.DEFAULT_FORMAT,
+        help="Format the sequence string.",
+    )
     args = parser.parse_args()
 
     print(args.path)
-    print_tree(args.path, include_hidden=args.all)
+    print_tree(args.path, fmt=args.format, include_hidden=args.all)
 
     return 0
 
