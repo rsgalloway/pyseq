@@ -125,7 +125,7 @@ def resolve_sequence(sequence_string: str):
     # detect %d or %0Nd
     match = re.search(r"%0?(\d*)d", filename)
     if not match:
-        raise ValueError("Format string must contain '%d' or '%0Nd'")
+        raise ValueError("Sequence string must contain '%d' or '%0Nd'")
 
     padding = match.group(1)
     if padding:
