@@ -34,6 +34,7 @@ settings and looks for a `pyseq.env` file to source environment variables:
 $ pip install -U envstack
 $ ./pyseq.env -r
 PYSEQ_FRAME_PATTERN=\d+
+PYSEQ_GLOBAL_FORMAT=%4l %h%p%t %R
 PYSEQ_RANGE_SEP=, 
 PYSEQ_STRICT_PAD=0
 ```
