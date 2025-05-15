@@ -575,7 +575,8 @@ class LSSTestCase(unittest.TestCase):
         )
 
     def test_lss_is_working_properly_1(self):
-        """testing if the lss command is working properly"""
+        """testing if the lss command is working properly. Assumes strict pad
+        is disabled."""
         test_files = os.path.join(os.path.dirname(os.path.realpath(__file__)), "files")
 
         result = self.run_command(self.lss, test_files)
@@ -926,6 +927,22 @@ class TestIssues(unittest.TestCase):
         # and excluded from the second sequence
         self.assertTrue(seqs1[0].includes(item))
         self.assertFalse(seqs2[0].includes(item))
+
+    def test_issue_86(self):
+        """tests issue 86. uncompress() with whitespace."""
+
+        sequence_path = "path/to/file/image ([1-2, 4]).png"
+        sequence = pyseq.uncompress(sequence_path, fmt="%h%R%t")
+        self.assertEqual(str(sequence), "image (1-4).png")
+        self.assertEqual(len(sequence), 3)
+        self.assertEqual(sequence[0].path, "path/to/file/image (1).png")
+        self.assertEqual(sequence[1].path, "path/to/file/image (2).png")
+        self.assertEqual(sequence[2].path, "path/to/file/image (4).png")
+
+        sequence_path = "other/path/file with spaces [10-40].png"
+        sequence = pyseq.uncompress(sequence_path, fmt="%h%R%t")
+        self.assertEqual(str(sequence), "file with spaces 10-40.png")
+        self.assertEqual(len(sequence), 31)
 
 
 if __name__ == "__main__":
