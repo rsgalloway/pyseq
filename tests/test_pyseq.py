@@ -931,6 +931,7 @@ class TestIssues(unittest.TestCase):
     def test_issue_86(self):
         """tests issue 86. uncompress() with whitespace."""
 
+        # test sequence with whitespace
         sequence_path = "path/to/file/image ([1-2, 4]).png"
         sequence = pyseq.uncompress(sequence_path, fmt="%h%R%t")
         self.assertEqual(str(sequence), "image (1-4).png")
@@ -939,10 +940,17 @@ class TestIssues(unittest.TestCase):
         self.assertEqual(sequence[1].path, "path/to/file/image (2).png")
         self.assertEqual(sequence[2].path, "path/to/file/image (4).png")
 
+        # test sequence with multiple spaces
         sequence_path = "other/path/file with spaces [10-40].png"
         sequence = pyseq.uncompress(sequence_path, fmt="%h%R%t")
         self.assertEqual(str(sequence), "file with spaces 10-40.png")
         self.assertEqual(len(sequence), 31)
+
+        # test sequence with brackets
+        sequence_path = "My file [v2].[1-2].jpg"
+        sequence = pyseq.uncompress(sequence_path, fmt="%h%R%t")
+        self.assertEqual(str(sequence), "My file [v2].1-2.jpg")
+        self.assertEqual(len(sequence), 2)
 
 
 if __name__ == "__main__":
