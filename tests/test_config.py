@@ -27,42 +27,38 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-# -----------------------------------------------------------------------------
+#
 
-import sys
-from os import path
+__doc__ = """
+Contains tests for the config module.
+"""
 
-from setuptools import find_packages, setup
+import re
 
-this_directory = path.abspath(path.dirname(__file__))
-with open(path.join(this_directory, "README.md")) as f:
-    long_description = f.read()
+from pyseq import config
 
-sys.path.insert(0, "lib")
-from pyseq import __version__
 
-setup(
-    name="pyseq",
-    version=__version__,
-    description="Compressed File Sequence String Module",
-    long_description=long_description,
-    long_description_content_type="text/markdown",
-    author="Ryan Galloway",
-    author_email="ryan@rsgalloway.com",
-    url="http://github.com/rsgalloway/pyseq",
-    package_dir={"": "lib"},
-    packages=find_packages("lib"),
-    entry_points={
-        "console_scripts": [
-            "lss = pyseq.lss:main",
-            "scopy = pyseq.scopy:main",
-            "sdiff = pyseq.sdiff:main",
-            "sfind = pyseq.sfind:main",
-            "smove = pyseq.smove:main",
-            "sstat = pyseq.sstat:main",
-            "stree = pyseq.stree:main",
-        ],
-    },
-    python_requires=">=3.6",
-    zip_safe=False,
-)
+def test_set_frame_pattern_valid():
+    """Test that a valid regex pattern is set correctly."""
+    pattern = r"\d+"
+    config.set_frame_pattern(pattern)
+    assert config.frames_re.pattern == pattern
+    assert isinstance(config.frames_re, re.Pattern)
+
+
+def test_set_frame_pattern_invalid():
+    """Test that invalid regex pattern falls back to default pattern."""
+    # intentionally broken regex
+    bad_pattern = r"("
+    config.set_frame_pattern(bad_pattern)
+    # expect fallback to default
+    assert config.frames_re.pattern == config.DEFAULT_FRAME_PATTERN
+
+
+def test_set_frame_pattern_invalid_prints_error(capfd):
+    """Test that invalid regex prints an error and reverts to default pattern."""
+    bad_pattern = r"["
+    config.set_frame_pattern(bad_pattern)
+    out, err = capfd.readouterr()
+    assert "Error: Invalid regex pattern" in out
+    assert config.frames_re.pattern == config.DEFAULT_FRAME_PATTERN

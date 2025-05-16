@@ -30,24 +30,22 @@
 # -----------------------------------------------------------------------------
 
 __doc__ = """
-Contains the main lss function for the pyseq module.
+Contains the main lss functions for the pyseq module.
 """
 
 import glob
 import optparse
 import os
 import sys
+from typing import Any, Optional
 
 from pyseq import __version__, get_sequences
 from pyseq import seq as pyseq
 from pyseq import walk
 
 
-def tree(source, level, seq_format):
-    """Recusrively walk from the source and display all the the folders and
-    sequences.
-    """
-
+def tree(source: str, level: Optional[int], seq_format: str):
+    """Recursively walk from the source and display all the folders and sequences."""
     if sys.stdout.isatty():
         blue = "\033[94m"
         endc = "\033[0m"
@@ -103,7 +101,7 @@ def tree(source, level, seq_format):
     print(endc)
 
 
-def _recur_cb(option, opt_str, value, parser):
+def _recur_cb(option: Any, opt_str: str, value: Optional[str], parser: Any):
     """Callback for the `recursive` argument."""
     if value is None:
         value = -1
@@ -146,7 +144,11 @@ Formatting options:
 
     parser = optparse.OptionParser(usage=usage, version="%prog " + __version__)
     parser.add_option(
-        "-f", "--format", dest="format", default=None, help="format the output string"
+        "-f",
+        "--format",
+        dest="format",
+        default=None,
+        help="Format the sequence string.",
     )
     parser.add_option(
         "-r",
@@ -162,13 +164,18 @@ Formatting options:
         dest="strict",
         action="store_true",
         default=pyseq.strict_pad,
-        help="strict padding (default false)",
+        help="Strict padding (default false).",
     )
     (options, args) = parser.parse_args()
 
     pyseq.strict_pad = options.strict
 
-    if len(args) == 0:
+    # stdin is piped, read from stdin if no cli args provided
+    if not args and not sys.stdin.isatty():
+        args = [line.strip() for line in sys.stdin if line.strip()]
+
+    # if no args are given, use cwd
+    elif len(args) == 0:
         args = [os.getcwd()]
 
     items = []

@@ -56,7 +56,26 @@ digits_re = re.compile(r"\d+")
 # the default is \d+ for maximum compatibility
 DEFAULT_FRAME_PATTERN = r"\d+"
 PYSEQ_FRAME_PATTERN = os.getenv("PYSEQ_FRAME_PATTERN", DEFAULT_FRAME_PATTERN)
-frames_re = re.compile(PYSEQ_FRAME_PATTERN)
+
+
+def set_frame_pattern(pattern: str = DEFAULT_FRAME_PATTERN):
+    """
+    Set the regex pattern for matching frame numbers.
+
+    :param pattern: The regex pattern to use for matching frame numbers.
+    """
+    global frames_re
+    global PYSEQ_FRAME_PATTERN
+    PYSEQ_FRAME_PATTERN = pattern
+    try:
+        frames_re = re.compile(pattern)
+    except Exception as e:
+        print("Error: Invalid regex pattern: %s" % e)
+        frames_re = re.compile(DEFAULT_FRAME_PATTERN)
+
+
+# set the default frame pattern
+set_frame_pattern(PYSEQ_FRAME_PATTERN)
 
 # regex for matching format directives
 format_re = re.compile(r"%(?P<pad>\d+)?(?P<var>\w+)")

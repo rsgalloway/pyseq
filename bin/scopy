@@ -29,40 +29,15 @@
 # POSSIBILITY OF SUCH DAMAGE.
 # -----------------------------------------------------------------------------
 
+
+__doc__ = """
+Contains a simple wrapper for the scopy executable.
+"""
+
+import re
 import sys
-from os import path
+from pyseq.scopy import main
 
-from setuptools import find_packages, setup
-
-this_directory = path.abspath(path.dirname(__file__))
-with open(path.join(this_directory, "README.md")) as f:
-    long_description = f.read()
-
-sys.path.insert(0, "lib")
-from pyseq import __version__
-
-setup(
-    name="pyseq",
-    version=__version__,
-    description="Compressed File Sequence String Module",
-    long_description=long_description,
-    long_description_content_type="text/markdown",
-    author="Ryan Galloway",
-    author_email="ryan@rsgalloway.com",
-    url="http://github.com/rsgalloway/pyseq",
-    package_dir={"": "lib"},
-    packages=find_packages("lib"),
-    entry_points={
-        "console_scripts": [
-            "lss = pyseq.lss:main",
-            "scopy = pyseq.scopy:main",
-            "sdiff = pyseq.sdiff:main",
-            "sfind = pyseq.sfind:main",
-            "smove = pyseq.smove:main",
-            "sstat = pyseq.sstat:main",
-            "stree = pyseq.stree:main",
-        ],
-    },
-    python_requires=">=3.6",
-    zip_safe=False,
-)
+if __name__ == "__main__":
+    sys.argv[0] = re.sub(r"(-script\.pyw|\.exe)?$", "", sys.argv[0])
+    sys.exit(main())

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# 
+#
 # Copyright (c) 2011-2025, Ryan Galloway (ryan@rsgalloway.com)
 #
 # Redistribution and use in source and binary forms, with or without
@@ -27,7 +27,11 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-# 
+#
+
+__doc__ = """
+Contains tests for the pyseq package.
+"""
 
 import os
 import re
@@ -566,10 +570,13 @@ class LSSTestCase(unittest.TestCase):
         """ """
         self.maxDiff = None
         self.here = os.path.dirname(__file__)
-        self.lss = os.path.realpath(os.path.join(os.path.dirname(self.here), "lib", "pyseq", "lss.py"))
+        self.lss = os.path.realpath(
+            os.path.join(os.path.dirname(self.here), "lib", "pyseq", "lss.py")
+        )
 
     def test_lss_is_working_properly_1(self):
-        """testing if the lss command is working properly"""
+        """testing if the lss command is working properly. Assumes strict pad
+        is disabled."""
         test_files = os.path.join(os.path.dirname(os.path.realpath(__file__)), "files")
 
         result = self.run_command(self.lss, test_files)
@@ -879,6 +886,8 @@ class TestIssues(unittest.TestCase):
     def test_issue_83(self):
         """tests issue 83. externalize frame pattern."""
 
+        from pyseq import config
+
         filenames = [
             "file_v001.jpg",
             "file_v002.jpg",
@@ -887,7 +896,9 @@ class TestIssues(unittest.TestCase):
         ]
 
         # test using default frame pattern
-        seqs1 = pyseq.get_sequences(filenames)
+        seqs1 = pyseq.get_sequences(
+            filenames, frame_pattern=config.DEFAULT_FRAME_PATTERN
+        )
         self.assertEqual(len(seqs1), 1)
 
         # test if a new file in the sequence is included
@@ -916,6 +927,30 @@ class TestIssues(unittest.TestCase):
         # and excluded from the second sequence
         self.assertTrue(seqs1[0].includes(item))
         self.assertFalse(seqs2[0].includes(item))
+
+    def test_issue_86(self):
+        """tests issue 86. uncompress() with whitespace."""
+
+        # test sequence with whitespace
+        sequence_path = "path/to/file/image ([1-2, 4]).png"
+        sequence = pyseq.uncompress(sequence_path, fmt="%h%R%t")
+        self.assertEqual(str(sequence), "image (1-4).png")
+        self.assertEqual(len(sequence), 3)
+        self.assertEqual(sequence[0].path, "path/to/file/image (1).png")
+        self.assertEqual(sequence[1].path, "path/to/file/image (2).png")
+        self.assertEqual(sequence[2].path, "path/to/file/image (4).png")
+
+        # test sequence with multiple spaces
+        sequence_path = "other/path/file with spaces [10-40].png"
+        sequence = pyseq.uncompress(sequence_path, fmt="%h%R%t")
+        self.assertEqual(str(sequence), "file with spaces 10-40.png")
+        self.assertEqual(len(sequence), 31)
+
+        # test sequence with brackets
+        sequence_path = "My file [v2].[1-2].jpg"
+        sequence = pyseq.uncompress(sequence_path, fmt="%h%R%t")
+        self.assertEqual(str(sequence), "My file [v2].1-2.jpg")
+        self.assertEqual(len(sequence), 2)
 
 
 if __name__ == "__main__":

@@ -8,6 +8,15 @@ string representing the entire sequence (e.g. fileA.1-3.png). It should work
 regardless of where the numerical sequence index is embedded in the name. For
 examples, see basic usage below or http://rsgalloway.github.io/pyseq
 
+[Installation](#installation) |
+[Basic Usage](#basic-usage) |
+[API Examples](#api-examples) |
+[Formatting](#formatting) |
+[Command-Line Tools](#command-line-tools) |
+[Frame Patterns](#frame-patterns) |
+[Testing](#testing)
+
+
 ## Installation
 
 The easiest way to install pyseq:
@@ -25,6 +34,7 @@ settings and looks for a `pyseq.env` file to source environment variables:
 $ pip install -U envstack
 $ ./pyseq.env -r
 PYSEQ_FRAME_PATTERN=\d+
+PYSEQ_GLOBAL_FORMAT=%4l %h%p%t %R
 PYSEQ_RANGE_SEP=, 
 PYSEQ_STRICT_PAD=0
 ```
@@ -96,7 +106,7 @@ tests
 Piping the output of `find` to `lss`, for example finding all the png sequences:
 
 ```bash
-$ find ./tests/ -name *.png | xargs lss
+$ find ./tests/ -name *.png | lss
   10 012_vb_110_v001.%04d.png [1-10]
   10 012_vb_110_v002.%04d.png [1-10]
    3 fileA.%04d.png [1-3]
@@ -108,7 +118,7 @@ $ find ./tests/ -name *.png | xargs lss
 Use the `--format` option to retain the relative path:
 
 ```bash
-$ find tests/ -name "*.png" | xargs lss -f "%D%h%r%t"
+$ find tests/ -name "*.png" | lss -f "%D%h%r%t"
 tests/files/012_vb_110_v001.1-10.png
 tests/files/012_vb_110_v002.1-10.png
 tests/files/fileA.1-3.png
@@ -177,7 +187,7 @@ Here are some examples using `lss -f <format>` and `seq.format(..)`:
 Using `lss -f <format>`:
 
 ```bash
-$ $ lss tests/files/a*.tga -f "%h%r%t"
+$ lss tests/files/a*.tga -f "%h%r%t"
 a.1-14.tga
 $ lss tests/files/a*.tga -f "%l %h%r%t"
 7 a.1-14.tga
@@ -195,6 +205,46 @@ a.1-14.tga
 7 a.1-14.tga
 >>> print(s.format("%l %h%r%t %M"))
 7 a.1-14.tga [4-9, 11]
+```
+
+## Command-Line Tools
+
+PySeq comes with the following sequence-aware command-line tools:
+
+| Command | Description                           | Example Usage                    |
+| ------- | ------------------------------------- | -------------------------------- |
+| `lss`   | List image sequences in a directory   | `lss shots/`                     |
+| `stree` | Display sequence-aware directory tree | `stree shots/`                   |
+| `sfind` | Recursively find image sequences      | `sfind assets/ -name "*.exr"`   |
+| `sdiff` | Compare two sequences                 | `sdiff A.%04d.exr B.%04d.exr`    |
+| `sstat` | Print detailed stats about a sequence | `sstat render.%04d.exr`          |
+| `scopy` | Copy a sequence to another directory  | `scopy a.%04d.exr /tmp/output/`  |
+| `smove` | Move a sequence to another directory  | `smove b.%04d.exr /tmp/archive/` |
+
+Example commands:
+
+```bash
+# List sequences in a folder
+$ lss tests/files
+
+# Show directory structure with grouped sequences
+$ stree tests/
+
+# Find all .png sequences recursively
+$ sfind ./tests -name "*.png"
+
+# Compare two sequences and print diffs
+$ sdiff comp_A.%04d.exr comp_B.%04d.exr
+
+# Show stats for a sequence
+$ sstat render.%04d.exr
+$ sstat --json render.%04d.exr
+
+# Copy a sequence and rename it
+$ scopy input.%04d.exr output/ --rename scene01
+
+# Move and renumber a sequence starting at frame 1001
+$ smove old.%04d.exr archive/ --renumber 1001
 ```
 
 ## Frame Patterns
@@ -215,16 +265,26 @@ Environment vars can be defined anywhere in your environment, or if using
 $ export ENVPATH=/path/to/env/files
 ```
 
+Examples of regex patterns can be found in the `pyseq.env` file:
+
+```yaml
+# matches all numbers, the most flexible
+PYSEQ_FRAME_PATTERN: \d+
+
+# excludes version numbers, e.g. file_v001.1001.exr
+PYSEQ_FRAME_PATTERN: ([^v\d])\d+
+
+# frame numbers are dot-delimited, e.g. file.v1.1001.exr
+PYSEQ_FRAME_PATTERN: \.\d+\.
+
+# frame numbers start with an underscore, e.g. file_v1_1001.exr
+PYSEQ_FRAME_PATTERN: _\d+
+```
+
 ## Testing
 
 To run the unit tests, simply run `pytest` in a shell:
 
 ```bash
-$ pytest test/ -s
-```
-
-Or if you don't have `pytest`, you can run:
-
-```bash
-$ python tests/test_pyseq.py
+$ pytest tests/
 ```

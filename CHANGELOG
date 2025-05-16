@@ -1,96 +1,88 @@
 CHANGELOG
 =========
 
-v0.8.4
-======
+## 0.9.0
+
+* Adds initial versions of pyseq aware cli tools
+* Update %h directive in uncompress to support spaces
+* Allows piping to lss
+* Adds function type hints
+
+## 0.8.4
 
 * Allows setting the frame regex pattern as an env var
 * Adds config module with default settings
 * Resolves issue #83
 
-v0.8.3
-======
+## 0.8.3
 
 * Resolves issue #79 (padded sequence changes to unpadded)
 
-v0.8.1
-======
+## 0.8.1
 
 * Adds dist and env files
 
-v0.8.0
-======
+## 0.8.0
 
 * Refactors module into package
 * Adds console_scripts entry point in setup (fixes lss on windows)
 * Adds util module
 * Resolves Issue #73
 
-v0.7.0
-======
+## 0.7.0
 
 * Performance improvements
 * Deprecates support for Python 2
 * Adds %H human readable size directive
 * Removes debug logging
 
-v0.6.1
-======
+## 0.6.1
 
 * Addresses issue #69 (strict padding)
 * Disables pad strictness by default
 
-v0.6.0
-======
+## 0.6.0
 
 * Fixes issue #67 (hangs on many missing frames)
 
-v0.5.5
-======
+## 0.5.5
 
 * Removes deprecation warnings
 
-v0.5.4
-======
+## 0.5.4
 
 * Fixes setup issues for python 2.7
 
-v0.5.3
-======
+## 0.5.3
 
 * Fixes bug where changes in frame size (e.g. 9 to 10) cause incorrect pad
 * Disables strict padding in lss by default (adds --strict option)
 
-v0.5.1
-======
+## 0.5.1
 
 * Adds %M (missing frames) and %D (parent dir) directives
 * lss to only use colors when stdout is tty
 * Fixes issue #37 (walk directory path fix)
 * Fixes issue #41 (adds strict padding option)
 
-v0.5.0
-======
+## 0.5.0
 
 * Major performance improvements
 * Bug fixes (size %d directive attr)
 
-v0.4.4
-======
+## 0.4.4
 
 * Better support for python 3 strings
 * Bug fixes
 
-v0.4.3
-======
+## 0.4.3
 
 * Fixes regex in ``uncompress`` (issue #19)
 * Adds brackets to %R directive formatting
 * Fixes lss to use cwd when no args/paths are given
 * Changes default range delimiter $PYSEQ_RANGE_SEP to a comma
 
-v0.4.2
-======
+## 0.4.2
 
 * Adds recursive walk() function, and -r option to lss.
 * Adds frame range separator as env var.
@@ -98,8 +90,7 @@ v0.4.2
 * Adds insert, extend, and magic methods.
 * Fixes lss to support multiple arguments.
 
-v0.4.1
-======
+## 0.4.1
 
 * Performance improvement by increasing Sequence._get_missing speed.
 * Adds size and mtime properties to Item and Sequence classes.
@@ -107,8 +98,7 @@ v0.4.1
 * Deprecates Item.isSibling(): use Item.is_sibling() instead.
 * Additional PEP8 updates.
 
-v0.4.0
-======
+## 0.4.0
 
 * Some PEP8 and Python 3+ updates.
 * Added *unittests* for the whole library (requires python 2.7+).
@@ -137,20 +127,17 @@ v0.4.0
 
   will print 'file.   1-   6.jpg'
 
-v0.2.2
-======
+## 0.2.2
 
 * Fixed %R in uncompress()
 * Fixed minor bug in getSequences() with glob
 
-v0.2.1b
-=======
+## 0.2.1b
 
 * supports sequences of any serializable, sortable items
 * fixes bug in lss
 
-v0.2.0b
-=======
+## 0.2.0b
 
 * Added support for wildcards in getSequence source input and in lss
 * Added format method to Sequence class for formatted string stdout
@@ -174,8 +161,7 @@ v0.2.0b
 * Performance improvements.
 * Added html docs.
 
-v0.1.2
-======
+## 0.1.2
 
 * ``getSequences`` now takes either a directory path or a Python list of files.
 * Added setup.py
