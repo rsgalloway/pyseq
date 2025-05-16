@@ -4,6 +4,7 @@ CHANGELOG
 ## 0.9.0
 
 * Adds initial versions of pyseq aware cli tools
+* Update %h directive in uncompress to support spaces
 * Allows piping to lss
 * Adds function type hints
 
