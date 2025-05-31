@@ -81,14 +81,18 @@ def main():
     )
     args = parser.parse_args()
 
-    for path in args.paths:
-        if not os.path.isdir(path):
-            print(f"sfind: {path} is not a directory", file=sys.stderr)
-            continue
-        for seq in walk_and_collect_sequences(
-            path, include_hidden=args.all, pattern=args.name
-        ):
-            print(seq)
+    try:
+        for path in args.paths:
+            if not os.path.isdir(path):
+                print(f"sfind: {path} is not a directory", file=sys.stderr)
+                continue
+            for seq in walk_and_collect_sequences(
+                path, include_hidden=args.all, pattern=args.name
+            ):
+                print(seq)
+    except KeyboardInterrupt:
+        print("\nstopping...")
+        sys.exit(1)
 
     return 0
 
