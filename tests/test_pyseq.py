@@ -913,22 +913,26 @@ class TestIssues(unittest.TestCase):
         # should have 4 sequences, with one file each
         self.assertEqual(len(seqs2), len(filenames))
 
-        # test that items from sequences 1 and 2 are not siblings
-        seq1item1 = seqs1[0][0]
-        seq2item1 = seqs2[0][0]
-        self.assertFalse(seq1item1.is_sibling(seq2item1))
+    def test_issue_89(self):
+        """tests issue 89. contains() should ignore unrelated numbers."""
 
-        # test that 2 items in the sequence 1 are still siblings
-        seq1item2 = seqs1[0][1]
-        self.assertTrue(seq1item1.is_sibling(seq1item2))
+        filenames = [
+            "s001_0030_1.jpg",
+            "s001_0030_2.jpg",
+            "s001_0090_1.jpg",
+            "s001_0090_2.jpg",
+        ]
 
-        # test items in sequences 1 and 2 are not siblings
-        self.assertFalse(seq1item1.is_sibling(seq2item1))
+        seqs = pyseq.get_sequences(filenames)
+        self.assertEqual(len(seqs), 2)
 
-        # test that the new item is still included in the first sequence,
-        # and excluded from the second sequence
-        self.assertTrue(seqs1[0].includes(item))
-        self.assertFalse(seqs2[0].includes(item))
+        seq = seqs[1]
+        self.assertEqual(str(seq), "s001_0090_1-2.jpg")
+        self.assertEqual(seq.frames(), [1, 2])
+        self.assertFalse(seq.includes("s001_0030_2.jpg"))
+        self.assertFalse(seq.contains("s001_0030_2.jpg"))
+        self.assertEqual(seq.frames(), [1, 2])
+        self.assertEqual(str(seq), "s001_0090_1-2.jpg")
 
     def test_issue_86(self):
         """tests issue 86. uncompress() with whitespace."""

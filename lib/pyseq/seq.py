@@ -663,12 +663,44 @@ class Sequence(list):
         if not isinstance(item, Item):
             item = Item(item)
 
-        if self[-1] != item:
-            return self[-1].is_sibling(item)
-        elif self[0] != item:
-            return self[0].is_sibling(item)
-        elif self[0] == item:
+        if self[-1] == item:
+            item.frame = self[-1].frame
+            item.pad = self[-1].pad
+            item.head = self[-1].head
+            item.tail = self[-1].tail
             return True
+
+        if self[0] == item:
+            item.frame = self[0].frame
+            item.pad = self[0].pad
+            item.head = self[0].head
+            item.tail = self[0].tail
+            return True
+
+        if len(self) == 1:
+            return self[0].is_sibling(item)
+
+        # Compare against cloned anchors so membership checks do not mutate the
+        # cached frame metadata on items already stored in the sequence.
+        canonical_head = self[0].head
+        canonical_tail = self[0].tail
+
+        anchors = []
+        for member in (self[-1], self[0]):
+            if anchors and member == self[-1] == self[0]:
+                continue
+            anchor = Item(member)
+            anchor.frame = member.frame
+            anchor.pad = member.pad
+            anchor.head = member.head
+            anchor.tail = member.tail
+            anchors.append(anchor)
+
+        for anchor in anchors:
+            if anchor.is_sibling(item):
+                return item.name.startswith(canonical_head) and item.name.endswith(
+                    canonical_tail
+                )
 
         return False
 
