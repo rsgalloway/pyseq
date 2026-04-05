@@ -50,6 +50,11 @@ from pyseq import seq as pyseq
 pyseq.default_format = "%h%r%t"
 
 
+def assert_read_only_attribute_error(message):
+    valid_snippets = ("can't set attribute", "has no setter")
+    assert any(snippet in message for snippet in valid_snippets), message
+
+
 class ItemTestCase(unittest.TestCase):
     """tests the Item class"""
 
@@ -89,7 +94,7 @@ class ItemTestCase(unittest.TestCase):
         with self.assertRaises(AttributeError) as cm:
             setattr(i, "path", "some value")
 
-        self.assertIn("can't set attribute", str(cm.exception))
+        assert_read_only_attribute_error(str(cm.exception))
 
     def test_name_attribute_is_working_properly(self):
         """testing if the name attribute is working properly"""
@@ -102,7 +107,7 @@ class ItemTestCase(unittest.TestCase):
         with self.assertRaises(AttributeError) as cm:
             setattr(i, "name", "some value")
 
-        self.assertIn("can't set attribute", str(cm.exception))
+        assert_read_only_attribute_error(str(cm.exception))
 
     def test_dirname_attribute_is_working_properly(self):
         """testing if the dirname attribute is working properly"""
@@ -116,7 +121,7 @@ class ItemTestCase(unittest.TestCase):
         with self.assertRaises(AttributeError) as cm:
             setattr(i, "dirname", "some value")
 
-        self.assertIn("can't set attribute", str(cm.exception))
+        assert_read_only_attribute_error(str(cm.exception))
 
     def test_digits_attribute_is_working_properly(self):
         """testing if the digits attribute is working properly"""
@@ -129,7 +134,7 @@ class ItemTestCase(unittest.TestCase):
         with self.assertRaises(AttributeError) as cm:
             setattr(i, "digits", "some value")
 
-        self.assertIn("can't set attribute", str(cm.exception))
+        assert_read_only_attribute_error(str(cm.exception))
 
     def test_parts_attribute_is_working_properly(self):
         """testing if the parts attribute is working properly"""
@@ -142,7 +147,7 @@ class ItemTestCase(unittest.TestCase):
         with self.assertRaises(AttributeError) as cm:
             setattr(i, "parts", "some value")
 
-        self.assertIn("can't set attribute", str(cm.exception))
+        assert_read_only_attribute_error(str(cm.exception))
 
     def test_is_sibling_method_is_working_properly(self):
         """testing if the is_sibling() is working properly"""
