@@ -38,6 +38,7 @@ import json
 import sys
 
 import pyseq
+from pyseq.util import cli_catch_keyboard_interrupt
 from pyseq.util import resolve_sequence
 
 
@@ -113,6 +114,7 @@ def print_diff(diff: dict, compare_size: bool = False):
             print(f"Disk usage mismatch:\n  A: {a}\n  B: {b}")
 
 
+@cli_catch_keyboard_interrupt
 def main():
     """Main function to parse arguments and display sequence diffs."""
 

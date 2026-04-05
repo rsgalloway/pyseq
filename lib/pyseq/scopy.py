@@ -41,7 +41,11 @@ import fnmatch
 from typing import Optional
 
 import pyseq
-from pyseq.util import is_compressed_format_string, resolve_sequence
+from pyseq.util import (
+    cli_catch_keyboard_interrupt,
+    is_compressed_format_string,
+    resolve_sequence,
+)
 
 
 def copy_sequence(
@@ -91,6 +95,7 @@ def copy_sequence(
             shutil.copy2(src_path, dest_path)
 
 
+@cli_catch_keyboard_interrupt
 def main():
     """Main function to parse cli args and copy sequences."""
 

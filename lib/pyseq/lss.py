@@ -41,6 +41,7 @@ from typing import Any, Optional
 
 from pyseq import __version__, get_sequences
 from pyseq import seq as pyseq
+from pyseq.util import cli_catch_keyboard_interrupt
 from pyseq import walk
 
 
@@ -110,6 +111,7 @@ def _recur_cb(option: Any, opt_str: str, value: Optional[str], parser: Any):
     setattr(parser.values, option.dest, value)
 
 
+@cli_catch_keyboard_interrupt
 def main():
     """Command-line interface."""
 

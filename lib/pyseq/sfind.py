@@ -39,6 +39,7 @@ import os
 import sys
 
 import pyseq
+from pyseq.util import cli_catch_keyboard_interrupt
 
 
 def walk_and_collect_sequences(
@@ -59,6 +60,7 @@ def walk_and_collect_sequences(
             yield os.path.join(dirpath, full_str)
 
 
+@cli_catch_keyboard_interrupt
 def main():
     """Main function to parse arguments and call the sequence finder."""
 
@@ -81,18 +83,14 @@ def main():
     )
     args = parser.parse_args()
 
-    try:
-        for path in args.paths:
-            if not os.path.isdir(path):
-                print(f"sfind: {path} is not a directory", file=sys.stderr)
-                continue
-            for seq in walk_and_collect_sequences(
-                path, include_hidden=args.all, pattern=args.name
-            ):
-                print(seq)
-    except KeyboardInterrupt:
-        print("\nstopping...")
-        sys.exit(1)
+    for path in args.paths:
+        if not os.path.isdir(path):
+            print(f"sfind: {path} is not a directory", file=sys.stderr)
+            continue
+        for seq in walk_and_collect_sequences(
+            path, include_hidden=args.all, pattern=args.name
+        ):
+            print(seq)
 
     return 0
 

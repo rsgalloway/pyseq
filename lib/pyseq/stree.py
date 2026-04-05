@@ -39,6 +39,7 @@ import sys
 
 import pyseq
 from pyseq import config
+from pyseq.util import cli_catch_keyboard_interrupt
 
 
 def print_tree(
@@ -78,6 +79,7 @@ def print_tree(
             print_tree(os.path.join(root, name), next_prefix, fmt, include_hidden)
 
 
+@cli_catch_keyboard_interrupt
 def main():
     """Main function to parse cli args and print the directory tree."""
 
