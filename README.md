@@ -27,8 +27,8 @@ $ pip install -U pyseq
 #### Environment
 
 PySeq reads configuration from standard environment variables. The repository
-includes a `pyseq.env` example [envstack](https://github.com/rsgalloway/envstack)
-file you can source in a shell or adapt for your own environment:
+includes a `pyseq.env` example file you can source in a shell or adapt for your
+own environment:
 
 #### Distribution
 

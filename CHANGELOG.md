@@ -1,6 +1,16 @@
 CHANGELOG
 =========
 
+## 0.9.1
+
+* Removes the envstack runtime dependency and migrates packaging metadata to `pyproject.toml`
+* Adds GitHub Actions test coverage across Python 3.8+ and multiple operating systems
+* Tests installed console script entry points instead of relying on repo wrapper scripts
+* Resolves issue #88 by handling `KeyboardInterrupt` cleanly across CLI commands
+* Resolves issue #89 by fixing `Sequence.contains()` false positives with unrelated numbers
+* Improves Windows compatibility in tests and CLI output handling
+* Miscellaneous test and documentation cleanup
+
 ## 0.9.0
 
 * Adds initial versions of pyseq aware cli tools
