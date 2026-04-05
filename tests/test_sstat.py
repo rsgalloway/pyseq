@@ -40,14 +40,10 @@ import json
 import pytest
 
 import pyseq
+from conftest import get_installed_command
 from pyseq.sstat import json_sstat
 
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-
-if os.name == "nt":
-    sstat_bin = os.path.join(project_root, "bin", "sstat.bat")
-else:
-    sstat_bin = os.path.join(project_root, "bin", "sstat")
+sstat_bin = get_installed_command("sstat")
 
 
 @pytest.fixture

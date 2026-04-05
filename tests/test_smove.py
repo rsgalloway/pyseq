@@ -39,14 +39,10 @@ import tempfile
 import pytest
 
 import pyseq
+from conftest import get_installed_command
 from pyseq.smove import move_sequence
 
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-
-if os.name == "nt":
-    smove_bin = os.path.join(project_root, "bin", "smove.bat")
-else:
-    smove_bin = os.path.join(project_root, "bin", "smove")
+smove_bin = get_installed_command("smove")
 
 
 @pytest.fixture

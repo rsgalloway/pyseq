@@ -40,6 +40,7 @@ import os
 import sys
 
 import pyseq
+from pyseq.util import cli_catch_keyboard_interrupt
 from pyseq.util import resolve_sequence
 
 
@@ -64,6 +65,9 @@ def print_sstat(seq: pyseq.Sequence):
     def stat_path(frame):
         return os.stat(os.path.join(seq.format("%D"), frame.name))
 
+    def blocks_for(stat_result):
+        return getattr(stat_result, "st_blocks", 0)
+
     try:
         st_first = stat_path(seq[0])
         st_last = stat_path(seq[-1])
@@ -83,7 +87,7 @@ def print_sstat(seq: pyseq.Sequence):
     print(f"Head:     {seq.head()}")
     print(f"Tail:     {seq.tail()}")
     print(f"Range:    {seq.format('%r')}")
-    print(f"Blocks:   {st_first.st_blocks + st_last.st_blocks}")
+    print(f"Blocks:   {blocks_for(st_first) + blocks_for(st_last)}")
     print(f"Access:   {format_time_range(st_first.st_atime, st_last.st_atime)}")
     print(f"Modify:   {format_time_range(st_first.st_mtime, st_last.st_mtime)}")
     print(f"Change:   {format_time_range(st_first.st_ctime, st_last.st_ctime)}")
@@ -125,6 +129,7 @@ def json_sstat(seq: pyseq.Sequence):
     }
 
 
+@cli_catch_keyboard_interrupt
 def main():
     """Main function to parse arguments and display sequence statistics."""
 

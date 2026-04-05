@@ -39,6 +39,25 @@ import sys
 
 import pyseq
 from pyseq import config
+from pyseq.util import cli_catch_keyboard_interrupt
+
+
+def get_tree_tokens():
+    """Return unicode tree glyphs when stdout supports them, otherwise ASCII."""
+    encoding = (getattr(sys.stdout, "encoding", None) or "").lower()
+    if encoding.startswith("utf"):
+        return {
+            "tee": "├── ",
+            "last": "└── ",
+            "pipe": "│   ",
+            "space": "    ",
+        }
+    return {
+        "tee": "|-- ",
+        "last": "`-- ",
+        "pipe": "|   ",
+        "space": "    ",
+    }
 
 
 def print_tree(
@@ -62,6 +81,8 @@ def print_tree(
     if not include_hidden:
         entries = [e for e in entries if not e.startswith(".")]
 
+    tree = get_tree_tokens()
+
     files = [e for e in entries if os.path.isfile(os.path.join(root, e))]
     dirs = [e for e in entries if os.path.isdir(os.path.join(root, e))]
 
@@ -70,14 +91,15 @@ def print_tree(
 
     for i, name in enumerate(dirs + [str(s.format(fmt)) for s in seqs]):
         is_last = i == total - 1
-        connector = "└── " if is_last else "├── "
-        next_prefix = prefix + ("    " if is_last else "│   ")
+        connector = tree["last"] if is_last else tree["tee"]
+        next_prefix = prefix + (tree["space"] if is_last else tree["pipe"])
         print(f"{prefix}{connector}{name}")
 
         if name in dirs:
             print_tree(os.path.join(root, name), next_prefix, fmt, include_hidden)
 
 
+@cli_catch_keyboard_interrupt
 def main():
     """Main function to parse cli args and print the directory tree."""
 

@@ -38,12 +38,9 @@ import subprocess
 import tempfile
 import pytest
 
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+from conftest import get_installed_command
 
-if os.name == "nt":
-    sfind_bin = os.path.join(project_root, "bin", "sfind.bat")
-else:
-    sfind_bin = os.path.join(project_root, "bin", "sfind")
+sfind_bin = get_installed_command("sfind")
 
 
 @pytest.fixture

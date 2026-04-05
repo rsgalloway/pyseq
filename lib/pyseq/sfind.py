@@ -39,6 +39,7 @@ import os
 import sys
 
 import pyseq
+from pyseq.util import cli_catch_keyboard_interrupt
 
 
 def walk_and_collect_sequences(
@@ -59,6 +60,7 @@ def walk_and_collect_sequences(
             yield os.path.join(dirpath, full_str)
 
 
+@cli_catch_keyboard_interrupt
 def main():
     """Main function to parse arguments and call the sequence finder."""
 

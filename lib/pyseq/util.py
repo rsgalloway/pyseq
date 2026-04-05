@@ -33,6 +33,7 @@ import functools
 import glob
 import os
 import re
+import sys
 import warnings
 
 import pyseq
@@ -52,6 +53,20 @@ def deprecated(func):
     inner.__name__ = func.__name__
     inner.__doc__ = func.__doc__
     inner.__dict__.update(func.__dict__)
+    return inner
+
+
+def cli_catch_keyboard_interrupt(func):
+    """Return exit code 1 instead of a traceback on Ctrl-C."""
+
+    @functools.wraps(func)
+    def inner(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except KeyboardInterrupt:
+            print("stopping...", file=sys.stderr)
+            return 1
+
     return inner
 
 

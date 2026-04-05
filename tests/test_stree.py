@@ -38,12 +38,9 @@ import subprocess
 import tempfile
 import pytest
 
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+from conftest import get_installed_command
 
-if os.name == "nt":
-    stree_bin = os.path.join(project_root, "bin", "stree.bat")
-else:
-    stree_bin = os.path.join(project_root, "bin", "stree")
+stree_bin = get_installed_command("stree")
 
 
 @pytest.fixture
@@ -80,7 +77,7 @@ def test_stree_output(tree_fixture):
     assert "foo.1-3.exr" in out
     assert "bar.1-2.exr" in out
     assert "subdir" in out
-    assert "├──" in out or "└──" in out  # tree chars
+    assert any(token in out for token in ("├──", "└──", "|--", "`--"))
 
 
 def test_stree_default_path(tree_fixture):

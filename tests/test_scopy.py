@@ -39,14 +39,10 @@ import tempfile
 import pytest
 
 import pyseq
+from conftest import get_installed_command
 from pyseq.scopy import copy_sequence
 
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-
-if os.name == "nt":
-    scopy_bin = os.path.join(project_root, "bin", "scopy.bat")
-else:
-    scopy_bin = os.path.join(project_root, "bin", "scopy")
+scopy_bin = get_installed_command("scopy")
 
 
 @pytest.fixture
