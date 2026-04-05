@@ -42,6 +42,7 @@ import sys
 import time
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from conftest import get_installed_command
 from pyseq import Item, Sequence, diff, uncompress, get_sequences
 from pyseq import SequenceError
 from pyseq import seq as pyseq
@@ -88,7 +89,7 @@ class ItemTestCase(unittest.TestCase):
         with self.assertRaises(AttributeError) as cm:
             setattr(i, "path", "some value")
 
-        self.assertEqual(str(cm.exception), "can't set attribute")
+        self.assertIn("can't set attribute", str(cm.exception))
 
     def test_name_attribute_is_working_properly(self):
         """testing if the name attribute is working properly"""
@@ -101,7 +102,7 @@ class ItemTestCase(unittest.TestCase):
         with self.assertRaises(AttributeError) as cm:
             setattr(i, "name", "some value")
 
-        self.assertEqual(str(cm.exception), "can't set attribute")
+        self.assertIn("can't set attribute", str(cm.exception))
 
     def test_dirname_attribute_is_working_properly(self):
         """testing if the dirname attribute is working properly"""
@@ -115,7 +116,7 @@ class ItemTestCase(unittest.TestCase):
         with self.assertRaises(AttributeError) as cm:
             setattr(i, "dirname", "some value")
 
-        self.assertEqual(str(cm.exception), "can't set attribute")
+        self.assertIn("can't set attribute", str(cm.exception))
 
     def test_digits_attribute_is_working_properly(self):
         """testing if the digits attribute is working properly"""
@@ -128,7 +129,7 @@ class ItemTestCase(unittest.TestCase):
         with self.assertRaises(AttributeError) as cm:
             setattr(i, "digits", "some value")
 
-        self.assertEqual(str(cm.exception), "can't set attribute")
+        self.assertIn("can't set attribute", str(cm.exception))
 
     def test_parts_attribute_is_working_properly(self):
         """testing if the parts attribute is working properly"""
@@ -141,7 +142,7 @@ class ItemTestCase(unittest.TestCase):
         with self.assertRaises(AttributeError) as cm:
             setattr(i, "parts", "some value")
 
-        self.assertEqual(str(cm.exception), "can't set attribute")
+        self.assertIn("can't set attribute", str(cm.exception))
 
     def test_is_sibling_method_is_working_properly(self):
         """testing if the is_sibling() is working properly"""
@@ -569,10 +570,7 @@ class LSSTestCase(unittest.TestCase):
     def setUp(self):
         """ """
         self.maxDiff = None
-        self.here = os.path.dirname(__file__)
-        self.lss = os.path.realpath(
-            os.path.join(os.path.dirname(self.here), "lib", "pyseq", "lss.py")
-        )
+        self.lss = get_installed_command("lss")
 
     def test_lss_is_working_properly_1(self):
         """testing if the lss command is working properly. Assumes strict pad

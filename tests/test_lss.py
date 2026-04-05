@@ -38,12 +38,9 @@ import subprocess
 import tempfile
 import pytest
 
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+from conftest import get_installed_command
 
-if os.name == "nt":
-    lss_bin = os.path.join(project_root, "bin", "lss.bat")
-else:
-    lss_bin = os.path.join(project_root, "bin", "lss")
+lss_bin = get_installed_command("lss")
 
 
 @pytest.fixture

@@ -40,14 +40,10 @@ import tempfile
 import pytest
 
 import pyseq
+from conftest import get_installed_command
 from pyseq.sdiff import diff_sequences
 
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-
-if os.name == "nt":
-    sdiff_bin = os.path.join(project_root, "bin", "sdiff.bat")
-else:
-    sdiff_bin = os.path.join(project_root, "bin", "sdiff")
+sdiff_bin = get_installed_command("sdiff")
 
 
 @pytest.fixture

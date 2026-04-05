@@ -38,12 +38,9 @@ import subprocess
 import tempfile
 import pytest
 
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+from conftest import get_installed_command
 
-if os.name == "nt":
-    stree_bin = os.path.join(project_root, "bin", "stree.bat")
-else:
-    stree_bin = os.path.join(project_root, "bin", "stree")
+stree_bin = get_installed_command("stree")
 
 
 @pytest.fixture
