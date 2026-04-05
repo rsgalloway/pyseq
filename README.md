@@ -27,8 +27,8 @@ $ pip install -U pyseq
 #### Environment
 
 PySeq reads configuration from standard environment variables. The repository
-includes a `pyseq.env` example file you can source in a shell or adapt for your
-own environment:
+includes a `pyseq.env` example [envstack](https://github.com/rsgalloway/envstack)
+file for users who want to manage those variables externally.
 
 #### Distribution
 
@@ -246,6 +246,14 @@ with an _, you might use:
 
 ```bash
 $ export PYSEQ_FRAME_PATTERN="_\d+"
+```
+
+Environment vars can be defined anywhere in your environment, or if using
+`envstack`, add them to `pyseq.env` and make sure that file is found in
+`${ENVPATH}`:
+
+```bash
+$ export ENVPATH=/path/to/env/files
 ```
 
 Examples of regex patterns can be found in the `pyseq.env` file:

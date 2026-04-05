@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-import os
-
 import pytest
 
 from pyseq import lss, scopy, sdiff, sfind, smove, sstat, stree
