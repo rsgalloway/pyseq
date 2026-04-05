@@ -946,13 +946,16 @@ class TestIssues(unittest.TestCase):
         self.assertEqual(str(sequence), "image (1-4).png")
         self.assertEqual(len(sequence), 3)
         self.assertEqual(
-            sequence[0].path, os.path.join("path", "to", "file", "image (1).png")
+            os.path.normpath(sequence[0].path),
+            os.path.normpath(os.path.join("path", "to", "file", "image (1).png")),
         )
         self.assertEqual(
-            sequence[1].path, os.path.join("path", "to", "file", "image (2).png")
+            os.path.normpath(sequence[1].path),
+            os.path.normpath(os.path.join("path", "to", "file", "image (2).png")),
         )
         self.assertEqual(
-            sequence[2].path, os.path.join("path", "to", "file", "image (4).png")
+            os.path.normpath(sequence[2].path),
+            os.path.normpath(os.path.join("path", "to", "file", "image (4).png")),
         )
 
         # test sequence with multiple spaces
