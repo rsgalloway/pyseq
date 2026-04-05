@@ -16,7 +16,6 @@ examples, see basic usage below or http://rsgalloway.github.io/pyseq
 [Frame Patterns](#frame-patterns) |
 [Testing](#testing)
 
-
 ## Installation
 
 The easiest way to install pyseq:
@@ -27,17 +26,9 @@ $ pip install -U pyseq
 
 #### Environment
 
-PySeq uses [envstack](https://github.com/rsgalloway/envstack) to externalize
-settings and looks for a `pyseq.env` file to source environment variables:
-
-```bash
-$ pip install -U envstack
-$ ./pyseq.env -r
-PYSEQ_FRAME_PATTERN=\d+
-PYSEQ_GLOBAL_FORMAT=%4l %h%p%t %R
-PYSEQ_RANGE_SEP=, 
-PYSEQ_STRICT_PAD=0
-```
+PySeq reads configuration from standard environment variables. The repository
+includes a `pyseq.env` example [envstack](https://github.com/rsgalloway/envstack)
+file you can source in a shell or adapt for your own environment:
 
 #### Distribution
 
@@ -257,14 +248,6 @@ with an _, you might use:
 $ export PYSEQ_FRAME_PATTERN="_\d+"
 ```
 
-Environment vars can be defined anywhere in your environment, or if using
-[envstack](https://github.com/rsgalloway/envstack) add it to the
-`pyseq.env` file and make sure it's found in `${ENVPATH}`:
-
-```bash
-$ export ENVPATH=/path/to/env/files
-```
-
 Examples of regex patterns can be found in the `pyseq.env` file:
 
 ```yaml
@@ -286,5 +269,5 @@ PYSEQ_FRAME_PATTERN: _\d+
 To run the unit tests, simply run `pytest` in a shell:
 
 ```bash
-$ pytest tests/
+$ pytest tests -q
 ```
