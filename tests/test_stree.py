@@ -77,7 +77,7 @@ def test_stree_output(tree_fixture):
     assert "foo.1-3.exr" in out
     assert "bar.1-2.exr" in out
     assert "subdir" in out
-    assert "├──" in out or "└──" in out  # tree chars
+    assert any(token in out for token in ("├──", "└──", "|--", "`--"))
 
 
 def test_stree_default_path(tree_fixture):

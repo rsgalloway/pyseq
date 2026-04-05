@@ -945,9 +945,15 @@ class TestIssues(unittest.TestCase):
         sequence = pyseq.uncompress(sequence_path, fmt="%h%R%t")
         self.assertEqual(str(sequence), "image (1-4).png")
         self.assertEqual(len(sequence), 3)
-        self.assertEqual(sequence[0].path, "path/to/file/image (1).png")
-        self.assertEqual(sequence[1].path, "path/to/file/image (2).png")
-        self.assertEqual(sequence[2].path, "path/to/file/image (4).png")
+        self.assertEqual(
+            sequence[0].path, os.path.join("path", "to", "file", "image (1).png")
+        )
+        self.assertEqual(
+            sequence[1].path, os.path.join("path", "to", "file", "image (2).png")
+        )
+        self.assertEqual(
+            sequence[2].path, os.path.join("path", "to", "file", "image (4).png")
+        )
 
         # test sequence with multiple spaces
         sequence_path = "other/path/file with spaces [10-40].png"
