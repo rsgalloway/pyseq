@@ -210,7 +210,7 @@ PySeq comes with the following sequence-aware command-line tools:
 | `sdiff` | Compare two sequences                 | `sdiff A.%04d.exr B.%04d.exr`    |
 | `sstat` | Print detailed stats about a sequence | `sstat render.%04d.exr`          |
 | `scopy` | Copy a sequence to another directory  | `scopy a.%04d.exr /tmp/output/`  |
-| `smove` | Move or rename a sequence             | `smove b.%04d.exr /tmp/archive/` |
+| `smv`   | Move or rename a sequence             | `smv b.%04d.exr /tmp/archive/` |
 
 Example commands:
 
@@ -238,13 +238,13 @@ $ scopy input.%04d.exr output/
 $ scopy input.1-100.exr scene.1001-1100.exr
 
 # Rename a sequence in place
-$ smove old.%04d.exr new.%04d.exr
+$ smv old.%04d.exr new.%04d.exr
 
 # Move an embedded frame range into a new sequence
-$ smove old.1-100.rgb new.1001-1100.rgb
+$ smv old.1-100.rgb new.1001-1100.rgb
 
 # Move and renumber a sequence starting at frame 1001
-$ smove old.%04d.exr archive/ --renumber 1001
+$ smv old.%04d.exr archive/ --renumber 1001
 ```
 
 ## Frame Patterns

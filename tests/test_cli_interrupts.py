@@ -31,7 +31,7 @@ def test_cli_main_handles_keyboard_interrupt(
     assert "stopping..." in captured.err
 
 
-@pytest.mark.parametrize(("module", "command"), [(scopy, "scopy"), (smove, "smove")])
+@pytest.mark.parametrize(("module", "command"), [(scopy, "scopy"), (smove, "smv")])
 def test_copy_move_cli_main_handles_keyboard_interrupt(
     monkeypatch, capsys, tmp_path, module, command
 ):

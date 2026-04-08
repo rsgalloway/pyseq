@@ -20,7 +20,7 @@ lss = "pyseq.lss:main"
 scopy = "pyseq.scopy:main"
 sdiff = "pyseq.sdiff:main"
 sfind = "pyseq.sfind:main"
-smove = "pyseq.smove:main"
+smv = "pyseq.smove:main"
 sstat = "pyseq.sstat:main"
 stree = "pyseq.stree:main"
 

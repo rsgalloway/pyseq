@@ -30,7 +30,7 @@
 #
 
 __doc__ = """
-Contains tests for the smove module.
+Contains tests for the smv console command and smove module.
 """
 
 import os
@@ -42,7 +42,7 @@ import pyseq
 from conftest import get_installed_command
 from pyseq.smove import move_sequence
 
-smove_bin = get_installed_command("smove")
+smv_bin = get_installed_command("smv")
 
 
 @pytest.fixture
@@ -84,14 +84,14 @@ def test_move_sequence_basic(sample_sequence):
             assert not os.path.exists(old_path)
 
 
-def test_smove_cli(sample_sequence):
-    """Test the command-line interface of smove."""
+def test_smv_cli(sample_sequence):
+    """Test the command-line interface of smv."""
     src_dir, _ = sample_sequence
     with tempfile.TemporaryDirectory() as dest_dir:
         pattern = os.path.join(src_dir, "test.%04d.exr")
 
         result = subprocess.run(
-            [smove_bin, pattern, dest_dir],
+            [smv_bin, pattern, dest_dir],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
@@ -105,14 +105,14 @@ def test_smove_cli(sample_sequence):
             assert not os.path.exists(old_path)
 
 
-def test_smove_cli_rename_sequence_pattern(sample_sequence):
-    """smove should support mv-style sequence renames."""
+def test_smv_cli_rename_sequence_pattern(sample_sequence):
+    """smv should support mv-style sequence renames."""
     src_dir, _ = sample_sequence
     src_pattern = os.path.join(src_dir, "test.%04d.exr")
     dest_pattern = os.path.join(src_dir, "renamed.%04d.exr")
 
     result = subprocess.run(
-        [smove_bin, src_pattern, dest_pattern],
+        [smv_bin, src_pattern, dest_pattern],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
@@ -124,8 +124,8 @@ def test_smove_cli_rename_sequence_pattern(sample_sequence):
         assert not os.path.exists(os.path.join(src_dir, f"test.{i:04d}.exr"))
 
 
-def test_smove_cli_creates_destination_directory(sample_sequence):
-    """smove should create a destination directory when moving a sequence."""
+def test_smv_cli_creates_destination_directory(sample_sequence):
+    """smv should create a destination directory when moving a sequence."""
     src_dir, _ = sample_sequence
     parent_dir = tempfile.mkdtemp()
     try:
@@ -133,7 +133,7 @@ def test_smove_cli_creates_destination_directory(sample_sequence):
         pattern = os.path.join(src_dir, "test.%04d.exr")
 
         result = subprocess.run(
-            [smove_bin, pattern, dest_dir],
+            [smv_bin, pattern, dest_dir],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
@@ -152,7 +152,7 @@ def test_smove_cli_creates_destination_directory(sample_sequence):
         os.rmdir(parent_dir)
 
 
-def test_smove_cli_wildcard_source(sample_sequence):
+def test_smv_cli_wildcard_source(sample_sequence):
     """Wildcard sources should resolve to a sequence before moving."""
     src_dir, _ = sample_sequence
     dest_dir = tempfile.mkdtemp()
@@ -160,7 +160,7 @@ def test_smove_cli_wildcard_source(sample_sequence):
         wildcard = os.path.join(src_dir, "test.*.exr")
 
         result = subprocess.run(
-            [smove_bin, wildcard, dest_dir],
+            [smv_bin, wildcard, dest_dir],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
@@ -178,7 +178,7 @@ def test_smove_cli_wildcard_source(sample_sequence):
         os.rmdir(dest_dir)
 
 
-def test_smove_cli_multiple_sources_require_directory(tmp_path):
+def test_smv_cli_multiple_sources_require_directory(tmp_path):
     """Multiple sources should require a destination directory."""
     for prefix in ("a", "b"):
         for i in range(1, 3):
@@ -189,7 +189,7 @@ def test_smove_cli_multiple_sources_require_directory(tmp_path):
     dest_pattern = str(tmp_path / "renamed.%04d.exr")
 
     result = subprocess.run(
-        [smove_bin, src_a, src_b, dest_pattern],
+        [smv_bin, src_a, src_b, dest_pattern],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
@@ -199,7 +199,7 @@ def test_smove_cli_multiple_sources_require_directory(tmp_path):
     assert "destination must be a directory" in result.stderr
 
 
-def test_smove_cli_explicit_sequence_string_source_and_dest(tmp_path):
+def test_smv_cli_explicit_sequence_string_source_and_dest(tmp_path):
     """Serialized sequence strings should resolve before moving."""
     for i in range(1, 6):
         (tmp_path / f"shot.{i:04d}.exr").write_text("dummy frame")
@@ -208,7 +208,7 @@ def test_smove_cli_explicit_sequence_string_source_and_dest(tmp_path):
     dest = str(tmp_path / "take.%04d.exr") + " 1001-1003"
 
     result = subprocess.run(
-        [smove_bin, src, dest],
+        [smv_bin, src, dest],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
@@ -223,7 +223,7 @@ def test_smove_cli_explicit_sequence_string_source_and_dest(tmp_path):
         assert os.path.exists(tmp_path / f"shot.{i:04d}.exr")
 
 
-def test_smove_cli_embedded_range_source_and_dest(tmp_path):
+def test_smv_cli_embedded_range_source_and_dest(tmp_path):
     """Embedded range syntax should resolve against on-disk padded sequences."""
     for i in range(1, 6):
         (tmp_path / f"plate.{i:04d}.rgb").write_text("dummy frame")
@@ -232,7 +232,7 @@ def test_smove_cli_embedded_range_source_and_dest(tmp_path):
     dest = str(tmp_path / "beauty.20-22.rgb")
 
     result = subprocess.run(
-        [smove_bin, src, dest],
+        [smv_bin, src, dest],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
