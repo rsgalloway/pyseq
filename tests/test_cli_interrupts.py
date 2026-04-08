@@ -2,7 +2,7 @@
 
 import pytest
 
-from pyseq import lss, scopy, sdiff, sfind, smove, sstat, stree
+from pyseq import lss, scopy, sdiff, sfind, smove, sremove, sstat, stree
 
 
 def _raise_keyboard_interrupt(*args, **kwargs):
@@ -42,5 +42,17 @@ def test_copy_move_cli_main_handles_keyboard_interrupt(
     monkeypatch.setattr("sys.argv", [command, "a.%04d.exr", str(dest_dir)])
 
     assert module.main() == 1
+    captured = capsys.readouterr()
+    assert "stopping..." in captured.err
+
+
+def test_srm_cli_main_handles_keyboard_interrupt(monkeypatch, capsys, tmp_path):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(
+        sremove, "resolve_sequence_reference", _raise_keyboard_interrupt
+    )
+    monkeypatch.setattr("sys.argv", ["srm", "a.%04d.exr"])
+
+    assert sremove.main() == 1
     captured = capsys.readouterr()
     assert "stopping..." in captured.err

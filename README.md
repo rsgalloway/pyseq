@@ -210,6 +210,7 @@ PySeq comes with the following sequence-aware command-line tools:
 | `sdiff` | Compare two sequences                 | `sdiff A.%04d.exr B.%04d.exr`    |
 | `sstat` | Print detailed stats about a sequence | `sstat render.%04d.exr`          |
 | `scopy` | Copy a sequence to another directory  | `scopy a.%04d.exr /tmp/output/`  |
+| `srm`   | Remove a sequence or frame range      | `srm a.1001-1100.exr`            |
 | `smv`   | Move or rename a sequence             | `smv b.%04d.exr /tmp/archive/` |
 
 Example commands:
@@ -236,6 +237,9 @@ $ scopy input.%04d.exr output/
 
 # Copy an embedded frame range into a new sequence
 $ scopy input.1-100.exr scene.1001-1100.exr
+
+# Remove an embedded frame range
+$ srm input.1-100.exr
 
 # Rename a sequence in place
 $ smv old.%04d.exr new.%04d.exr

@@ -6,6 +6,7 @@ CHANGELOG
 * Renames the move CLI from `smove` to `smv`
 * Makes `smv` behave more like sequence-aware `mv`, including destination-based renames
 * Adds explicit range support to `smv` and `scopy` for both compressed and embedded sequence syntax
+* Adds an initial `srm` CLI for removing resolved sequence members
 * Removes the legacy `--rename` flag from `smv` and `scopy` in favor of destination-based naming
 * Updates tests and README examples for the new CLI behavior
 
