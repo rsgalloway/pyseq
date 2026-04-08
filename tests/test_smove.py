@@ -197,3 +197,51 @@ def test_smove_cli_multiple_sources_require_directory(tmp_path):
 
     assert result.returncode == 1
     assert "destination must be a directory" in result.stderr
+
+
+def test_smove_cli_explicit_sequence_string_source_and_dest(tmp_path):
+    """Serialized sequence strings should resolve before moving."""
+    for i in range(1, 6):
+        (tmp_path / f"shot.{i:04d}.exr").write_text("dummy frame")
+
+    src = str(tmp_path / "shot.%04d.exr") + " 1-3"
+    dest = str(tmp_path / "take.%04d.exr") + " 1001-1003"
+
+    result = subprocess.run(
+        [smove_bin, src, dest],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    for i in range(1001, 1004):
+        assert os.path.exists(tmp_path / f"take.{i:04d}.exr")
+    for i in range(1, 4):
+        assert not os.path.exists(tmp_path / f"shot.{i:04d}.exr")
+    for i in range(4, 6):
+        assert os.path.exists(tmp_path / f"shot.{i:04d}.exr")
+
+
+def test_smove_cli_embedded_range_source_and_dest(tmp_path):
+    """Embedded range syntax should resolve against on-disk padded sequences."""
+    for i in range(1, 6):
+        (tmp_path / f"plate.{i:04d}.rgb").write_text("dummy frame")
+
+    src = str(tmp_path / "plate.2-4.rgb")
+    dest = str(tmp_path / "beauty.20-22.rgb")
+
+    result = subprocess.run(
+        [smove_bin, src, dest],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    for i in range(20, 23):
+        assert os.path.exists(tmp_path / f"beauty.{i:04d}.rgb")
+    assert os.path.exists(tmp_path / "plate.0001.rgb")
+    assert os.path.exists(tmp_path / "plate.0005.rgb")
+    for i in range(2, 5):
+        assert not os.path.exists(tmp_path / f"plate.{i:04d}.rgb")

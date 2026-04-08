@@ -37,14 +37,13 @@ import sys
 import os
 import argparse
 import shutil
-import fnmatch
 from typing import Optional
 
 import pyseq
 from pyseq.util import (
     cli_catch_keyboard_interrupt,
-    is_compressed_format_string,
-    resolve_sequence,
+    parse_destination_reference,
+    resolve_sequence_reference,
 )
 
 
@@ -100,20 +99,12 @@ def main():
     """Main function to parse cli args and copy sequences."""
 
     parser = argparse.ArgumentParser(
-        description="Copy image sequences with renaming/renumbering support",
+        description="Copy image sequences with destination-based renaming and renumbering support",
     )
     parser.add_argument(
-        "sources",
+        "paths",
         nargs="+",
-        help="Source sequences (wildcards or compressed format strings)",
-    )
-    parser.add_argument(
-        "dest",
-        help="Destination directory",
-    )
-    parser.add_argument(
-        "--rename",
-        help="Rename sequence basename",
+        help="Source sequence(s) followed by a destination directory or sequence pattern",
     )
     parser.add_argument(
         "--renumber",
@@ -145,35 +136,38 @@ def main():
     )
     args = parser.parse_args()
 
-    if not os.path.isdir(args.dest):
-        print(f"Error: destination {args.dest} is not a directory", file=sys.stderr)
+    if len(args.paths) < 2:
+        print("Error: expected at least one source and a destination", file=sys.stderr)
         return 1
 
-    for source in args.sources:
+    sources = args.paths[:-1]
+    dest = args.paths[-1]
+
+    for source in sources:
         try:
-            if is_compressed_format_string(source):
-                seq = resolve_sequence(source)
-                dirname = os.path.dirname(source) or "."
-            else:
-                # treat as glob
-                dirname = os.path.dirname(source) or "."
-                basename = os.path.basename(source)
-                matches = [
-                    f for f in os.listdir(dirname) if fnmatch.fnmatchcase(f, basename)
-                ]
-                sequences = pyseq.get_sequences(matches)
-                if not sequences:
-                    print(f"No sequence found matching {source}", file=sys.stderr)
-                    continue
-                seq = sequences[0]
+            seq, dirname = resolve_sequence_reference(source)
+            dest_spec = parse_destination_reference(dest, seq)
+
+            if len(sources) > 1 and dest_spec["kind"] != "directory":
+                raise ValueError(
+                    "destination must be a directory when copying multiple sources"
+                )
+
+            rename = dest_spec["rename"]
+            pad = args.pad if dest_spec["kind"] == "directory" else dest_spec["pad"]
+            renumber = (
+                args.renumber
+                if dest_spec["kind"] == "directory"
+                else dest_spec["renumber"]
+            )
 
             copy_sequence(
                 seq,
                 dirname,
-                args.dest,
-                rename=args.rename,
-                renumber=args.renumber,
-                pad=args.pad,
+                dest_spec["dest_dir"],
+                rename=rename,
+                renumber=renumber,
+                pad=pad,
                 force=args.force,
                 dryrun=args.dryrun,
                 verbose=args.verbose,

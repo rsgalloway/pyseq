@@ -231,11 +231,17 @@ $ sdiff comp_A.%04d.exr comp_B.%04d.exr
 $ sstat render.%04d.exr
 $ sstat --json render.%04d.exr
 
-# Copy a sequence and rename it
-$ scopy input.%04d.exr output/ --rename scene01
+# Copy a sequence into a directory
+$ scopy input.%04d.exr output/
+
+# Copy an embedded frame range into a new sequence
+$ scopy input.1-100.exr scene.1001-1100.exr
 
 # Rename a sequence in place
 $ smove old.%04d.exr new.%04d.exr
+
+# Move an embedded frame range into a new sequence
+$ smove old.1-100.rgb new.1001-1100.rgb
 
 # Move and renumber a sequence starting at frame 1001
 $ smove old.%04d.exr archive/ --renumber 1001

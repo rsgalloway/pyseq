@@ -38,7 +38,7 @@ def test_copy_move_cli_main_handles_keyboard_interrupt(
     dest_dir = tmp_path / "dest"
     dest_dir.mkdir()
 
-    monkeypatch.setattr(module, "resolve_sequence", _raise_keyboard_interrupt)
+    monkeypatch.setattr(module, "resolve_sequence_reference", _raise_keyboard_interrupt)
     monkeypatch.setattr("sys.argv", [command, "a.%04d.exr", str(dest_dir)])
 
     assert module.main() == 1
