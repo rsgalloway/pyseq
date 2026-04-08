@@ -3,9 +3,10 @@ CHANGELOG
 
 ## 0.9.2
 
-* Makes `smove` behave more like sequence-aware `mv`, including destination-based renames
-* Adds explicit range support to `smove` and `scopy` for both compressed and embedded sequence syntax
-* Removes the legacy `--rename` flag from `smove` and `scopy` in favor of destination-based naming
+* Renames the move CLI from `smove` to `smv`
+* Makes `smv` behave more like sequence-aware `mv`, including destination-based renames
+* Adds explicit range support to `smv` and `scopy` for both compressed and embedded sequence syntax
+* Removes the legacy `--rename` flag from `smv` and `scopy` in favor of destination-based naming
 * Updates tests and README examples for the new CLI behavior
 
 ## 0.9.1
