@@ -210,7 +210,8 @@ PySeq comes with the following sequence-aware command-line tools:
 | `sdiff` | Compare two sequences                 | `sdiff A.%04d.exr B.%04d.exr`    |
 | `sstat` | Print detailed stats about a sequence | `sstat render.%04d.exr`          |
 | `scopy` | Copy a sequence to another directory  | `scopy a.%04d.exr /tmp/output/`  |
-| `smove` | Move a sequence to another directory  | `smove b.%04d.exr /tmp/archive/` |
+| `srm`   | Remove a sequence or frame range      | `srm a.1001-1100.exr`            |
+| `smv`   | Move or rename a sequence             | `smv b.%04d.exr /tmp/archive/` |
 
 Example commands:
 
@@ -231,11 +232,23 @@ $ sdiff comp_A.%04d.exr comp_B.%04d.exr
 $ sstat render.%04d.exr
 $ sstat --json render.%04d.exr
 
-# Copy a sequence and rename it
-$ scopy input.%04d.exr output/ --rename scene01
+# Copy a sequence into a directory
+$ scopy input.%04d.exr output/
+
+# Copy an embedded frame range into a new sequence
+$ scopy input.1-100.exr scene.1001-1100.exr
+
+# Remove an embedded frame range
+$ srm input.1-100.exr
+
+# Rename a sequence in place
+$ smv old.%04d.exr new.%04d.exr
+
+# Move an embedded frame range into a new sequence
+$ smv old.1-100.rgb new.1001-1100.rgb
 
 # Move and renumber a sequence starting at frame 1001
-$ smove old.%04d.exr archive/ --renumber 1001
+$ smv old.%04d.exr archive/ --renumber 1001
 ```
 
 ## Frame Patterns

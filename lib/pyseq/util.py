@@ -30,13 +30,16 @@
 # -----------------------------------------------------------------------------
 
 import functools
+import fnmatch
 import glob
 import os
 import re
 import sys
 import warnings
+from typing import Optional
 
 import pyseq
+from pyseq.config import range_join
 
 
 def deprecated(func):
@@ -172,3 +175,193 @@ def resolve_sequence(sequence_string: str):
         raise ValueError("Multiple sequences found: %s" % sequences)
 
     return sequences[0]
+
+
+def build_sequence_pattern(head: str, pad: Optional[int], tail: str) -> str:
+    """Build a compressed sequence pattern from sequence components."""
+    if pad:
+        return f"{head}%0{pad}d{tail}"
+    return f"{head}%d{tail}"
+
+
+def subset_sequence(seq, frames):
+    """Return a sequence containing only the requested frames."""
+    frame_set = set(frames)
+    items = [item for item in seq if item.frame in frame_set]
+    found_frames = {item.frame for item in items}
+    missing_frames = sorted(frame_set - found_frames)
+    if missing_frames:
+        raise FileNotFoundError(f"Missing frames in sequence: {missing_frames}")
+
+    sequences = pyseq.get_sequences(items)
+    if not sequences:
+        raise ValueError("No valid sequence found for requested frame subset")
+    return sequences[0]
+
+
+def parse_explicit_sequence_string(reference: str):
+    """Parse a serialized sequence string, including embedded range syntax."""
+    dirname = os.path.dirname(reference) or "."
+    basename = os.path.basename(reference)
+
+    embedded = re.match(
+        r"^(?P<head>.+?)(?P<range>\[(?:[^\]]+)\]|\d+-\d+)(?P<tail>\.[^/\s]+)$",
+        basename,
+    )
+    if embedded:
+        range_text = embedded.group("range")
+        frames = []
+        if range_text.startswith("["):
+            for number_group in range_text[1:-1].split(range_join):
+                number_group = number_group.strip()
+                if not number_group:
+                    continue
+                if "-" in number_group:
+                    start, end = number_group.split("-", 1)
+                    frames.extend(range(int(start), int(end) + 1))
+                else:
+                    frames.append(int(number_group))
+        else:
+            start, end = range_text.split("-", 1)
+            frames = list(range(int(start), int(end) + 1))
+
+        items = [
+            pyseq.Item(
+                os.path.join(
+                    dirname,
+                    f"{embedded.group('head')}{frame}{embedded.group('tail')}",
+                )
+            )
+            for frame in frames
+        ]
+        sequences = pyseq.get_sequences(items)
+        if sequences:
+            return {
+                "seq": sequences[0],
+                "has_pad": False,
+            }
+
+    formats = (
+        ("%h%p%t %R", True),
+        ("%h%p%t %r", True),
+        ("%h%R%t", False),
+        ("%h%r%t", False),
+    )
+    for fmt, has_pad in formats:
+        seq = pyseq.uncompress(reference, fmt=fmt)
+        if seq:
+            return {
+                "seq": seq,
+                "has_pad": has_pad,
+            }
+    return None
+
+
+def resolve_sequence_reference(reference: str):
+    """Resolve a source reference into a sequence and its containing directory."""
+    explicit = parse_explicit_sequence_string(reference)
+    if explicit:
+        dirname = os.path.dirname(reference) or "."
+        requested_seq = explicit["seq"]
+
+        if explicit["has_pad"]:
+            pattern = os.path.join(
+                dirname,
+                build_sequence_pattern(
+                    requested_seq.head(),
+                    requested_seq.pad,
+                    requested_seq.tail(),
+                ),
+            )
+            full_seq = resolve_sequence(pattern)
+        else:
+            sequences = pyseq.get_sequences(os.listdir(dirname))
+            candidates = [
+                seq
+                for seq in sequences
+                if seq.head() == requested_seq.head()
+                and seq.tail() == requested_seq.tail()
+            ]
+            candidates = [
+                seq
+                for seq in candidates
+                if set(requested_seq.frames()).issubset(set(seq.frames()))
+            ]
+            if not candidates:
+                raise FileNotFoundError(f"No sequence found matching {reference}")
+            if len(candidates) > 1:
+                raise ValueError(
+                    f"Multiple sequences found matching {reference}: {candidates}"
+                )
+            full_seq = candidates[0]
+
+        return subset_sequence(full_seq, requested_seq.frames()), dirname
+
+    if is_compressed_format_string(reference):
+        seq = resolve_sequence(reference)
+        dirname = os.path.dirname(reference) or "."
+        return seq, dirname
+
+    dirname = os.path.dirname(reference) or "."
+    basename = os.path.basename(reference)
+    matches = [f for f in os.listdir(dirname) if fnmatch.fnmatchcase(f, basename)]
+    sequences = pyseq.get_sequences(matches)
+    if not sequences:
+        raise FileNotFoundError(f"No sequence found matching {reference}")
+    if len(sequences) > 1:
+        raise ValueError(f"Multiple sequences found matching {reference}: {sequences}")
+    return sequences[0], dirname
+
+
+def parse_destination_reference(destination: str, source_seq):
+    """Parse a destination string as either a directory or destination sequence."""
+    explicit = parse_explicit_sequence_string(destination)
+    if explicit:
+        dest_seq = explicit["seq"]
+        dest_frames = list(dest_seq.frames())
+        expected_frames = list(range(dest_frames[0], dest_frames[0] + len(source_seq)))
+
+        if dest_seq.tail() != source_seq.tail():
+            raise ValueError(
+                "Destination sequence pattern must preserve the source extension"
+            )
+        if dest_frames != expected_frames:
+            raise ValueError("Destination explicit range must be contiguous")
+        if len(dest_seq) != len(source_seq):
+            raise ValueError("Destination explicit range must match source length")
+
+        return {
+            "kind": "sequence",
+            "dest_dir": os.path.dirname(destination) or ".",
+            "rename": dest_seq.head(),
+            "pad": dest_seq.pad if explicit["has_pad"] else None,
+            "renumber": dest_frames[0],
+        }
+
+    if not is_compressed_format_string(destination):
+        return {
+            "kind": "directory",
+            "dest_dir": destination,
+            "rename": None,
+            "pad": None,
+            "renumber": None,
+        }
+
+    filename = os.path.basename(destination)
+    match = re.search(r"%(?:0(?P<pad>\d+))?d", filename)
+    if not match:
+        raise ValueError(f"Invalid destination sequence pattern: {destination}")
+
+    tail = filename[match.end() :]
+    if tail != source_seq.tail():
+        raise ValueError(
+            "Destination sequence pattern must preserve the source extension"
+        )
+
+    return {
+        "kind": "sequence",
+        "dest_dir": os.path.dirname(destination) or ".",
+        "rename": filename[: match.start()],
+        "pad": int(match.group("pad")) if match.group("pad") else None,
+        "renumber": None,
+    }
