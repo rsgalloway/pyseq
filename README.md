@@ -37,8 +37,7 @@ OS packages are also available for some distributions:
 sudo apt install python3-pyseq
 ```
 
-- Debian unstable (`sid`) as 
-[`python3-pyseq`](https://packages.debian.org/sid/python/python3-pyseq):
+- Debian unstable (`sid`) as [`python3-pyseq`](https://packages.debian.org/sid/python/python3-pyseq):
 
 ```bash
 sudo apt install python3-pyseq
