@@ -1,18 +1,25 @@
-PySeq
-=====
+![pyseq logo](docs/assets/logo.png)
 
-PySeq is a python module that finds groups of items that follow a naming
-convention containing  a numerical sequence index (e.g. fileA.001.png,
-fileA.002.png, fileA.003.png...) and serializes them into a compressed sequence
-string representing the entire sequence (e.g. fileA.1-3.png). It should work
-regardless of where the numerical sequence index is embedded in the name. For
-examples, see basic usage below or http://rsgalloway.github.io/pyseq
+# PySeq
+
+[![PyPI](https://img.shields.io/pypi/v/pyseq.svg)](https://pypi.org/project/pyseq/)
+[![CI](https://github.com/rsgalloway/pyseq/actions/workflows/tests.yml/badge.svg)](https://github.com/rsgalloway/pyseq/actions/workflows/tests.yml)
+[![License](https://img.shields.io/github/license/rsgalloway/pyseq.svg)](LICENSE)
+
+PySeq is a Python library for detecting, parsing, and formatting numbered file
+sequences such as `fileA.0001.png`, `fileA.0002.png`, and
+`fileA.0003.png`. It groups matching filenames into a compact sequence form
+like `fileA.1-3.png`, regardless of where the frame number appears in the
+name.
+
+Used in visual effects, animation, and post-production pipelines.
 
 [Installation](#installation) |
 [Basic Usage](#basic-usage) |
 [API Examples](#api-examples) |
 [Formatting](#formatting) |
 [Command-Line Tools](#command-line-tools) |
+[Docs](#docs) |
 [Frame Patterns](#frame-patterns) |
 [Testing](#testing)
 
@@ -141,6 +148,12 @@ Uncompression, or deserialization, of compressed sequences strings:
 1001 012_vb_110_v001.%04d.png [1-1001]
 ```
 
+## Production Usage
+
+pyseq has been used for many years in production visual effects and animation
+pipelines for parsing and manipulating image sequences. If your studio uses
+pyseq, we'd love to hear from you.
+
 Walk a directory tree and print disk usage for file sequences:
 
 ```python
@@ -250,6 +263,14 @@ $ smv old.1-100.rgb new.1001-1100.rgb
 # Move and renumber a sequence starting at frame 1001
 $ smv old.%04d.exr archive/ --renumber 1001
 ```
+
+## Docs
+
+Additional documentation is available in the [docs](docs/) folder:
+
+- [Docs Overview](docs/README.md)
+- [Examples](docs/examples.md)
+- [CLI Tools Reference](docs/cli-tools.md)
 
 ## Frame Patterns
 

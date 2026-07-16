@@ -12,7 +12,6 @@ license = { text = "BSD-3-Clause" }
 authors = [
   { name = "Ryan Galloway", email = "ryan@rsgalloway.com" },
 ]
-urls = { Homepage = "http://github.com/rsgalloway/pyseq" }
 optional-dependencies = { dev = ["pytest"], test = ["pytest"] }
 
 [project.scripts]
@@ -24,6 +23,12 @@ smv = "pyseq.smove:main"
 srm = "pyseq.sremove:main"
 sstat = "pyseq.sstat:main"
 stree = "pyseq.stree:main"
+
+[project.urls]
+Homepage = "https://github.com/rsgalloway/pyseq"
+Documentation = "https://github.com/rsgalloway/pyseq/tree/main/docs"
+Repository = "https://github.com/rsgalloway/pyseq"
+Issues = "https://github.com/rsgalloway/pyseq/issues"
 
 [tool.setuptools]
 zip-safe = false
