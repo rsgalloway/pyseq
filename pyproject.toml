@@ -9,10 +9,37 @@ description = "Compressed File Sequence String Module"
 readme = "README.md"
 requires-python = ">=3.8"
 license = { text = "BSD-3-Clause" }
+keywords = [
+  "animation",
+  "file sequence",
+  "image sequence",
+  "pipeline",
+  "post-production",
+  "pyseq",
+  "visual effects",
+  "vfx",
+]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: BSD License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Multimedia :: Graphics",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: Utilities",
+]
 authors = [
   { name = "Ryan Galloway", email = "ryan@rsgalloway.com" },
 ]
-urls = { Homepage = "http://github.com/rsgalloway/pyseq" }
 optional-dependencies = { dev = ["pytest"], test = ["pytest"] }
 
 [project.scripts]
@@ -24,6 +51,12 @@ smv = "pyseq.smove:main"
 srm = "pyseq.sremove:main"
 sstat = "pyseq.sstat:main"
 stree = "pyseq.stree:main"
+
+[project.urls]
+Homepage = "https://github.com/rsgalloway/pyseq"
+Documentation = "https://github.com/rsgalloway/pyseq/tree/main/docs"
+Repository = "https://github.com/rsgalloway/pyseq"
+Issues = "https://github.com/rsgalloway/pyseq/issues"
 
 [tool.setuptools]
 zip-safe = false
