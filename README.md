@@ -29,6 +29,21 @@ The easiest way to install pyseq:
 $ pip install -U pyseq
 ```
 
+OS packages are also available for some distributions:
+
+- Ubuntu 26.04 LTS (`resolute`) from `universe`:
+
+```bash
+sudo apt install python3-pyseq
+```
+
+- Debian unstable (`sid`) as 
+[`python3-pyseq`](https://packages.debian.org/sid/python/python3-pyseq):
+
+```bash
+sudo apt install python3-pyseq
+```
+
 For environment configuration and source distribution setup, see
 [Setup and Distribution](docs/setup-and-distribution.md).
 
