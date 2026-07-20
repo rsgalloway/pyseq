@@ -40,6 +40,7 @@ import traceback
 import warnings
 from collections import deque
 from glob import glob, iglob
+from itertools import zip_longest
 from typing import List, Callable, Union
 
 from pyseq import config
@@ -50,6 +51,11 @@ from pyseq.config import (
     global_format,
     range_join,
     strict_pad,
+)
+from pyseq.frange import (
+    format_frame_range_explicit,
+    format_frame_range_stepped,
+    parse_frame_range,
 )
 
 
@@ -392,6 +398,7 @@ class Sequence(list):
             "p": self._get_padding,
             "r": functools.partial(self._get_framerange, self.frames(), missing=False),
             "R": functools.partial(self._get_framerange, self.frames(), missing=True),
+            "x": functools.partial(format_frame_range_stepped, self.frames()),
             "h": self.head,
             "t": self.tail,
         }
@@ -514,6 +521,8 @@ class Sequence(list):
         +-----------+--------------------------------------+
         | ``%R``    | explicit broken range, [1-10, 15-20] |
         +-----------+--------------------------------------+
+        | ``%x``    | stepped explicit range, 1-10x2, 20   |
+        +-----------+--------------------------------------+
         | ``%d``    | disk usage                           |
         +-----------+--------------------------------------+
         | ``%H``    | disk usage (human readable)          |
@@ -539,6 +548,7 @@ class Sequence(list):
             "p": "s",
             "r": "s",
             "R": "s",
+            "x": "s",
             "d": "s",
             "H": "s",
             "D": "s",
@@ -852,9 +862,6 @@ class Sequence(list):
         :return: Formatted frame range string.
         """
 
-        frange = []
-        start = ""
-        end = ""
         if not missing:
             if frames:
                 return "%s-%s" % (self.start(), self.end())
@@ -864,28 +871,22 @@ class Sequence(list):
         if not frames:
             return ""
 
-        for i in range(0, len(frames)):
-            frame = frames[i]
+        frange = []
+        expanded = []
+        saw_ranges = False
+        for frame in frames:
             if isinstance(frame, range):
+                saw_ranges = True
                 if frame.start != frame.stop:
                     frange.append("%s-%s" % (frame.start, frame.stop - 1))
                 continue
-            prev = frames[i - 1]
-            if i != 0 and frame != prev + 1:
-                if start != end:
-                    frange.append("%s-%s" % (str(start), str(end)))
-                elif start == end:
-                    frange.append(str(start))
-                start = end = frame
-                continue
-            if start == "" or int(start) > frame:
-                start = frame
-            if end == "" or int(end) < frame:
-                end = frame
-        if start == end:
-            frange.append(str(start))
-        else:
-            frange.append("%s-%s" % (str(start), str(end)))
+            expanded.append(frame)
+
+        explicit = format_frame_range_explicit(expanded, pad_with_brackets=False)
+        if explicit:
+            frange.extend(explicit.split(range_join))
+        if saw_ranges:
+            frange.append("")
         return "[%s]" % range_join.join(frange)
 
     def _get_frames(self):
@@ -1004,8 +1005,9 @@ def uncompress(seq_string: str, fmt: str = global_format):
         "l": r"\d+",
         "h": r"(.+)?",
         "t": r"(\S+)?",
-        "r": r"\d+-\d+",
-        "R": r"\[[\d\s?\-%s?]+\]" % re.escape(range_join),
+        "r": r"-?\d+\s*-\s*-?\d+(?:\s*x\s*\d+)?",
+        "R": r"\[[^\]]+\]",
+        "x": r"-?\d+(?:\s*-\s*-?\d+(?:\s*x\s*\d+)?)?(?:\s*,\s*-?\d+(?:\s*-\s*-?\d+(?:\s*x\s*\d+)?)?)*",
         "p": r"%\d+d",
         "m": r"\[.*\]",
         "f": r"\[.*\]",
@@ -1026,6 +1028,7 @@ def uncompress(seq_string: str, fmt: str = global_format):
     match = regex.match(name)
 
     frames = []
+    frame_values = []
     missing = []
     s = None
     e = None
@@ -1041,36 +1044,31 @@ def uncompress(seq_string: str, fmt: str = global_format):
 
     try:
         R = match.group("R")
-        R = R[1:-1]
-        number_groups = R.split(range_join)
-        pad_len = 0
-        for number_group in number_groups:
-            if "-" in number_group:
-                splits = number_group.split("-")
-                pad_len = max(pad_len, len(splits[0]), len(splits[1]))
-                start = int(splits[0])
-                end = int(splits[1])
-                frames.extend(range(start, end + 1))
-
-            else:
-                end = int(number_group)
-                pad_len = max(pad_len, len(number_group))
-                frames.append(end)
+        frame_values = parse_frame_range(R)
+        pad_len = max((len(str(abs(frame))) for frame in frame_values), default=0)
         if pad == "%d" and pad_len != 0:
             pad = "%0" + str(pad_len) + "d"
 
     except IndexError:
         try:
             r = match.group("r")
-            s, e = r.split("-")
-            frames = range(int(s), int(e) + 1)
+            frame_values = parse_frame_range(r)
+            if frame_values:
+                s = frame_values[0]
+                e = frame_values[-1]
 
         except IndexError:
-            s = match.group("s")
-            e = match.group("e")
+            try:
+                x = match.group("x")
+                frame_values = parse_frame_range(x)
+            except IndexError:
+                s = match.group("s")
+                e = match.group("e")
+                if s is not None and e is not None:
+                    frame_values = parse_frame_range(f"{s}-{e}")
 
     try:
-        frames = eval(match.group("f"))
+        frame_values = eval(match.group("f"))
 
     except IndexError:
         pass
@@ -1082,30 +1080,44 @@ def uncompress(seq_string: str, fmt: str = global_format):
         pass
 
     items = []
+    emitted_frames = []
     if missing:
-        for i in range(int(s), int(e) + 1):
+        for i in parse_frame_range(f"{s}-{e}"):
             if i in missing:
                 continue
-            f = pad % i
+            f = ("-" if i < 0 else "") + (pad % abs(i))
             name = "%s%s%s" % (
                 match.groupdict().get("h", ""),
                 f,
                 match.groupdict().get("t", ""),
             )
             items.append(Item(os.path.join(dirname, name)))
+            emitted_frames.append(i)
 
     else:
-        for i in frames:
-            f = pad % i
+        for i in frame_values:
+            f = ("-" if i < 0 else "") + (pad % abs(i))
             name = "%s%s%s" % (
                 match.groupdict().get("h", ""),
                 f,
                 match.groupdict().get("t", ""),
             )
             items.append(Item(os.path.join(dirname, name)))
+            emitted_frames.append(i)
 
     seqs = get_sequences(items)
     if seqs:
+        if emitted_frames:
+            seq = seqs[0]
+            for item, frame in zip_longest(seq, emitted_frames):
+                if item is None or frame is None:
+                    break
+                item.frame = frame
+                item.head = match.groupdict().get("h", "")
+                item.tail = match.groupdict().get("t", "")
+                item.pad = 0 if pad == "%d" else int(re.search(r"\d+", pad).group())
+            seq._Sequence__frames = sorted(emitted_frames)
+            seq._Sequence__missing = None
         return seqs[0]
     return seqs
 

@@ -40,6 +40,11 @@ from typing import Optional
 
 import pyseq
 from pyseq.config import range_join
+from pyseq.frange import (
+    has_serialized_range,
+    parse_frame_range,
+    split_embedded_frame_range,
+)
 
 
 def deprecated(func):
@@ -203,57 +208,62 @@ def parse_explicit_sequence_string(reference: str):
     """Parse a serialized sequence string, including embedded range syntax."""
     dirname = os.path.dirname(reference) or "."
     basename = os.path.basename(reference)
+    has_explicit_range = has_serialized_range(basename)
 
-    embedded = re.match(
-        r"^(?P<head>.+?)(?P<range>\[(?:[^\]]+)\]|\d+-\d+)(?P<tail>\.[^/\s]+)$",
-        basename,
+    # Plain compressed sequence patterns like "file.%04d.exr" should be
+    # resolved against disk, not reinterpreted as explicit serialized ranges.
+    if is_compressed_format_string(basename) and not has_explicit_range:
+        return None
+
+    embedded = (
+        None
+        if is_compressed_format_string(basename)
+        else split_embedded_frame_range(basename)
     )
     if embedded:
-        range_text = embedded.group("range")
-        frames = []
-        if range_text.startswith("["):
-            for number_group in range_text[1:-1].split(range_join):
-                number_group = number_group.strip()
-                if not number_group:
-                    continue
-                if "-" in number_group:
-                    start, end = number_group.split("-", 1)
-                    frames.extend(range(int(start), int(end) + 1))
-                else:
-                    frames.append(int(number_group))
-        else:
-            start, end = range_text.split("-", 1)
-            frames = list(range(int(start), int(end) + 1))
+        head, range_text, tail = embedded
+        frames = parse_frame_range(range_text)
 
         items = [
             pyseq.Item(
                 os.path.join(
                     dirname,
-                    f"{embedded.group('head')}{frame}{embedded.group('tail')}",
+                    f"{head}{frame}{tail}",
                 )
             )
             for frame in frames
         ]
         sequences = pyseq.get_sequences(items)
         if sequences:
+            seq = sequences[0]
+            for item, frame in zip(seq, frames):
+                item.frame = frame
+                item.head = head
+                item.tail = tail
+                item.pad = 0
+            seq._Sequence__frames = sorted(frames)
+            seq._Sequence__missing = None
             return {
-                "seq": sequences[0],
+                "seq": seq,
                 "has_pad": False,
             }
 
-    formats = (
-        ("%h%p%t %R", True),
-        ("%h%p%t %r", True),
-        ("%h%R%t", False),
-        ("%h%r%t", False),
-    )
-    for fmt, has_pad in formats:
-        seq = pyseq.uncompress(reference, fmt=fmt)
-        if seq:
-            return {
-                "seq": seq,
-                "has_pad": has_pad,
-            }
+    if has_explicit_range:
+        formats = (
+            ("%h%p%t %x", True),
+            ("%h%p%t %R", True),
+            ("%h%p%t %r", True),
+            ("%h%x%t", False),
+            ("%h%R%t", False),
+            ("%h%r%t", False),
+        )
+        for fmt, has_pad in formats:
+            seq = pyseq.uncompress(reference, fmt=fmt)
+            if seq:
+                return {
+                    "seq": seq,
+                    "has_pad": has_pad,
+                }
     return None
 
 

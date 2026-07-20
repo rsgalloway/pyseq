@@ -11,6 +11,7 @@ List files and group matching names into sequences.
 lss tests/files
 lss -r tests
 lss tests/files/*.png -f "%l %h%r%t %M"
+lss tests/files/*.png -f "%h%p%t %x"
 ```
 
 ## `stree`
@@ -54,6 +55,7 @@ sequence.
 ```bash
 scopy input.%04d.exr output/
 scopy input.1-100.exr scene.1001-1100.exr
+scopy input.%04d.exr\ 1001-1010x2 output/
 ```
 
 ## `smv`
@@ -63,6 +65,7 @@ Move or rename a sequence, with optional renumbering.
 ```bash
 smv old.%04d.exr new.%04d.exr
 smv old.%04d.exr archive/ --renumber 1001
+smv old.%04d.exr\ 1001-1005x2 new.%04d.exr\ 2001-2003
 ```
 
 ## `srm`
@@ -71,6 +74,7 @@ Remove a sequence or a frame range embedded in a compressed sequence string.
 
 ```bash
 srm input.1-100.exr
+srm input.%04d.exr\ 1001-1010x2
 ```
 
 ## Common Pipeline Use Cases

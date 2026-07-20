@@ -12,3 +12,6 @@ venv*/
 .vscode/
 pyseq.egg-info/
 default.env
+.codex
+.agents/
+.pytest_cache/

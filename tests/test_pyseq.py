@@ -512,6 +512,26 @@ class HelperFunctionsTestCase(unittest.TestCase):
 
         self.assertEqual(96, len(seq8))
 
+    def test_uncompress_extended_range_with_step(self):
+        seq = uncompress("render.%04d.exr 1001-1010x3", fmt="%h%p%t %x")
+        self.assertEqual(seq.frames(), [1001, 1004, 1007, 1010])
+        self.assertEqual(seq.format("%x"), "1001-1010x3")
+
+    def test_uncompress_extended_range_negative_frames(self):
+        seq = uncompress("render.%04d.exr -10--1x3", fmt="%h%p%t %x")
+        self.assertEqual(seq.frames(), [-10, -7, -4, -1])
+        self.assertEqual(seq.format("%h%p%t %x"), "render.%04d.exr -10--1x3")
+
+    def test_uncompress_extended_range_descending(self):
+        seq = uncompress("render.%04d.exr 10-1x3", fmt="%h%p%t %x")
+        self.assertEqual(seq.frames(), [1, 4, 7, 10])
+        self.assertEqual(seq.format("%x"), "1-10x3")
+
+    def test_format_extended_range_multiple_segments(self):
+        seq = uncompress("render.%04d.exr 1-10x3, 20-30x5, 42", fmt="%h%p%t %x")
+        self.assertEqual(seq.frames(), [1, 4, 7, 10, 20, 25, 30, 42])
+        self.assertEqual(seq.format("%x"), "1-10x3, 20-30x5, 42")
+
     def test_get_sequences_is_working_properly_1(self):
         """testing if get_sequences is working properly"""
         seqs = get_sequences("./files/")
@@ -615,6 +635,7 @@ class PerformanceTests(unittest.TestCase):
 
     def test_performance_1(self):
         """tests performance for single 10k frame sequence"""
+        pyseq.strict_pad = False
         files = ["file.%03d.jpg" % i for i in range(1, 10000)]
         s = time.time()
         seq = Sequence(files)
