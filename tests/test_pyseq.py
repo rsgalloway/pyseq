@@ -668,6 +668,25 @@ class PerformanceTests(unittest.TestCase):
         # slower CI runners or across Python versions.
         self.assertLess(total_time, 0.5)
 
+    def test_performance_sparse_large_missing_range(self):
+        """tests sparse large ranges stay fast and do not eagerly expand."""
+        pyseq.strict_pad = False
+        files = ["image-1.jpg", "image-1000.jpg", "image-50000000.jpg"]
+
+        start = time.perf_counter()
+        seq = get_sequences(files)[0]
+        missing = seq._get_missing()
+        formatted = seq.format("%M")
+        elapsed = time.perf_counter() - start
+
+        self.assertEqual(seq.frames(), [1, 1000, 50000000])
+        self.assertEqual(len(missing), 2)
+        self.assertEqual(formatted, "[2-999, 1001-49999999, ]")
+        # This threshold is intentionally generous: the goal is to catch
+        # catastrophic regressions like eager huge-range expansion, not to
+        # micro-benchmark CI machines.
+        self.assertLess(elapsed, 1.0)
+
 
 class TestIssues(unittest.TestCase):
     """tests reported issues on github"""
