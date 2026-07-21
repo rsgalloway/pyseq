@@ -16,7 +16,7 @@ CLI tools.
 | `%p`      | padding, e.g. %06d                   |
 | `%r`      | implied range, start-end             |
 | `%R`      | explicit broken range, [1-10, 15-20] |
-| `%x`      | stepped explicit range, 1-10x2, 20   |
+| `%x`      | stepped explicit range, 1-10x2,20    |
 | `%d`      | disk usage                           |
 | `%H`      | disk usage (human readable)          |
 | `%D`      | parent directory                     |
@@ -42,8 +42,9 @@ Notes:
 - `xN` means "every Nth frame" anchored to the segment start.
 - Descending ranges are accepted when parsing, but `Sequence.frames()` and
   `%x` formatting normalize frames into ascending order.
-- Signed frame numbers are currently documented for serialized range strings.
-  Full on-disk discovery of negative filenames is a separate follow-up.
+- `%x` uses compact canonical formatting with no spaces after commas.
+- Signed frame numbers are supported in serialized range strings and in
+  on-disk filename patterns such as `render.-0010.exr`.
 
 ## CLI Examples
 

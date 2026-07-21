@@ -71,6 +71,11 @@ class FormatError(Exception):
     pass
 
 
+def _frame_width(frame: str) -> int:
+    """Return the digit width of a frame token, excluding any sign."""
+    return len(frame[1:] if frame.startswith("-") else frame)
+
+
 def padsize(item, frame):
     """
     Determines the pad size for a given Item. Return value may depend on
@@ -86,13 +91,16 @@ def padsize(item, frame):
 
     # strict: frame size (%d) must match between frames (default)
     # for example: test.09.jpg, test.10.jpg, test.11.jpg
+    width = _frame_width(frame)
+    digits = frame[1:] if frame.startswith("-") else frame
+
     if strict_pad:
-        return item.pad or len(frame)
+        return item.pad or width
 
     # not strict: frame size can change between frames
     # for example: test.9.jpg, test.10.jpg, test.11.jpg
     else:
-        return item.pad or len(frame) if frame.startswith("0") else 0
+        return item.pad or width if digits.startswith("0") else 0
 
 
 class Item(str):
@@ -947,7 +955,9 @@ def diff(f1: Union[str, Item], f2: Union[str, Item]):
     if len(f1.number_matches) == len(f2.number_matches):
         for m1, m2 in zip(f1.number_matches, f2.number_matches):
             if (m1.start() == m2.start()) and (m1.group() != m2.group()):
-                if strict_pad is True and (len(m1.group()) != len(m2.group())):
+                if strict_pad is True and (
+                    _frame_width(m1.group()) != _frame_width(m2.group())
+                ):
                     continue
                 d.append(
                     {

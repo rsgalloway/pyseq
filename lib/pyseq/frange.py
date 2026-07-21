@@ -158,4 +158,4 @@ def format_frame_range_stepped(frames: List[int]) -> str:
             parts.extend([str(start), str(end)])
         else:
             parts.append(f"{start}-{end}x{step}")
-    return range_join.join(parts)
+    return ",".join(parts)

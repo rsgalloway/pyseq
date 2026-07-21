@@ -36,6 +36,7 @@ Contains tests for the pyseq package.
 import os
 import re
 import random
+import tempfile
 import unittest
 import subprocess
 import sys
@@ -153,6 +154,13 @@ class ItemTestCase(unittest.TestCase):
         """testing if the is_sibling() is working properly"""
         item1 = Item("/mnt/S/Some/Path/to/a/file/with/numbers/file.0010.exr")
         item2 = Item("/mnt/S/Some/Path/to/a/file/with/numbers/file.0101.exr")
+
+        self.assertTrue(item1.is_sibling(item2))
+        self.assertTrue(item2.is_sibling(item1))
+
+    def test_is_sibling_method_with_negative_frames(self):
+        item1 = Item("render.-0002.exr")
+        item2 = Item("render.-0001.exr")
 
         self.assertTrue(item1.is_sibling(item2))
         self.assertTrue(item2.is_sibling(item1))
@@ -530,7 +538,7 @@ class HelperFunctionsTestCase(unittest.TestCase):
     def test_format_extended_range_multiple_segments(self):
         seq = uncompress("render.%04d.exr 1-10x3, 20-30x5, 42", fmt="%h%p%t %x")
         self.assertEqual(seq.frames(), [1, 4, 7, 10, 20, 25, 30, 42])
-        self.assertEqual(seq.format("%x"), "1-10x3, 20-30x5, 42")
+        self.assertEqual(seq.format("%x"), "1-10x3,20-30x5,42")
 
     def test_get_sequences_is_working_properly_1(self):
         """testing if get_sequences is working properly"""
@@ -554,6 +562,7 @@ class HelperFunctionsTestCase(unittest.TestCase):
             "fileA.1-3.jpg",
             "fileA.1-3.png",
             "file_02.tif",
+            "negA.-2-1.exr",
             "z1_001_v1.1-4.png",
             "z1_002_v1.1-4.png",
             "z1_002_v2.1-4.png",
@@ -598,6 +607,57 @@ class HelperFunctionsTestCase(unittest.TestCase):
         self.assertEqual(seq.frames(), [1001, 1004, 1007, 1010])
         self.assertEqual(seq.format("%h%p%t %x"), "stepA.%d.exr 1001-1010x3")
 
+    def test_get_sequences_with_negative_filenames(self):
+        pyseq.strict_pad = True
+        seq = get_sequences(
+            [
+                "render.-0002.exr",
+                "render.-0001.exr",
+                "render.0000.exr",
+                "render.0001.exr",
+            ]
+        )[0]
+
+        self.assertEqual(seq.frames(), [-2, -1, 0, 1])
+        self.assertEqual(seq.format("%h%p%t %x"), "render.%04d.exr -2-1")
+
+    def test_get_sequences_with_negative_fixture_files(self):
+        pyseq.strict_pad = True
+        seq = get_sequences("./tests/files/negA*")[0]
+
+        self.assertEqual(str(seq), "negA.-2-1.exr")
+        self.assertEqual(seq.frames(), [-2, -1, 0, 1])
+        self.assertEqual(seq.format("%h%p%t %x"), "negA.%04d.exr -2-1")
+
+    def test_resolve_sequence_reference_with_negative_filenames(self):
+        pyseq.strict_pad = True
+        with tempfile.TemporaryDirectory() as tmpdir:
+            for frame in (-2, -1, 0, 1):
+                if frame < 0:
+                    frame_text = f"-{abs(frame):04d}"
+                else:
+                    frame_text = f"{frame:04d}"
+                with open(
+                    os.path.join(tmpdir, f"render.{frame_text}.exr"), "w"
+                ) as handle:
+                    handle.write("dummy frame")
+
+            seq, dirname = resolve_sequence_reference(
+                os.path.join(tmpdir, "render.%04d.exr -2-1")
+            )
+
+            self.assertEqual(dirname, tmpdir)
+            self.assertEqual(seq.frames(), [-2, -1, 0, 1])
+            self.assertEqual(seq.format("%h%p%t %x"), "render.%04d.exr -2-1")
+
+    def test_resolve_sequence_reference_with_negative_fixture_files(self):
+        pyseq.strict_pad = True
+        seq, dirname = resolve_sequence_reference("./tests/files/negA.%04d.exr -2-1")
+
+        self.assertEqual(dirname, "./tests/files")
+        self.assertEqual(seq.frames(), [-2, -1, 0, 1])
+        self.assertEqual(seq.format("%h%p%t %x"), "negA.%04d.exr -2-1")
+
 
 class LSSTestCase(unittest.TestCase):
     """Tests lss command"""
@@ -640,6 +700,7 @@ class LSSTestCase(unittest.TestCase):
    3 fileA.%04d.jpg [1-3]
    3 fileA.%04d.png [1-3]
    1 file_02.tif 
+   4 negA.%04d.exr [-2-1]
    4 stepA.%d.exr [1001, 1004, 1007, 1010]
    4 z1_001_v1.%d.png [1-4]
    4 z1_002_v1.%d.png [1-4]

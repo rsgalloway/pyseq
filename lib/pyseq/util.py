@@ -153,13 +153,13 @@ def resolve_sequence(sequence_string: str):
     padding = match.group(1)
     if padding:
         pad = int(padding)
-        glob_part = filename.replace(f"%0{pad}d", "?" * pad)
+        glob_part = filename.replace(f"%0{pad}d", "*")
         regex_pattern = re.escape(filename).replace(
-            f"%0{pad}d", r"\d{" + str(pad) + r"}"
+            f"%0{pad}d", r"-?\d{" + str(pad) + r"}"
         )
     else:
         glob_part = filename.replace("%d", "*")
-        regex_pattern = re.escape(filename).replace("%d", r"\d+")
+        regex_pattern = re.escape(filename).replace("%d", r"-?\d+")
 
     # glob all files in the directory using glob pattern
     glob_pattern = os.path.join(directory, glob_part)

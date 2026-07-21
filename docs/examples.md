@@ -137,9 +137,8 @@ Expected output:
 -10--1x3
 ```
 
-This currently applies to serialized range strings passed to `uncompress()`
-and the sequence-aware CLI tools. Full on-disk discovery of negative filenames
-is a separate follow-up.
+Signed frame ranges also work with on-disk filename patterns such as
+`render.-0010.exr` when resolving or discovering sequences.
 
 ## Resolve a Sequence Pattern on Disk
 

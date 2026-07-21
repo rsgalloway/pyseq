@@ -49,12 +49,13 @@ PYSEQ_STRICT_PAD = os.getenv("PYSEQ_STRICT_PAD", 0)
 PYSEQ_NOT_STRICT = os.getenv("PYSEQ_NOT_STRICT", 1)
 strict_pad = int(PYSEQ_STRICT_PAD) == 1 or int(PYSEQ_NOT_STRICT) == 0
 
-# regex pattern for matching all numbers in a filename
-digits_re = re.compile(r"\d+")
-
 # regex pattern for matching frame numbers only
-# the default is \d+ for maximum compatibility
-DEFAULT_FRAME_PATTERN = r"\d+"
+# the default preserves compatibility with common positive filenames while
+# also allowing signed frame tokens like render.-0010.exr
+DEFAULT_FRAME_PATTERN = r"(?:(?<=^)|(?<=[._]))-\d+|\d+"
+
+# regex pattern for matching all numeric sequence tokens in a filename
+digits_re = re.compile(DEFAULT_FRAME_PATTERN)
 PYSEQ_FRAME_PATTERN = os.getenv("PYSEQ_FRAME_PATTERN", DEFAULT_FRAME_PATTERN)
 
 
