@@ -1,6 +1,15 @@
 CHANGELOG
 =========
 
+## 0.9.3
+
+* Adds canonical stepped frame range formatting via `%x`, using compact syntax such as `1-10x2,20-30x5,42`
+* Adds explicit stepped range parsing for serialized and embedded sequence references
+* Adds support for signed frame numbers in serialized ranges and on-disk filenames such as `render.-0002.exr`
+* Refactors explicit range parsing and formatting onto shared helpers to keep the syntax rules consistent
+* Expands regression coverage for stepped ranges, negative frame handling, CLI tools, and performance-sensitive paths
+* Adds benchmark tooling, benchmark documentation, and GitHub Pages publishing workflows for docs and reports
+
 ## 0.9.2
 
 * Renames the move CLI from `smove` to `smv`

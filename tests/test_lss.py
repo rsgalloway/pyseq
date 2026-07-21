@@ -95,3 +95,19 @@ def test_lss_stdin_input(lss_fixture):
     assert result.returncode == 0
     out = result.stdout
     assert "   3 shot.%04d.exr [1-3]" in out
+
+
+def test_lss_compact_extended_range_format(tmp_path):
+    """The %x directive should render compact stepped ranges."""
+    for frame in (1001, 1004, 1007, 1010):
+        (tmp_path / f"stepA.{frame:04d}.exr").write_text("frame\n")
+
+    result = subprocess.run(
+        [lss_bin, "-f", "%h%x%t", str(tmp_path)],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "stepA.1001-1010x3.exr" in result.stdout

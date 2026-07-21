@@ -45,6 +45,10 @@ from pyseq.sremove import remove_sequence
 srm_bin = get_installed_command("srm")
 
 
+def _signed_frame_name(frame):
+    return f"{frame:05d}" if frame < 0 else f"{frame:04d}"
+
+
 @pytest.fixture
 def sample_sequence():
     """Fixture to create a temporary directory with a sequence of files."""
@@ -147,3 +151,23 @@ def test_srm_cli_embedded_range(tmp_path):
     assert os.path.exists(tmp_path / "plate.0005.rgb")
     for i in range(2, 5):
         assert not os.path.exists(tmp_path / f"plate.{i:04d}.rgb")
+
+
+def test_srm_cli_negative_sequence_string(tmp_path):
+    """Serialized negative frame ranges should resolve before removal."""
+    for frame in range(-2, 2):
+        (tmp_path / f"negA.{_signed_frame_name(frame)}.exr").write_text("dummy frame")
+
+    src = str(tmp_path / "negA.%04d.exr") + " -2-0"
+
+    result = subprocess.run(
+        [srm_bin, src],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    for frame in range(-2, 1):
+        assert not os.path.exists(tmp_path / f"negA.{_signed_frame_name(frame)}.exr")
+    assert os.path.exists(tmp_path / "negA.0001.exr")
