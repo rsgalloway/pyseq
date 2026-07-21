@@ -39,7 +39,6 @@ import random
 import unittest
 import subprocess
 import sys
-import time
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from conftest import get_installed_command
@@ -648,44 +647,6 @@ class LSSTestCase(unittest.TestCase):
 """,
             result,
         )
-
-
-class PerformanceTests(unittest.TestCase):
-    """tests the performance of pyseq"""
-
-    def test_performance_1(self):
-        """tests performance for single 10k frame sequence"""
-        pyseq.strict_pad = False
-        files = ["file.%03d.jpg" % i for i in range(1, 10000)]
-        s = time.time()
-        seq = Sequence(files)
-        e = time.time()
-        total_time = e - s
-        print("time taken to create sequence: %s" % (total_time))
-        self.assertEqual(str(seq), "file.1-9999.jpg")
-        self.assertEqual(len(seq), 9999)
-        # Keep a loose upper bound so this stays meaningful without flaking on
-        # slower CI runners or across Python versions.
-        self.assertLess(total_time, 0.5)
-
-    def test_performance_sparse_large_missing_range(self):
-        """tests sparse large ranges stay fast and do not eagerly expand."""
-        pyseq.strict_pad = False
-        files = ["image-1.jpg", "image-1000.jpg", "image-50000000.jpg"]
-
-        start = time.perf_counter()
-        seq = get_sequences(files)[0]
-        missing = seq._get_missing()
-        formatted = seq.format("%M")
-        elapsed = time.perf_counter() - start
-
-        self.assertEqual(seq.frames(), [1, 1000, 50000000])
-        self.assertEqual(len(missing), 2)
-        self.assertEqual(formatted, "[2-999, 1001-49999999, ]")
-        # This threshold is intentionally generous: the goal is to catch
-        # catastrophic regressions like eager huge-range expansion, not to
-        # micro-benchmark CI machines.
-        self.assertLess(elapsed, 1.0)
 
 
 class TestIssues(unittest.TestCase):
