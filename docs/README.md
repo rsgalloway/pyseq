@@ -10,6 +10,7 @@ Available guides:
 - [Setup and Distribution](setup-and-distribution.md)
 - [Formatting Reference](formatting.md)
 - [Frame Patterns](frame-patterns.md)
+- [Performance](performance.md)
 
 If you are evaluating pyseq for pipeline use, start with the examples guide and
 then review the CLI reference for the sequence-aware utilities included with

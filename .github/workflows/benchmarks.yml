@@ -1,0 +1,69 @@
+name: benchmarks
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: Benchmark profile to run
+        required: false
+        default: smoke
+        type: choice
+        options:
+          - smoke
+          - full
+  schedule:
+    - cron: "0 9 * * 1"
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install package
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install -e ".[dev]"
+
+      - name: Select profile
+        id: profile
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "value=${{ inputs.profile }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=smoke" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run core benchmarks
+        run: |
+          python scripts/benchmarks_core.py \
+            --profile "${{ steps.profile.outputs.value }}" \
+            --json benchmark-core.json
+
+      - name: Run CLI benchmarks
+        run: |
+          python scripts/benchmarks_cli.py \
+            --profile "${{ steps.profile.outputs.value }}" \
+            --json benchmark-cli.json
+
+      - name: Write benchmark summary
+        run: |
+          python scripts/benchmarks_core.py --profile "${{ steps.profile.outputs.value }}" --summary >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          python scripts/benchmarks_cli.py --profile "${{ steps.profile.outputs.value }}" --summary >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload benchmark artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results-${{ steps.profile.outputs.value }}
+          path: |
+            benchmark-core.json
+            benchmark-cli.json
