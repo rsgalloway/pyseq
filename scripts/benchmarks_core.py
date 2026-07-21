@@ -103,9 +103,9 @@ def run_profile(profile):
     )
 
     results["format_stepped_10k"] = measure(
-        lambda: uncompress(stepped_range_string(1001, 10000, 3), fmt="%h%p%t %x").format(
-            "%x"
-        ),
+        lambda: uncompress(
+            stepped_range_string(1001, 10000, 3), fmt="%h%p%t %x"
+        ).format("%x"),
         config["iterations"],
     )
 
