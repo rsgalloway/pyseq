@@ -201,7 +201,18 @@ def subset_sequence(seq, frames):
     sequences = pyseq.get_sequences(items)
     if not sequences:
         raise ValueError("No valid sequence found for requested frame subset")
-    return sequences[0]
+
+    subset = sequences[0]
+    subset._Sequence__frames = sorted(frame_set)
+    subset._Sequence__missing = None
+
+    # Preserve source sequence formatting metadata for resolved subsets.
+    for item in subset:
+        item.head = seq.head()
+        item.tail = seq.tail()
+        item.pad = seq.pad
+
+    return subset
 
 
 def parse_explicit_sequence_string(reference: str):

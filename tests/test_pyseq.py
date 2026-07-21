@@ -46,6 +46,7 @@ from conftest import get_installed_command
 from pyseq import Item, Sequence, diff, uncompress, get_sequences
 from pyseq import SequenceError
 from pyseq import seq as pyseq
+from pyseq.util import resolve_sequence_reference
 
 pyseq.default_format = "%h%r%t"
 
@@ -580,6 +581,24 @@ class HelperFunctionsTestCase(unittest.TestCase):
         for seq, expected_result in zip(seqs, expected_results):
             self.assertEqual(expected_result, seq.format("%h%p%t %r"))
 
+    def test_resolve_sequence_reference_with_stepped_serialized_range(self):
+        pyseq.strict_pad = False
+        reference = "./tests/files/stepA.%04d.exr 1001-1010x3"
+        seq, dirname = resolve_sequence_reference(reference)
+
+        self.assertEqual(dirname, "./tests/files")
+        self.assertEqual(seq.frames(), [1001, 1004, 1007, 1010])
+        self.assertEqual(seq.format("%h%p%t %x"), "stepA.%d.exr 1001-1010x3")
+
+    def test_resolve_sequence_reference_with_stepped_embedded_range(self):
+        pyseq.strict_pad = False
+        reference = "./tests/files/stepA.1001-1010x3.exr"
+        seq, dirname = resolve_sequence_reference(reference)
+
+        self.assertEqual(dirname, "./tests/files")
+        self.assertEqual(seq.frames(), [1001, 1004, 1007, 1010])
+        self.assertEqual(seq.format("%h%p%t %x"), "stepA.%d.exr 1001-1010x3")
+
 
 class LSSTestCase(unittest.TestCase):
     """Tests lss command"""
@@ -622,6 +641,7 @@ class LSSTestCase(unittest.TestCase):
    3 fileA.%04d.jpg [1-3]
    3 fileA.%04d.png [1-3]
    1 file_02.tif 
+   4 stepA.%d.exr [1001, 1004, 1007, 1010]
    4 z1_001_v1.%d.png [1-4]
    4 z1_002_v1.%d.png [1-4]
    4 z1_002_v2.%d.png [9-12]
