@@ -153,17 +153,28 @@ def resolve_sequence(sequence_string: str):
     padding = match.group(1)
     if padding:
         pad = int(padding)
-        glob_part = filename.replace(f"%0{pad}d", "*")
+        positive_glob = filename.replace(f"%0{pad}d", "?" * pad)
+        negative_glob = filename.replace(f"%0{pad}d", "-" + ("?" * pad))
         regex_pattern = re.escape(filename).replace(
             f"%0{pad}d", r"-?\d{" + str(pad) + r"}"
         )
     else:
-        glob_part = filename.replace("%d", "*")
+        positive_glob = filename.replace("%d", "*")
+        negative_glob = None
         regex_pattern = re.escape(filename).replace("%d", r"-?\d+")
 
-    # glob all files in the directory using glob pattern
-    glob_pattern = os.path.join(directory, glob_part)
-    candidate_files = glob.glob(glob_pattern)
+    # Keep globbing narrow for padded sequences, including signed variants.
+    glob_patterns = [os.path.join(directory, positive_glob)]
+    if negative_glob and negative_glob != positive_glob:
+        glob_patterns.append(os.path.join(directory, negative_glob))
+
+    candidate_files = []
+    seen = set()
+    for glob_pattern in glob_patterns:
+        for candidate in glob.glob(glob_pattern):
+            if candidate not in seen:
+                seen.add(candidate)
+                candidate_files.append(candidate)
 
     # filter using regex (because glob pattern is wide)
     regex = re.compile(f"^{regex_pattern}$")
@@ -235,23 +246,22 @@ def parse_explicit_sequence_string(reference: str):
         head, range_text, tail = embedded
         frames = parse_frame_range(range_text)
 
-        items = [
-            pyseq.Item(
+        items = []
+        for frame in frames:
+            item = pyseq.Item(
                 os.path.join(
                     dirname,
                     f"{head}{frame}{tail}",
                 )
             )
-            for frame in frames
-        ]
+            item.frame = frame
+            item.head = head
+            item.tail = tail
+            item.pad = 0
+            items.append(item)
         sequences = pyseq.get_sequences(items)
         if sequences:
             seq = sequences[0]
-            for item, frame in zip(seq, frames):
-                item.frame = frame
-                item.head = head
-                item.tail = tail
-                item.pad = 0
             seq._Sequence__frames = sorted(frames)
             seq._Sequence__missing = None
             return {

@@ -533,6 +533,15 @@ class HelperFunctionsTestCase(unittest.TestCase):
     def test_uncompress_extended_range_descending(self):
         seq = uncompress("render.%04d.exr 10-1x3", fmt="%h%p%t %x")
         self.assertEqual(seq.frames(), [1, 4, 7, 10])
+        self.assertEqual(
+            [(item.name, item.frame) for item in seq],
+            [
+                ("render.0001.exr", 1),
+                ("render.0004.exr", 4),
+                ("render.0007.exr", 7),
+                ("render.0010.exr", 10),
+            ],
+        )
         self.assertEqual(seq.format("%x"), "1-10x3")
 
     def test_format_extended_range_multiple_segments(self):
@@ -606,6 +615,40 @@ class HelperFunctionsTestCase(unittest.TestCase):
         self.assertEqual(dirname, "./tests/files")
         self.assertEqual(seq.frames(), [1001, 1004, 1007, 1010])
         self.assertEqual(seq.format("%h%p%t %x"), "stepA.%d.exr 1001-1010x3")
+
+    def test_resolve_sequence_reference_with_descending_serialized_range(self):
+        pyseq.strict_pad = False
+        reference = "./tests/files/stepA.%04d.exr 1010-1001x3"
+        seq, dirname = resolve_sequence_reference(reference)
+
+        self.assertEqual(dirname, "./tests/files")
+        self.assertEqual(seq.frames(), [1001, 1004, 1007, 1010])
+        self.assertEqual(
+            [(item.name, item.frame) for item in seq],
+            [
+                ("stepA.1001.exr", 1001),
+                ("stepA.1004.exr", 1004),
+                ("stepA.1007.exr", 1007),
+                ("stepA.1010.exr", 1010),
+            ],
+        )
+
+    def test_resolve_sequence_reference_with_descending_embedded_range(self):
+        pyseq.strict_pad = False
+        reference = "./tests/files/stepA.1010-1001x3.exr"
+        seq, dirname = resolve_sequence_reference(reference)
+
+        self.assertEqual(dirname, "./tests/files")
+        self.assertEqual(seq.frames(), [1001, 1004, 1007, 1010])
+        self.assertEqual(
+            [(item.name, item.frame) for item in seq],
+            [
+                ("stepA.1001.exr", 1001),
+                ("stepA.1004.exr", 1004),
+                ("stepA.1007.exr", 1007),
+                ("stepA.1010.exr", 1010),
+            ],
+        )
 
     def test_get_sequences_with_negative_filenames(self):
         pyseq.strict_pad = True

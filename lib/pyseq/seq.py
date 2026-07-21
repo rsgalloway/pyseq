@@ -38,9 +38,9 @@ import os
 import re
 import traceback
 import warnings
+from ast import literal_eval
 from collections import deque
 from glob import glob, iglob
-from itertools import zip_longest
 from typing import List, Callable, Union
 
 from pyseq import config
@@ -125,10 +125,10 @@ class Item(str):
         self.__stat = None
 
         # modified by self.is_sibling()
-        self.frame = None
-        self.head = self.name
-        self.tail = ""
-        self.pad = None
+        self.frame = getattr(item, "frame", None)
+        self.head = getattr(item, "head", self.name)
+        self.tail = getattr(item, "tail", "")
+        self.pad = getattr(item, "pad", None)
 
     def __eq__(self, other):
         """
@@ -1078,54 +1078,52 @@ def uncompress(seq_string: str, fmt: str = global_format):
                     frame_values = parse_frame_range(f"{s}-{e}")
 
     try:
-        frame_values = eval(match.group("f"))
+        frame_values = literal_eval(match.group("f"))
 
     except IndexError:
         pass
 
     try:
-        missing = eval(match.group("m"))
+        missing = literal_eval(match.group("m"))
 
     except IndexError:
         pass
 
     items = []
     emitted_frames = []
+    head = match.groupdict().get("h", "")
+    tail = match.groupdict().get("t", "")
+    item_pad = 0 if pad == "%d" else int(re.search(r"\d+", pad).group())
     if missing:
         for i in parse_frame_range(f"{s}-{e}"):
             if i in missing:
                 continue
             f = ("-" if i < 0 else "") + (pad % abs(i))
-            name = "%s%s%s" % (
-                match.groupdict().get("h", ""),
-                f,
-                match.groupdict().get("t", ""),
-            )
-            items.append(Item(os.path.join(dirname, name)))
+            name = "%s%s%s" % (head, f, tail)
+            item = Item(os.path.join(dirname, name))
+            item.frame = i
+            item.head = head
+            item.tail = tail
+            item.pad = item_pad
+            items.append(item)
             emitted_frames.append(i)
 
     else:
         for i in frame_values:
             f = ("-" if i < 0 else "") + (pad % abs(i))
-            name = "%s%s%s" % (
-                match.groupdict().get("h", ""),
-                f,
-                match.groupdict().get("t", ""),
-            )
-            items.append(Item(os.path.join(dirname, name)))
+            name = "%s%s%s" % (head, f, tail)
+            item = Item(os.path.join(dirname, name))
+            item.frame = i
+            item.head = head
+            item.tail = tail
+            item.pad = item_pad
+            items.append(item)
             emitted_frames.append(i)
 
     seqs = get_sequences(items)
     if seqs:
         if emitted_frames:
             seq = seqs[0]
-            for item, frame in zip_longest(seq, emitted_frames):
-                if item is None or frame is None:
-                    break
-                item.frame = frame
-                item.head = match.groupdict().get("h", "")
-                item.tail = match.groupdict().get("t", "")
-                item.pad = 0 if pad == "%d" else int(re.search(r"\d+", pad).group())
             seq._Sequence__frames = sorted(emitted_frames)
             seq._Sequence__missing = None
         return seqs[0]
