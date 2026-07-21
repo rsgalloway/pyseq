@@ -37,19 +37,16 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install -e ".[dev]"
 
-      - name: Generate benchmark reports
+      - name: Generate benchmark report
         run: |
-          python scripts/benchmarks_core.py --profile smoke --json benchmark-core.json --summary > benchmark-core.md
-          python scripts/benchmarks_cli.py --profile smoke --json benchmark-cli.json --summary > benchmark-cli.md
+          python scripts/benchmark.py --json benchmark.json > benchmark.md
 
       - name: Build Jekyll source tree
         run: |
           python scripts/build_pages_site.py \
             --output _site_src \
-            --core-summary benchmark-core.md \
-            --cli-summary benchmark-cli.md \
-            --core-json benchmark-core.json \
-            --cli-json benchmark-cli.json
+            --benchmark-summary benchmark.md \
+            --benchmark-json benchmark.json
 
       - name: Build site with Jekyll
         uses: actions/jekyll-build-pages@v1

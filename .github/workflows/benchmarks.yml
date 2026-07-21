@@ -1,6 +1,13 @@
 name: benchmarks
 
 on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+      - converted_to_draft
   workflow_dispatch:
     inputs:
       profile:
@@ -38,32 +45,29 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "value=${{ inputs.profile }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "value=full" >> "$GITHUB_OUTPUT"
           else
             echo "value=smoke" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Run core benchmarks
+      - name: Run benchmarks
         run: |
-          python scripts/benchmarks_core.py \
-            --profile "${{ steps.profile.outputs.value }}" \
-            --json benchmark-core.json
-
-      - name: Run CLI benchmarks
-        run: |
-          python scripts/benchmarks_cli.py \
-            --profile "${{ steps.profile.outputs.value }}" \
-            --json benchmark-cli.json
+          if [ "${{ steps.profile.outputs.value }}" = "full" ]; then
+            python scripts/benchmark.py --full --json benchmark.json > benchmark.md
+          else
+            python scripts/benchmark.py --json benchmark.json > benchmark.md
+          fi
 
       - name: Write benchmark summary
         run: |
-          python scripts/benchmarks_core.py --profile "${{ steps.profile.outputs.value }}" --summary >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          python scripts/benchmarks_cli.py --profile "${{ steps.profile.outputs.value }}" --summary >> "$GITHUB_STEP_SUMMARY"
+          cat benchmark.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload benchmark artifacts
         uses: actions/upload-artifact@v4
         with:
           name: benchmark-results-${{ steps.profile.outputs.value }}
           path: |
-            benchmark-core.json
-            benchmark-cli.json
+            benchmark.json
+            benchmark.md
+            tmp/benchmarks/profiles

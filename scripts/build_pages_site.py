@@ -62,10 +62,8 @@ permalink: pretty
 
 def write_benchmarks_page(
     output_dir: Path,
-    core_summary: Path = None,
-    cli_summary: Path = None,
-    core_json: Path = None,
-    cli_json: Path = None,
+    benchmark_summary: Path = None,
+    benchmark_json: Path = None,
 ):
     """Create a latest benchmark report page and copy JSON artifacts."""
     benchmarks_dir = output_dir / "benchmarks"
@@ -78,19 +76,13 @@ def write_benchmarks_page(
         "",
     ]
 
-    if core_summary and core_summary.exists():
-        sections.extend([core_summary.read_text(encoding="utf-8").strip(), ""])
-
-    if cli_summary and cli_summary.exists():
-        sections.extend([cli_summary.read_text(encoding="utf-8").strip(), ""])
+    if benchmark_summary and benchmark_summary.exists():
+        sections.extend([benchmark_summary.read_text(encoding="utf-8").strip(), ""])
 
     downloads = []
-    if core_json and core_json.exists():
-        shutil.copy2(core_json, benchmarks_dir / "benchmark-core.json")
-        downloads.append("- [Core benchmark JSON](benchmark-core.json)")
-    if cli_json and cli_json.exists():
-        shutil.copy2(cli_json, benchmarks_dir / "benchmark-cli.json")
-        downloads.append("- [CLI benchmark JSON](benchmark-cli.json)")
+    if benchmark_json and benchmark_json.exists():
+        shutil.copy2(benchmark_json, benchmarks_dir / "benchmark.json")
+        downloads.append("- [Benchmark JSON](benchmark.json)")
 
     if downloads:
         sections.extend(["## Downloads", "", *downloads, ""])
@@ -132,10 +124,10 @@ def build_site(args):
 
     write_benchmarks_page(
         output_dir,
-        core_summary=Path(args.core_summary) if args.core_summary else None,
-        cli_summary=Path(args.cli_summary) if args.cli_summary else None,
-        core_json=Path(args.core_json) if args.core_json else None,
-        cli_json=Path(args.cli_json) if args.cli_json else None,
+        benchmark_summary=Path(args.benchmark_summary)
+        if args.benchmark_summary
+        else None,
+        benchmark_json=Path(args.benchmark_json) if args.benchmark_json else None,
     )
 
 
@@ -143,10 +135,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", default=".")
     parser.add_argument("--output", required=True)
-    parser.add_argument("--core-summary")
-    parser.add_argument("--cli-summary")
-    parser.add_argument("--core-json")
-    parser.add_argument("--cli-json")
+    parser.add_argument("--benchmark-summary")
+    parser.add_argument("--benchmark-json")
     args = parser.parse_args()
     build_site(args)
 
