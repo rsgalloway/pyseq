@@ -71,7 +71,8 @@ jobs:
           python scripts/benchmark.py \
             --compare baseline/baseline-benchmark.json candidate-benchmark.json \
             --json benchmark-compare.json \
-            --fail-on-regression-pct 5 > benchmark-compare.md
+            --fail-on-regression-pct 5 \
+            --fail-on-regression-s 0.01 > benchmark-compare.md
 
       - name: Write benchmark summaries
         if: always()
@@ -113,8 +114,8 @@ jobs:
               ? "## Benchmark Regression Alert"
               : "## Benchmark Comparison";
             const status = failed
-              ? "_Regression guard exceeded the +5.00% threshold._"
-              : "_No benchmark exceeded the +5.00% regression threshold._";
+              ? "_Regression guard exceeded the +5.00% and +0.010s thresholds._"
+              : "_No benchmark exceeded the +5.00% and +0.010s regression thresholds._";
             const body = `${marker}\n${header}\n\n${status}\n\n${compare}`;
 
             const { owner, repo } = context.repo;
@@ -176,7 +177,7 @@ jobs:
       - name: Enforce regression threshold
         if: always() && steps.compare.conclusion == 'failure'
         run: |
-          echo "Benchmark regression exceeded the +5.00% threshold."
+          echo "Benchmark regression exceeded the +5.00% and +0.010s thresholds."
           exit 1
 
   benchmark-branch:

@@ -527,16 +527,20 @@ def build_comparison(baseline, candidate):
     }
 
 
-def enforce_regression_threshold(payload, threshold_pct):
+def enforce_regression_threshold(payload, threshold_pct, threshold_seconds=0.0):
     regressions = [
-        row for row in payload["benchmarks"] if row["delta_pct"] > threshold_pct
+        row
+        for row in payload["benchmarks"]
+        if row["delta_pct"] > threshold_pct and row["delta_s"] > threshold_seconds
     ]
     if regressions:
         worst = max(regressions, key=lambda row: row["delta_pct"])
         raise SystemExit(
             "Regression threshold exceeded: "
             f"{len(regressions)} benchmark(s) slower than +{threshold_pct:.2f}% "
-            f"(worst: {worst['benchmark']} at {worst['delta_pct']:+.2f}%)"
+            f"and +{threshold_seconds:.3f}s "
+            f"(worst: {worst['benchmark']} at {worst['delta_pct']:+.2f}%, "
+            f"{worst['delta_s']:+.6f}s)"
         )
 
 
@@ -689,6 +693,12 @@ def main():
         type=float,
         help="Exit non-zero when any compared benchmark regresses by more than this percentage",
     )
+    parser.add_argument(
+        "--fail-on-regression-s",
+        type=float,
+        default=0.0,
+        help="Require this minimum absolute regression in seconds when using --fail-on-regression-pct",
+    )
     args = parser.parse_args()
 
     if args.compare:
@@ -700,7 +710,11 @@ def main():
             dump_json(payload, args.json_path)
         write_compare_summary(payload, sys.stdout)
         if args.fail_on_regression_pct is not None:
-            enforce_regression_threshold(payload, args.fail_on_regression_pct)
+            enforce_regression_threshold(
+                payload,
+                args.fail_on_regression_pct,
+                args.fail_on_regression_s,
+            )
         return
 
     sizes = (
