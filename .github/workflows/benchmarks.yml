@@ -55,6 +55,7 @@ jobs:
       - name: Run baseline benchmarks
         working-directory: baseline
         run: |
+          mkdir -p scripts
           cp "$GITHUB_WORKSPACE/scripts/benchmark.py" scripts/benchmark.py
           python scripts/benchmark.py --scenarios contiguous,mixed --json baseline-benchmark.json > baseline-benchmark.md
 
