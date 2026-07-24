@@ -439,8 +439,8 @@ def build_comparison(baseline, candidate):
         "benchmarks": comparisons,
         "summary": {
             "median_delta_pct": median(deltas),
-            "max_regression_pct": max(deltas),
-            "max_improvement_pct": min(deltas),
+            "max_regression_pct": max(deltas) if deltas else 0.0,
+            "max_improvement_pct": min(deltas) if deltas else 0.0,
         },
     }
 
