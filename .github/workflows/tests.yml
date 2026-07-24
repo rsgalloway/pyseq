@@ -4,7 +4,17 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "lib/pyseq/**"
+      - "tests/**"
+      - "pyproject.toml"
+      - ".github/workflows/tests.yml"
   pull_request:
+    paths:
+      - "lib/pyseq/**"
+      - "tests/**"
+      - "pyproject.toml"
+      - ".github/workflows/tests.yml"
   workflow_dispatch:
 
 jobs:
