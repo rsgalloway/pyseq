@@ -69,14 +69,22 @@ jobs:
 
       - name: Compare benchmark runs
         id: compare
-        continue-on-error: true
         if: success() || hashFiles('baseline/baseline-benchmark.json', 'candidate-benchmark.json') != ''
         run: |
+          set +e
           python scripts/benchmark.py \
             --compare baseline/baseline-benchmark.json candidate-benchmark.json \
             --json benchmark-compare.json \
             --fail-on-regression-pct 3 \
             --fail-on-regression-s 0.005 > benchmark-compare.md
+          status=$?
+          echo "exit_code=$status" >> "$GITHUB_OUTPUT"
+          if [ "$status" -eq 0 ]; then
+            echo "threshold_exceeded=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "threshold_exceeded=true" >> "$GITHUB_OUTPUT"
+          fi
+          exit 0
 
       - name: Write benchmark summaries
         if: always()
@@ -107,13 +115,13 @@ jobs:
         uses: actions/github-script@v7
         env:
           BENCHMARK_COMPARE_PATH: benchmark-compare.md
-          BENCHMARK_THRESHOLD_STATUS: ${{ steps.compare.outcome }}
+          BENCHMARK_THRESHOLD_EXCEEDED: ${{ steps.compare.outputs.threshold_exceeded }}
         with:
           script: |
             const fs = require("fs");
             const marker = "<!-- pyseq-benchmark-comment -->";
             const compare = fs.readFileSync(process.env.BENCHMARK_COMPARE_PATH, "utf8");
-            const failed = process.env.BENCHMARK_THRESHOLD_STATUS !== "success";
+            const failed = process.env.BENCHMARK_THRESHOLD_EXCEEDED === "true";
             const header = failed
               ? "## Benchmark Regression Alert"
               : "## Benchmark Comparison";
@@ -179,7 +187,7 @@ jobs:
           if-no-files-found: warn
 
       - name: Enforce regression threshold
-        if: always() && steps.compare.conclusion == 'failure'
+        if: always() && steps.compare.outputs.threshold_exceeded == 'true'
         run: |
           echo "Benchmark regression exceeded the +3.00% and +0.005s thresholds."
           exit 1

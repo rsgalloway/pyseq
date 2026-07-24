@@ -126,8 +126,9 @@ def resolve_sequence(sequence_string: str, include_negative: bool = False):
     if include_negative and negative_glob and negative_glob != positive_glob:
         negative_files = glob.glob(os.path.join(directory, negative_glob))
         if candidate_files:
+            existing = set(candidate_files)
             candidate_files.extend(
-                candidate for candidate in negative_files if candidate not in candidate_files
+                candidate for candidate in negative_files if candidate not in existing
             )
         else:
             candidate_files = negative_files

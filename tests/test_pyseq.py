@@ -40,12 +40,12 @@ import subprocess
 import sys
 import tempfile
 import unittest
-from unittest import mock
+from contextlib import contextmanager
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from conftest import get_installed_command
 
-from pyseq import Item, Sequence, SequenceError, diff, get_sequences
+from pyseq import Item, Sequence, SequenceError, config, diff, get_sequences
 from pyseq import seq as pyseq
 from pyseq import uncompress
 from pyseq.util import resolve_sequence_reference
@@ -58,8 +58,19 @@ def assert_read_only_attribute_error(message):
     assert any(snippet in message for snippet in valid_snippets), message
 
 
+@contextmanager
 def enable_negative_frames():
-    return mock.patch.dict(os.environ, {"PYSEQ_ALLOW_NEGATIVE_FRAMES": "1"})
+    previous = os.environ.get("PYSEQ_ALLOW_NEGATIVE_FRAMES")
+    os.environ["PYSEQ_ALLOW_NEGATIVE_FRAMES"] = "1"
+    config.set_frame_pattern(config.PYSEQ_FRAME_PATTERN)
+    try:
+        yield
+    finally:
+        if previous is None:
+            os.environ.pop("PYSEQ_ALLOW_NEGATIVE_FRAMES", None)
+        else:
+            os.environ["PYSEQ_ALLOW_NEGATIVE_FRAMES"] = previous
+        config.set_frame_pattern(config.PYSEQ_FRAME_PATTERN)
 
 
 class ItemTestCase(unittest.TestCase):
