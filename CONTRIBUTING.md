@@ -10,6 +10,7 @@ PySeq changes should stay small, clear, and performance-aware.
   `python -m black --check lib/pyseq tests scripts`
   `python -m isort --check-only --diff lib/pyseq tests scripts`
   `python -m flake8 lib/pyseq tests scripts`
+- Run those commands from the repo's `.venv` so local results match CI.
 - Prefer focused changes over broad refactors unless the refactor is the task.
 - Keep the default filename discovery path permissive and fast.
 
