@@ -222,7 +222,6 @@ def test_smv_cli_explicit_sequence_string_source_and_dest(tmp_path):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
-        env=_negative_env(),
     )
 
     assert result.returncode == 0, result.stderr
@@ -247,7 +246,6 @@ def test_smv_cli_embedded_range_source_and_dest(tmp_path):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
-        env=_negative_env(),
     )
 
     assert result.returncode == 0, result.stderr

@@ -39,7 +39,6 @@ import warnings
 from typing import Optional
 
 import pyseq
-from pyseq.cli import cli_catch_keyboard_interrupt
 from pyseq import config
 from pyseq.config import range_join
 

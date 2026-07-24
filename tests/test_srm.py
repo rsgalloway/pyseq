@@ -131,7 +131,6 @@ def test_srm_cli_explicit_sequence_string(tmp_path):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
-        env=_negative_env(),
     )
 
     assert result.returncode == 0, result.stderr
