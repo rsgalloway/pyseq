@@ -72,6 +72,8 @@ def _ext_key(x: str):
     return [ext] + _natural_key(name)
 
 
+# Import frame-range helpers lazily so default pyseq/lss imports do not pay
+# frange regex compilation costs unless range parsing/formatting is used.
 def _format_frame_range_explicit(frames: List[int], pad_with_brackets: bool = True) -> str:
     from pyseq.frange import format_frame_range_explicit
 
