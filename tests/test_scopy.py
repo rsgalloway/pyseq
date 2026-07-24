@@ -36,10 +36,11 @@ Contains tests for the scopy module.
 import os
 import subprocess
 import tempfile
+
 import pytest
+from conftest import get_installed_command
 
 import pyseq
-from conftest import get_installed_command
 from pyseq.scopy import copy_sequence
 
 scopy_bin = get_installed_command("scopy")

@@ -37,10 +37,11 @@ import json
 import os
 import subprocess
 import tempfile
+
 import pytest
+from conftest import get_installed_command
 
 import pyseq
-from conftest import get_installed_command
 from pyseq.sdiff import diff_sequences
 
 sdiff_bin = get_installed_command("sdiff")

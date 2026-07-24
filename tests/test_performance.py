@@ -8,8 +8,9 @@
 import time
 import unittest
 
-from pyseq import Sequence, get_sequences, uncompress
+from pyseq import Sequence, get_sequences
 from pyseq import seq as pyseq
+from pyseq import uncompress
 
 
 class PerformanceTests(unittest.TestCase):

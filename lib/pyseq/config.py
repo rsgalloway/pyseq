@@ -64,10 +64,10 @@ PYSEQ_ALLOW_NEGATIVE_FRAMES = os.getenv("PYSEQ_ALLOW_NEGATIVE_FRAMES", "0")
 DEFAULT_FRAME_RANGE_SEGMENT_PATTERN = (
     r"^\s*(?P<start>-?\d+)(?:\s*-\s*(?P<end>-?\d+)(?:\s*x\s*(?P<step>\d+))?)?\s*$"
 )
-DEFAULT_FRAME_RANGE_TEXT_PATTERN = r"-?\d+(?:\s*-\s*-?\d+(?:\s*x\s*\d+)?)?(?:\s*,\s*-?\d+(?:\s*-\s*-?\d+(?:\s*x\s*\d+)?)?)*"
-DEFAULT_SERIALIZED_RANGE_PATTERN = (
-    rf"\[[^\]]+\]|\s+(?:{DEFAULT_FRAME_RANGE_TEXT_PATTERN})\s*$"
+DEFAULT_FRAME_RANGE_TEXT_PATTERN = (
+    r"-?\d+(?:\s*-\s*-?\d+(?:\s*x\s*\d+)?)?(?:\s*,\s*-?\d+(?:\s*-\s*-?\d+(?:\s*x\s*\d+)?)?)*"
 )
+DEFAULT_SERIALIZED_RANGE_PATTERN = rf"\[[^\]]+\]|\s+(?:{DEFAULT_FRAME_RANGE_TEXT_PATTERN})\s*$"
 DEFAULT_EMBEDDED_RANGE_PATTERN = rf"^(?P<head>.+?)(?P<range>\[(?:[^\]]+)\]|{DEFAULT_FRAME_RANGE_TEXT_PATTERN})(?P<tail>\.[^/\s]+)$"
 
 

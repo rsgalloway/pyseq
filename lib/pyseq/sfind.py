@@ -87,9 +87,7 @@ def main():
         if not os.path.isdir(path):
             print(f"sfind: {path} is not a directory", file=sys.stderr)
             continue
-        for seq in walk_and_collect_sequences(
-            path, include_hidden=args.all, pattern=args.name
-        ):
+        for seq in walk_and_collect_sequences(path, include_hidden=args.all, pattern=args.name):
             print(seq)
 
     return 0

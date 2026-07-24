@@ -29,18 +29,16 @@
 # POSSIBILITY OF SUCH DAMAGE.
 # -----------------------------------------------------------------------------
 
-import functools
 import fnmatch
+import functools
 import glob
 import os
 import re
-import sys
 import warnings
 from typing import Optional
 
 import pyseq
 from pyseq import config
-from pyseq.config import range_join
 
 
 def deprecated(func):
@@ -116,9 +114,7 @@ def resolve_sequence(sequence_string: str, include_negative: bool = False):
         frame_token = f"%0{pad}d"
         positive_glob = filename.replace(frame_token, "?" * pad)
         negative_glob = filename.replace(frame_token, "-" + ("?" * pad))
-        frame_pattern = (
-            r"-?\d{" + str(pad) + r"}" if include_negative else r"\d{" + str(pad) + r"}"
-        )
+        frame_pattern = r"-?\d{" + str(pad) + r"}" if include_negative else r"\d{" + str(pad) + r"}"
         regex_pattern = re.escape(filename).replace(frame_token, frame_pattern)
     else:
         positive_glob = filename.replace("%d", "*")
@@ -131,9 +127,7 @@ def resolve_sequence(sequence_string: str, include_negative: bool = False):
         negative_files = glob.glob(os.path.join(directory, negative_glob))
         if candidate_files:
             candidate_files.extend(
-                candidate
-                for candidate in negative_files
-                if candidate not in candidate_files
+                candidate for candidate in negative_files if candidate not in candidate_files
             )
         else:
             candidate_files = negative_files
@@ -190,11 +184,7 @@ def subset_sequence(seq, frames):
 
 def parse_explicit_sequence_string(reference: str):
     """Parse a serialized sequence string, including embedded range syntax."""
-    from pyseq.frange import (
-        has_serialized_range,
-        parse_frame_range,
-        split_embedded_frame_range,
-    )
+    from pyseq.frange import has_serialized_range, parse_frame_range, split_embedded_frame_range
 
     dirname = os.path.dirname(reference) or "."
     basename = os.path.basename(reference)
@@ -206,9 +196,7 @@ def parse_explicit_sequence_string(reference: str):
         return None
 
     embedded = (
-        None
-        if is_compressed_format_string(basename)
-        else split_embedded_frame_range(basename)
+        None if is_compressed_format_string(basename) else split_embedded_frame_range(basename)
     )
     if embedded:
         head, range_text, tail = embedded
@@ -284,20 +272,15 @@ def resolve_sequence_reference(reference: str):
             candidates = [
                 seq
                 for seq in sequences
-                if seq.head() == requested_seq.head()
-                and seq.tail() == requested_seq.tail()
+                if seq.head() == requested_seq.head() and seq.tail() == requested_seq.tail()
             ]
             candidates = [
-                seq
-                for seq in candidates
-                if set(requested_seq.frames()).issubset(set(seq.frames()))
+                seq for seq in candidates if set(requested_seq.frames()).issubset(set(seq.frames()))
             ]
             if not candidates:
                 raise FileNotFoundError(f"No sequence found matching {reference}")
             if len(candidates) > 1:
-                raise ValueError(
-                    f"Multiple sequences found matching {reference}: {candidates}"
-                )
+                raise ValueError(f"Multiple sequences found matching {reference}: {candidates}")
             full_seq = candidates[0]
 
         return subset_sequence(full_seq, requested_seq.frames()), dirname
@@ -327,9 +310,7 @@ def parse_destination_reference(destination: str, source_seq):
         expected_frames = list(range(dest_frames[0], dest_frames[0] + len(source_seq)))
 
         if dest_seq.tail() != source_seq.tail():
-            raise ValueError(
-                "Destination sequence pattern must preserve the source extension"
-            )
+            raise ValueError("Destination sequence pattern must preserve the source extension")
         if dest_frames != expected_frames:
             raise ValueError("Destination explicit range must be contiguous")
         if len(dest_seq) != len(source_seq):
@@ -359,9 +340,7 @@ def parse_destination_reference(destination: str, source_seq):
 
     tail = filename[match.end() :]
     if tail != source_seq.tail():
-        raise ValueError(
-            "Destination sequence pattern must preserve the source extension"
-        )
+        raise ValueError("Destination sequence pattern must preserve the source extension")
 
     return {
         "kind": "sequence",

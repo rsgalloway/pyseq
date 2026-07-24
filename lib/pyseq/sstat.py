@@ -79,9 +79,7 @@ def print_sstat(seq: pyseq.Sequence):
         return f"{format_time(t1)}.. {format_time(t2)}"
 
     print(f"Sequence: {str(seq)}")
-    print(
-        f"Size:     {seq.format('%H'):>8}    Frames: {seq.format('%l'):>5}    Padding: {seq.pad}"
-    )
+    print(f"Size:     {seq.format('%H'):>8}    Frames: {seq.format('%l'):>5}    Padding: {seq.pad}")
     missing = seq.format("%M")
     print(f"Missing:  {missing if missing else 'none'}")
     print(f"Head:     {seq.head()}")

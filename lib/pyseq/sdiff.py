@@ -58,7 +58,7 @@ def diff_sequences(
     def intval(val):
         try:
             return int(val)
-        except:
+        except (TypeError, ValueError):
             return None
 
     diff = {

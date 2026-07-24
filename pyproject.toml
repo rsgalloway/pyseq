@@ -40,7 +40,16 @@ classifiers = [
 authors = [
   { name = "Ryan Galloway", email = "ryan@rsgalloway.com" },
 ]
-optional-dependencies = { dev = ["pytest"], test = ["pytest"] }
+optional-dependencies = { dev = ["pytest", "flake8", "mccabe", "isort", "black"], test = ["pytest"] }
+
+[tool.isort]
+profile = "black"
+line_length = 100
+skip_gitignore = true
+
+[tool.black]
+line-length = 100
+target-version = ["py38"]
 
 [project.scripts]
 lss = "pyseq.lss:main"

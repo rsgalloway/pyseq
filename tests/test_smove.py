@@ -36,10 +36,11 @@ Contains tests for the smv console command and smove module.
 import os
 import subprocess
 import tempfile
+
 import pytest
+from conftest import get_installed_command
 
 import pyseq
-from conftest import get_installed_command
 from pyseq.smove import move_sequence
 
 smv_bin = get_installed_command("smv")

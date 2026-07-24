@@ -21,7 +21,6 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parent.parent
 LIB_ROOT = REPO_ROOT / "lib"
 SCRIPT_PATH = Path(__file__).resolve()
@@ -32,7 +31,6 @@ import pyseq  # noqa: E402
 import pyseq.seq as pyseq_seq  # noqa: E402
 from pyseq import get_sequences  # noqa: E402
 from pyseq.util import resolve_sequence  # noqa: E402
-
 
 DEFAULT_SIZES = [100, 1000, 10000]
 FULL_SIZES = [100, 1000, 10000, 50000]
@@ -177,14 +175,9 @@ def create_mixed_dataset(root, size, extra_files_factor=EXTRA_FILES_FACTOR):
     tertiary_start = 1001
     quaternary_start = 1001
     for offset in range(secondary_count):
-        (
-            dataset / f"big_buck_bunny_1080p_h264.{secondary_start + offset:08d}.png"
-        ).touch()
+        (dataset / f"big_buck_bunny_1080p_h264.{secondary_start + offset:08d}.png").touch()
     for offset in range(tertiary_count):
-        (
-            dataset
-            / f"big_buck_bunny_1080p_h264_test.{tertiary_start + offset:08d}.png"
-        ).touch()
+        (dataset / f"big_buck_bunny_1080p_h264_test.{tertiary_start + offset:08d}.png").touch()
     for offset in range(quaternary_count):
         (dataset / f"test.{quaternary_start + offset:08d}.png").touch()
 
@@ -209,9 +202,7 @@ def create_existing_dataset(path, sequence_pattern=None, glob_pattern=None):
     if glob_pattern:
         import fnmatch
 
-        file_names = [
-            name for name in file_names if fnmatch.fnmatch(name, glob_pattern)
-        ]
+        file_names = [name for name in file_names if fnmatch.fnmatch(name, glob_pattern)]
 
     return {
         "path": dataset,
@@ -348,9 +339,7 @@ def build_benchmarks(
                 [
                     {
                         "name": f"get_sequences_list_{label}",
-                        "callable": lambda file_names=file_names: get_sequences(
-                            file_names
-                        ),
+                        "callable": lambda file_names=file_names: get_sequences(file_names),
                         "profile_kind": "python",
                     },
                     {
@@ -412,9 +401,7 @@ def run_benchmarks(
             profiles_dir.mkdir(parents=True, exist_ok=True)
             for case in cases:
                 if case["profile_kind"] == "python":
-                    profile_python_callable(
-                        case["callable"], case["name"], profiles_dir
-                    )
+                    profile_python_callable(case["callable"], case["name"], profiles_dir)
                 else:
                     profile_lss_subprocess(
                         case["path"],
@@ -605,9 +592,7 @@ def write_compare_summary(payload, stream):
             f"Baseline pyseq: `{payload['baseline'].get('pyseq_file')}`  Candidate pyseq: `{payload['candidate'].get('pyseq_file')}`",
             file=stream,
         )
-    if payload["baseline"].get("pyseq_seq_file") or payload["candidate"].get(
-        "pyseq_seq_file"
-    ):
+    if payload["baseline"].get("pyseq_seq_file") or payload["candidate"].get("pyseq_seq_file"):
         print(
             f"Baseline pyseq.seq: `{payload['baseline'].get('pyseq_seq_file')}`  Candidate pyseq.seq: `{payload['candidate'].get('pyseq_seq_file')}`",
             file=stream,
@@ -662,9 +647,7 @@ def main():
         type=parse_csv_list,
         help="Comma-separated synthetic scenarios, for example: contiguous,mixed",
     )
-    parser.add_argument(
-        "--iterations", type=int, help="Override timing iteration count"
-    )
+    parser.add_argument("--iterations", type=int, help="Override timing iteration count")
     parser.add_argument("--json", dest="json_path", help="Write JSON output to a file")
     parser.add_argument(
         "--no-profile",
@@ -717,15 +700,9 @@ def main():
             )
         return
 
-    sizes = (
-        None
-        if args.path
-        else (args.sizes or (FULL_SIZES if args.full else DEFAULT_SIZES))
-    )
+    sizes = None if args.path else (args.sizes or (FULL_SIZES if args.full else DEFAULT_SIZES))
     scenarios = None if args.path else (args.scenarios or DEFAULT_SCENARIOS)
-    iterations = args.iterations or (
-        FULL_ITERATIONS if args.full else DEFAULT_ITERATIONS
-    )
+    iterations = args.iterations or (FULL_ITERATIONS if args.full else DEFAULT_ITERATIONS)
     profiles_dir = Path(args.profiles_dir) if args.profiles_dir else None
     payload = build_run_payload(
         sizes=sizes,

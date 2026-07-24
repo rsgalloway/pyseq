@@ -6,8 +6,19 @@ PySeq changes should stay small, clear, and performance-aware.
 
 - Run the unit tests for code changes:
   `pytest tests -q`
+- Run local quality checks for Python changes:
+  `python -m black --check lib/pyseq tests scripts`
+  `python -m isort --check-only --diff lib/pyseq tests scripts`
+  `python -m flake8 lib/pyseq tests scripts`
 - Prefer focused changes over broad refactors unless the refactor is the task.
 - Keep the default filename discovery path permissive and fast.
+
+Optional local hook installation:
+
+- `python scripts/install_precommit_hook.py`
+
+That hook runs `black`, `isort`, `flake8`/`mccabe`, and `pytest` before each
+commit.
 
 ## Performance
 

@@ -36,10 +36,11 @@ Contains tests for the srm CLI and sremove module.
 import os
 import subprocess
 import tempfile
+
 import pytest
+from conftest import get_installed_command
 
 import pyseq
-from conftest import get_installed_command
 from pyseq.sremove import remove_sequence
 
 srm_bin = get_installed_command("srm")

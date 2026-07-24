@@ -36,8 +36,8 @@ Contains tests for the stree module.
 import os
 import subprocess
 import tempfile
-import pytest
 
+import pytest
 from conftest import get_installed_command
 
 stree_bin = get_installed_command("stree")

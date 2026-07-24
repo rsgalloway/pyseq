@@ -36,8 +36,8 @@ Contains tests for the sfind module.
 import os
 import subprocess
 import tempfile
-import pytest
 
+import pytest
 from conftest import get_installed_command
 
 sfind_bin = get_installed_command("sfind")

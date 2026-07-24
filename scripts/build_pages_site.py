@@ -10,7 +10,6 @@ import re
 import shutil
 from pathlib import Path
 
-
 LINK_PATTERNS = (
     (r"\(README\.md\)", "(index.html)"),
     (r"\(docs/README\.md\)", "(docs/index.html)"),
@@ -124,9 +123,7 @@ def build_site(args):
 
     write_benchmarks_page(
         output_dir,
-        benchmark_summary=Path(args.benchmark_summary)
-        if args.benchmark_summary
-        else None,
+        benchmark_summary=Path(args.benchmark_summary) if args.benchmark_summary else None,
         benchmark_json=Path(args.benchmark_json) if args.benchmark_json else None,
     )
 

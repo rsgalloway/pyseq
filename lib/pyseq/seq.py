@@ -38,16 +38,10 @@ import os
 import re
 from collections import deque
 from glob import glob, iglob
-from typing import List, Callable, Union
+from typing import Callable, List, Union
 
 from pyseq import config
-from pyseq.config import (
-    default_format,
-    format_re,
-    global_format,
-    range_join,
-    strict_pad,
-)
+from pyseq.config import default_format, format_re, global_format, range_join, strict_pad
 
 
 class SequenceError(Exception):
@@ -78,9 +72,7 @@ def _ext_key(x: str):
     return [ext] + _natural_key(name)
 
 
-def _format_frame_range_explicit(
-    frames: List[int], pad_with_brackets: bool = True
-) -> str:
+def _format_frame_range_explicit(frames: List[int], pad_with_brackets: bool = True) -> str:
     from pyseq.frange import format_frame_range_explicit
 
     return format_frame_range_explicit(frames, pad_with_brackets=pad_with_brackets)
@@ -748,9 +740,7 @@ class Sequence(list):
 
         for anchor in anchors:
             if anchor.is_sibling(item):
-                return item.name.startswith(canonical_head) and item.name.endswith(
-                    canonical_tail
-                )
+                return item.name.startswith(canonical_head) and item.name.endswith(canonical_tail)
 
         return False
 
@@ -849,8 +839,7 @@ class Sequence(list):
 
         if offset > 0:
             gen = (
-                (image, frame)
-                for (image, frame) in zip(reversed(self), reversed(self.frames()))
+                (image, frame) for (image, frame) in zip(reversed(self), reversed(self.frames()))
             )
         else:
             gen = ((image, frame) for (image, frame) in zip(self, self.frames()))
@@ -990,9 +979,7 @@ def diff(f1: Union[str, Item], f2: Union[str, Item]):
     if len(f1.number_matches) == len(f2.number_matches):
         for m1, m2 in zip(f1.number_matches, f2.number_matches):
             if (m1.start() == m2.start()) and (m1.group() != m2.group()):
-                if strict_pad is True and (
-                    _frame_width(m1.group()) != _frame_width(m2.group())
-                ):
+                if strict_pad is True and (_frame_width(m1.group()) != _frame_width(m2.group())):
                     continue
                 d.append(
                     {
@@ -1051,9 +1038,7 @@ def uncompress(seq_string: str, fmt: str = global_format):
     # map of directives to regex
     allow_negative = config.allow_negative_frames()
     range_pattern = (
-        r"-?\d+\s*-\s*-?\d+(?:\s*x\s*\d+)?"
-        if allow_negative
-        else r"\d+\s*-\s*\d+(?:\s*x\s*\d+)?"
+        r"-?\d+\s*-\s*-?\d+(?:\s*x\s*\d+)?" if allow_negative else r"\d+\s*-\s*\d+(?:\s*x\s*\d+)?"
     )
     explicit_pattern = (
         r"-?\d+(?:\s*-\s*-?\d+(?:\s*x\s*\d+)?)?(?:\s*,\s*-?\d+(?:\s*-\s*-?\d+(?:\s*x\s*\d+)?)?)*"
@@ -1089,7 +1074,6 @@ def uncompress(seq_string: str, fmt: str = global_format):
     regex = re.compile(fmt)
     match = regex.match(name)
 
-    frames = []
     frame_values = []
     missing = []
     s = None

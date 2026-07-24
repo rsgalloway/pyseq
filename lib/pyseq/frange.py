@@ -53,9 +53,7 @@ def parse_frame_range(range_text: str) -> List[int]:
         step = match.group("step")
 
         if start < 0 and not config.allow_negative_frames():
-            raise ValueError(
-                "Negative frame ranges require PYSEQ_ALLOW_NEGATIVE_FRAMES=1"
-            )
+            raise ValueError("Negative frame ranges require PYSEQ_ALLOW_NEGATIVE_FRAMES=1")
 
         if end is None:
             frames.append(start)
@@ -63,9 +61,7 @@ def parse_frame_range(range_text: str) -> List[int]:
 
         end = int(end)
         if end < 0 and not config.allow_negative_frames():
-            raise ValueError(
-                "Negative frame ranges require PYSEQ_ALLOW_NEGATIVE_FRAMES=1"
-            )
+            raise ValueError("Negative frame ranges require PYSEQ_ALLOW_NEGATIVE_FRAMES=1")
         step = int(step) if step is not None else 1
         if step <= 0:
             raise ValueError(f"Frame step must be positive: {segment}")
@@ -111,9 +107,7 @@ def _frame_groups(frames: List[int]):
     return groups
 
 
-def format_frame_range_explicit(
-    frames: List[int], pad_with_brackets: bool = True
-) -> str:
+def format_frame_range_explicit(frames: List[int], pad_with_brackets: bool = True) -> str:
     """Format frames as explicit contiguous segments."""
     if not frames:
         return ""

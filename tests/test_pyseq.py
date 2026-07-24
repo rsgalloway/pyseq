@@ -34,19 +34,20 @@ Contains tests for the pyseq package.
 """
 
 import os
-import re
 import random
-import tempfile
-import unittest
+import re
 import subprocess
 import sys
+import tempfile
+import unittest
 from unittest import mock
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from conftest import get_installed_command
-from pyseq import Item, Sequence, diff, uncompress, get_sequences
-from pyseq import SequenceError
+
+from pyseq import Item, Sequence, SequenceError, diff, get_sequences
 from pyseq import seq as pyseq
+from pyseq import uncompress
 from pyseq.util import resolve_sequence_reference
 
 pyseq.default_format = "%h%r%t"
@@ -689,9 +690,7 @@ class HelperFunctionsTestCase(unittest.TestCase):
                         frame_text = f"-{abs(frame):04d}"
                     else:
                         frame_text = f"{frame:04d}"
-                    with open(
-                        os.path.join(tmpdir, f"render.{frame_text}.exr"), "w"
-                    ) as handle:
+                    with open(os.path.join(tmpdir, f"render.{frame_text}.exr"), "w") as handle:
                         handle.write("dummy frame")
 
                 seq, dirname = resolve_sequence_reference(
@@ -705,9 +704,7 @@ class HelperFunctionsTestCase(unittest.TestCase):
     def test_resolve_sequence_reference_with_negative_fixture_files(self):
         with enable_negative_frames():
             pyseq.strict_pad = True
-            seq, dirname = resolve_sequence_reference(
-                "./tests/files/negA.%04d.exr -2-1"
-            )
+            seq, dirname = resolve_sequence_reference("./tests/files/negA.%04d.exr -2-1")
 
             self.assertEqual(dirname, "./tests/files")
             self.assertEqual(seq.frames(), [-2, -1, 0, 1])
@@ -719,9 +716,7 @@ class LSSTestCase(unittest.TestCase):
 
     def run_command(self, *args):
         """a simple wrapper for subprocess.Popen"""
-        process = subprocess.Popen(
-            args, stdout=subprocess.PIPE, universal_newlines=True
-        )
+        process = subprocess.Popen(args, stdout=subprocess.PIPE, universal_newlines=True)
         stdout, _ = process.communicate()
         return stdout
 
@@ -738,30 +733,31 @@ class LSSTestCase(unittest.TestCase):
         result = self.run_command(self.lss, test_files)
 
         self.assertEqual(
-            """  10 012_vb_110_v001.%04d.png [1-10]
-  10 012_vb_110_v002.%04d.png [1-10]
-   7 a.%03d.tga [1-3, 10, 12-14]
-   1 alpha.txt 
-   5 bnc01_TinkSO_tx_0_ty_0.%04d.tif [101-105]
-   5 bnc01_TinkSO_tx_0_ty_1.%04d.tif [101-105]
-   5 bnc01_TinkSO_tx_1_ty_0.%04d.tif [101-105]
-   5 bnc01_TinkSO_tx_1_ty_1.%04d.tif [101-105]
-   4 file.%02d.tif [1-2, 98-99]
-   1 file.info.03.rgb 
-   3 file01.%03d.j2k [1-2, 4]
-   4 file01_%04d.rgb [40-43]
-   4 file02_%04d.rgb [44-47]
-   4 file%d.03.rgb [1-4]
-   3 fileA.%04d.jpg [1-3]
-   3 fileA.%04d.png [1-3]
-   1 file_02.tif 
-   2 negA.-%04d.exr [1-2]
-   2 negA.%04d.exr [0-1]
-   4 stepA.%d.exr [1001, 1004, 1007, 1010]
-   4 z1_001_v1.%d.png [1-4]
-   4 z1_002_v1.%d.png [1-4]
-   4 z1_002_v2.%d.png [9-12]
-""",
+            (
+                "  10 012_vb_110_v001.%04d.png [1-10]\n"
+                "  10 012_vb_110_v002.%04d.png [1-10]\n"
+                "   7 a.%03d.tga [1-3, 10, 12-14]\n"
+                "   1 alpha.txt \n"
+                "   5 bnc01_TinkSO_tx_0_ty_0.%04d.tif [101-105]\n"
+                "   5 bnc01_TinkSO_tx_0_ty_1.%04d.tif [101-105]\n"
+                "   5 bnc01_TinkSO_tx_1_ty_0.%04d.tif [101-105]\n"
+                "   5 bnc01_TinkSO_tx_1_ty_1.%04d.tif [101-105]\n"
+                "   4 file.%02d.tif [1-2, 98-99]\n"
+                "   1 file.info.03.rgb \n"
+                "   3 file01.%03d.j2k [1-2, 4]\n"
+                "   4 file01_%04d.rgb [40-43]\n"
+                "   4 file02_%04d.rgb [44-47]\n"
+                "   4 file%d.03.rgb [1-4]\n"
+                "   3 fileA.%04d.jpg [1-3]\n"
+                "   3 fileA.%04d.png [1-3]\n"
+                "   1 file_02.tif \n"
+                "   2 negA.-%04d.exr [1-2]\n"
+                "   2 negA.%04d.exr [0-1]\n"
+                "   4 stepA.%d.exr [1001, 1004, 1007, 1010]\n"
+                "   4 z1_001_v1.%d.png [1-4]\n"
+                "   4 z1_002_v1.%d.png [1-4]\n"
+                "   4 z1_002_v2.%d.png [9-12]\n"
+            ),
             result,
         )
 
@@ -933,9 +929,7 @@ class TestIssues(unittest.TestCase):
         self.assertTrue(len(missing), 5000000)
         self.assertEqual(missing[0][0], 100000001)
         self.assertEqual(missing[0][-1], 499999999)
-        self.assertEqual(
-            seqs[0].format(), "   2 image-%09d-2048x2048.jpg [100000000, 500000000]"
-        )
+        self.assertEqual(seqs[0].format(), "   2 image-%09d-2048x2048.jpg [100000000, 500000000]")
         self.assertEqual(seqs[0].format("%M"), "[100000001-499999999, ]")
 
         # high missing frame count test 3 (from the issue)
@@ -1039,9 +1033,7 @@ class TestIssues(unittest.TestCase):
         ]
 
         # test using default frame pattern
-        seqs1 = pyseq.get_sequences(
-            filenames, frame_pattern=config.DEFAULT_FRAME_PATTERN
-        )
+        seqs1 = pyseq.get_sequences(filenames, frame_pattern=config.DEFAULT_FRAME_PATTERN)
         self.assertEqual(len(seqs1), 1)
 
         # test if a new file in the sequence is included
