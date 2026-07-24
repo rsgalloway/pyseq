@@ -41,7 +41,7 @@ from typing import Any, Optional
 
 from pyseq import __version__, get_sequences
 from pyseq import seq as pyseq
-from pyseq.util import cli_catch_keyboard_interrupt
+from pyseq.cli import cli_catch_keyboard_interrupt
 from pyseq import walk
 
 

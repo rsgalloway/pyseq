@@ -39,7 +39,7 @@ import os
 import sys
 
 import pyseq
-from pyseq.util import cli_catch_keyboard_interrupt
+from pyseq.cli import cli_catch_keyboard_interrupt
 
 
 def walk_and_collect_sequences(

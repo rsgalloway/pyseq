@@ -43,8 +43,10 @@ Notes:
 - Descending ranges are accepted when parsing, but `Sequence.frames()` and
   `%x` formatting normalize frames into ascending order.
 - `%x` uses compact canonical formatting with no spaces after commas.
-- Signed frame numbers are supported in serialized range strings and in
-  on-disk filename patterns such as `render.-0010.exr`.
+- Negative frame ranges are opt-in. Enable them with
+  `PYSEQ_ALLOW_NEGATIVE_FRAMES=1`.
+- With that flag enabled, signed frame numbers are supported in serialized
+  range strings and in on-disk filename patterns such as `render.-0010.exr`.
 
 ## CLI Examples
 

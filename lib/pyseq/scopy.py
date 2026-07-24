@@ -40,8 +40,8 @@ import shutil
 from typing import Optional
 
 import pyseq
+from pyseq.cli import cli_catch_keyboard_interrupt
 from pyseq.util import (
-    cli_catch_keyboard_interrupt,
     parse_destination_reference,
     resolve_sequence_reference,
 )

@@ -24,6 +24,8 @@ Simple examples:
 python scripts/benchmark.py
 python scripts/benchmark.py --full
 python scripts/benchmark.py --json /tmp/pyseq-main.json
+python scripts/benchmark.py --path /project/shot/frames --iterations 5
+python scripts/benchmark.py --path /project/shot/frames --glob "*.exr" --iterations 5
 python scripts/benchmark.py --compare /tmp/pyseq-main.json /tmp/pyseq-feature.json
 ```
 
@@ -33,6 +35,10 @@ What it measures:
 - `get_sequences(...)` from a directory path
 - `resolve_sequence(...)` against a padded on-disk sequence
 - `lss` end-to-end subprocess runtime on the same synthetic dataset
+
+When using `--path`, the runner benchmarks an existing directory instead of a
+synthetic dataset. This is useful for validating results against real-world
+sequence layouts that may not be modeled well by generated fixtures.
 
 Default synthetic dataset sizes:
 
@@ -61,6 +67,38 @@ python scripts/benchmark.py --full --json /tmp/pyseq-feature.json
 # compare
 python scripts/benchmark.py --compare /tmp/pyseq-main.json /tmp/pyseq-feature.json
 ```
+
+For real-world validation, use the same workflow against an existing directory:
+
+```bash
+# on baseline branch
+python scripts/benchmark.py --path /project/shot/frames --iterations 5 --json /tmp/pyseq-main.json
+
+# switch branches
+python scripts/benchmark.py --path /project/shot/frames --iterations 5 --json /tmp/pyseq-feature.json
+
+# compare
+python scripts/benchmark.py --compare /tmp/pyseq-main.json /tmp/pyseq-feature.json
+```
+
+## Benchmark Hygiene
+
+Before trusting an A/B result, make sure both runs use:
+
+- the same terminal/session state
+- the same Python interpreter or virtualenv
+- the same benchmark script revision
+- the same target directory or synthetic dataset shape
+
+The benchmark summary and JSON now record:
+
+- `python_executable`
+- `lib_root`
+- `pyseq_file`
+- `pyseq_seq_file`
+
+Check those fields before drawing conclusions from a comparison. If they do
+not match your expectations, fix the environment first and rerun.
 
 ## Profiling
 
@@ -113,10 +151,16 @@ Example run payload:
   "commit": "abc1234",
   "iterations": 5,
   "kind": "benchmark",
+  "lib_root": "/path/to/pyseq/lib",
   "platform": "Linux-6.x-x86_64",
   "profiled": true,
+  "pyseq_file": "/path/to/pyseq/lib/pyseq/__init__.py",
+  "pyseq_seq_file": "/path/to/pyseq/lib/pyseq/seq.py",
+  "python_executable": "/path/to/venv/bin/python",
   "profiles_dir": "tmp/benchmarks/profiles/20260721T000000Z-feat-example-abc1234",
   "python": "3.11.x",
+  "repo_root": "/path/to/pyseq",
+  "script_path": "/path/to/pyseq/scripts/benchmark.py",
   "sizes": [100, 1000, 10000],
   "timestamp_utc": "2026-07-21T00:00:00+00:00"
 }
@@ -129,6 +173,10 @@ Field notes:
 - `mean_s` is useful when the run-to-run spread is small.
 - `samples_s` helps show spread directly.
 - `branch` and `commit` make branch-to-branch comparisons easier to track.
+- `repo_root`, `lib_root`, `script_path`, and `python_executable` show
+  exactly which source tree and interpreter were used.
+- `pyseq_file` and `pyseq_seq_file` confirm which imported package files were
+  actually exercised.
 - `profiles_dir` points to the profile output location for that run.
 - `timestamp_utc`, `python`, and `platform` help when comparing results.
 

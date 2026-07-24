@@ -38,7 +38,8 @@ import os
 import sys
 
 import pyseq
-from pyseq.util import cli_catch_keyboard_interrupt, resolve_sequence_reference
+from pyseq.cli import cli_catch_keyboard_interrupt
+from pyseq.util import resolve_sequence_reference
 
 
 def remove_sequence(

@@ -40,6 +40,7 @@ import tempfile
 import unittest
 import subprocess
 import sys
+from unittest import mock
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from conftest import get_installed_command
@@ -54,6 +55,10 @@ pyseq.default_format = "%h%r%t"
 def assert_read_only_attribute_error(message):
     valid_snippets = ("can't set attribute", "has no setter")
     assert any(snippet in message for snippet in valid_snippets), message
+
+
+def enable_negative_frames():
+    return mock.patch.dict(os.environ, {"PYSEQ_ALLOW_NEGATIVE_FRAMES": "1"})
 
 
 class ItemTestCase(unittest.TestCase):
@@ -526,9 +531,10 @@ class HelperFunctionsTestCase(unittest.TestCase):
         self.assertEqual(seq.format("%x"), "1001-1010x3")
 
     def test_uncompress_extended_range_negative_frames(self):
-        seq = uncompress("render.%04d.exr -10--1x3", fmt="%h%p%t %x")
-        self.assertEqual(seq.frames(), [-10, -7, -4, -1])
-        self.assertEqual(seq.format("%h%p%t %x"), "render.%04d.exr -10--1x3")
+        with enable_negative_frames():
+            seq = uncompress("render.%04d.exr -10--1x3", fmt="%h%p%t %x")
+            self.assertEqual(seq.frames(), [-10, -7, -4, -1])
+            self.assertEqual(seq.format("%h%p%t %x"), "render.%04d.exr -10--1x3")
 
     def test_uncompress_extended_range_descending(self):
         seq = uncompress("render.%04d.exr 10-1x3", fmt="%h%p%t %x")
@@ -651,55 +657,61 @@ class HelperFunctionsTestCase(unittest.TestCase):
         )
 
     def test_get_sequences_with_negative_filenames(self):
-        pyseq.strict_pad = True
-        seq = get_sequences(
-            [
-                "render.-0002.exr",
-                "render.-0001.exr",
-                "render.0000.exr",
-                "render.0001.exr",
-            ]
-        )[0]
+        with enable_negative_frames():
+            pyseq.strict_pad = True
+            seq = get_sequences(
+                [
+                    "render.-0002.exr",
+                    "render.-0001.exr",
+                    "render.0000.exr",
+                    "render.0001.exr",
+                ]
+            )[0]
 
-        self.assertEqual(seq.frames(), [-2, -1, 0, 1])
-        self.assertEqual(seq.format("%h%p%t %x"), "render.%04d.exr -2-1")
-
-    def test_get_sequences_with_negative_fixture_files(self):
-        pyseq.strict_pad = True
-        seq = get_sequences("./tests/files/negA*")[0]
-
-        self.assertEqual(str(seq), "negA.-2-1.exr")
-        self.assertEqual(seq.frames(), [-2, -1, 0, 1])
-        self.assertEqual(seq.format("%h%p%t %x"), "negA.%04d.exr -2-1")
-
-    def test_resolve_sequence_reference_with_negative_filenames(self):
-        pyseq.strict_pad = True
-        with tempfile.TemporaryDirectory() as tmpdir:
-            for frame in (-2, -1, 0, 1):
-                if frame < 0:
-                    frame_text = f"-{abs(frame):04d}"
-                else:
-                    frame_text = f"{frame:04d}"
-                with open(
-                    os.path.join(tmpdir, f"render.{frame_text}.exr"), "w"
-                ) as handle:
-                    handle.write("dummy frame")
-
-            seq, dirname = resolve_sequence_reference(
-                os.path.join(tmpdir, "render.%04d.exr -2-1")
-            )
-
-            self.assertEqual(dirname, tmpdir)
             self.assertEqual(seq.frames(), [-2, -1, 0, 1])
             self.assertEqual(seq.format("%h%p%t %x"), "render.%04d.exr -2-1")
 
-    def test_resolve_sequence_reference_with_negative_fixture_files(self):
-        pyseq.strict_pad = True
-        seq, dirname = resolve_sequence_reference("./tests/files/negA.%04d.exr -2-1")
+    def test_get_sequences_with_negative_fixture_files(self):
+        with enable_negative_frames():
+            pyseq.strict_pad = True
+            seq = get_sequences("./tests/files/negA*")[0]
 
-        self.assertEqual(dirname, "./tests/files")
-        self.assertEqual(seq.frames(), [-2, -1, 0, 1])
-        self.assertEqual(seq.format("%h%p%t %x"), "negA.%04d.exr -2-1")
+            self.assertEqual(str(seq), "negA.-2-1.exr")
+            self.assertEqual(seq.frames(), [-2, -1, 0, 1])
+            self.assertEqual(seq.format("%h%p%t %x"), "negA.%04d.exr -2-1")
+
+    def test_resolve_sequence_reference_with_negative_filenames(self):
+        with enable_negative_frames():
+            pyseq.strict_pad = True
+            with tempfile.TemporaryDirectory() as tmpdir:
+                for frame in (-2, -1, 0, 1):
+                    if frame < 0:
+                        frame_text = f"-{abs(frame):04d}"
+                    else:
+                        frame_text = f"{frame:04d}"
+                    with open(
+                        os.path.join(tmpdir, f"render.{frame_text}.exr"), "w"
+                    ) as handle:
+                        handle.write("dummy frame")
+
+                seq, dirname = resolve_sequence_reference(
+                    os.path.join(tmpdir, "render.%04d.exr -2-1")
+                )
+
+                self.assertEqual(dirname, tmpdir)
+                self.assertEqual(seq.frames(), [-2, -1, 0, 1])
+                self.assertEqual(seq.format("%h%p%t %x"), "render.%04d.exr -2-1")
+
+    def test_resolve_sequence_reference_with_negative_fixture_files(self):
+        with enable_negative_frames():
+            pyseq.strict_pad = True
+            seq, dirname = resolve_sequence_reference(
+                "./tests/files/negA.%04d.exr -2-1"
+            )
+
+            self.assertEqual(dirname, "./tests/files")
+            self.assertEqual(seq.frames(), [-2, -1, 0, 1])
+            self.assertEqual(seq.format("%h%p%t %x"), "negA.%04d.exr -2-1")
 
 
 class LSSTestCase(unittest.TestCase):
@@ -743,7 +755,8 @@ class LSSTestCase(unittest.TestCase):
    3 fileA.%04d.jpg [1-3]
    3 fileA.%04d.png [1-3]
    1 file_02.tif 
-   4 negA.%04d.exr [-2-1]
+   2 negA.-%04d.exr [1-2]
+   2 negA.%04d.exr [0-1]
    4 stepA.%d.exr [1001, 1004, 1007, 1010]
    4 z1_001_v1.%d.png [1-4]
    4 z1_002_v1.%d.png [1-4]

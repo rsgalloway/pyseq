@@ -49,6 +49,12 @@ def _signed_frame_name(frame):
     return f"{frame:05d}" if frame < 0 else f"{frame:04d}"
 
 
+def _negative_env():
+    env = os.environ.copy()
+    env["PYSEQ_ALLOW_NEGATIVE_FRAMES"] = "1"
+    return env
+
+
 @pytest.fixture
 def sample_sequence(tmp_path):
     """Create a dummy sequence: test.0001.exr through test.0003.exr"""
@@ -115,6 +121,7 @@ def test_scopy_cli_explicit_sequence_string_source_and_dest(tmp_path):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
+        env=_negative_env(),
     )
 
     assert result.returncode == 0, result.stderr
@@ -137,6 +144,7 @@ def test_scopy_cli_embedded_range_source_and_dest(tmp_path):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
+        env=_negative_env(),
     )
 
     assert result.returncode == 0, result.stderr
@@ -159,6 +167,7 @@ def test_scopy_cli_negative_sequence_string_source_and_dest(tmp_path):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
+        env=_negative_env(),
     )
 
     assert result.returncode == 0, result.stderr

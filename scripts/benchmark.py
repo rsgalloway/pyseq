@@ -24,9 +24,12 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 LIB_ROOT = REPO_ROOT / "lib"
+SCRIPT_PATH = Path(__file__).resolve()
 if str(LIB_ROOT) not in sys.path:
     sys.path.insert(0, str(LIB_ROOT))
 
+import pyseq  # noqa: E402
+import pyseq.seq as pyseq_seq  # noqa: E402
 from pyseq import get_sequences  # noqa: E402
 from pyseq.util import resolve_sequence  # noqa: E402
 
@@ -140,15 +143,35 @@ def create_dataset(root, size, extra_files_factor=EXTRA_FILES_FACTOR):
     }
 
 
-def run_lss(path):
+def create_existing_dataset(path, sequence_pattern=None, glob_pattern=None):
+    dataset = Path(path).resolve()
+    file_names = sorted(os.listdir(dataset))
+    if glob_pattern:
+        import fnmatch
+
+        file_names = [
+            name for name in file_names if fnmatch.fnmatch(name, glob_pattern)
+        ]
+
+    return {
+        "path": dataset,
+        "sequence_pattern": sequence_pattern,
+        "file_names": file_names,
+    }
+
+
+def run_lss(path, glob_pattern=None):
     env = os.environ.copy()
     env["PYTHONPATH"] = (
         str(LIB_ROOT)
         if not env.get("PYTHONPATH")
         else str(LIB_ROOT) + os.pathsep + env["PYTHONPATH"]
     )
+    target = str(path)
+    if glob_pattern:
+        target = str(Path(path) / glob_pattern)
     subprocess.run(
-        [sys.executable, "-m", "pyseq.lss", str(path)],
+        [sys.executable, "-m", "pyseq.lss", target],
         cwd=REPO_ROOT,
         env=env,
         check=True,
@@ -174,7 +197,7 @@ def profile_python_callable(func, stem, profiles_dir):
     text_path.write_text(stream.getvalue(), encoding="utf-8")
 
 
-def profile_lss_subprocess(path, stem, profiles_dir):
+def profile_lss_subprocess(path, stem, profiles_dir, glob_pattern=None):
     env = os.environ.copy()
     env["PYTHONPATH"] = (
         str(LIB_ROOT)
@@ -183,6 +206,9 @@ def profile_lss_subprocess(path, stem, profiles_dir):
     )
     pstats_path = profiles_dir / f"{stem}.pstats"
     text_path = profiles_dir / f"{stem}.txt"
+    target = str(path)
+    if glob_pattern:
+        target = str(Path(path) / glob_pattern)
 
     subprocess.run(
         [
@@ -193,7 +219,7 @@ def profile_lss_subprocess(path, stem, profiles_dir):
             str(pstats_path),
             "-m",
             "pyseq.lss",
-            str(path),
+            target,
         ],
         cwd=REPO_ROOT,
         env=env,
@@ -209,57 +235,97 @@ def profile_lss_subprocess(path, stem, profiles_dir):
     text_path.write_text(stream.getvalue(), encoding="utf-8")
 
 
-@contextmanager
-def build_benchmarks(sizes):
-    with tempfile.TemporaryDirectory() as tmpdir:
-        root = Path(tmpdir)
-        cases = []
+def _path_stem(path):
+    return safe_path_token(str(Path(path).resolve()))
 
-        for size in sizes:
-            fixture = create_dataset(root, size)
+
+@contextmanager
+def build_benchmarks(sizes=None, path=None, sequence_pattern=None, glob_pattern=None):
+    with tempfile.TemporaryDirectory() as tmpdir:
+        cases = []
+        fixtures = []
+
+        if path:
+            fixtures.append(
+                {
+                    "label": _path_stem(path),
+                    **create_existing_dataset(
+                        path,
+                        sequence_pattern=sequence_pattern,
+                        glob_pattern=glob_pattern,
+                    ),
+                }
+            )
+        else:
+            root = Path(tmpdir)
+            for size in sizes:
+                fixture = create_dataset(root, size)
+                fixtures.append({"label": str(size), **fixture})
+
+        for fixture in fixtures:
             dataset_path = fixture["path"]
             file_names = fixture["file_names"]
             sequence_pattern = fixture["sequence_pattern"]
+            label = fixture["label"]
 
             cases.extend(
                 [
                     {
-                        "name": f"get_sequences_list_{size}",
+                        "name": f"get_sequences_list_{label}",
                         "callable": lambda file_names=file_names: get_sequences(
                             file_names
                         ),
                         "profile_kind": "python",
                     },
                     {
-                        "name": f"get_sequences_dir_{size}",
-                        "callable": lambda dataset_path=dataset_path: get_sequences(
-                            str(dataset_path)
+                        "name": f"get_sequences_dir_{label}",
+                        "callable": lambda dataset_path=dataset_path, glob_pattern=glob_pattern: get_sequences(
+                            str(Path(dataset_path) / glob_pattern)
+                            if glob_pattern
+                            else str(dataset_path)
                         ),
                         "profile_kind": "python",
                     },
                     {
-                        "name": f"resolve_sequence_{size}",
+                        "name": f"lss_{label}",
+                        "callable": lambda dataset_path=dataset_path, glob_pattern=glob_pattern: run_lss(
+                            dataset_path, glob_pattern=glob_pattern
+                        ),
+                        "profile_kind": "lss",
+                        "path": dataset_path,
+                        "glob_pattern": glob_pattern,
+                    },
+                ]
+            )
+            if sequence_pattern:
+                cases.append(
+                    {
+                        "name": f"resolve_sequence_{label}",
                         "callable": lambda sequence_pattern=sequence_pattern: resolve_sequence(
                             sequence_pattern
                         ),
                         "profile_kind": "python",
-                    },
-                    {
-                        "name": f"lss_{size}",
-                        "callable": lambda dataset_path=dataset_path: run_lss(
-                            dataset_path
-                        ),
-                        "profile_kind": "lss",
-                        "path": dataset_path,
-                    },
-                ]
-            )
+                    }
+                )
 
         yield cases
 
 
-def run_benchmarks(sizes, iterations, enable_profile, profiles_dir):
-    with build_benchmarks(sizes) as cases:
+def run_benchmarks(
+    sizes,
+    iterations,
+    enable_profile,
+    profiles_dir,
+    path=None,
+    sequence_pattern=None,
+    glob_pattern=None,
+):
+    with build_benchmarks(
+        sizes=sizes,
+        path=path,
+        sequence_pattern=sequence_pattern,
+        glob_pattern=glob_pattern,
+    ) as cases:
         results = {}
         for case in cases:
             results[case["name"]] = benchmark_call(case["callable"], iterations)
@@ -272,12 +338,25 @@ def run_benchmarks(sizes, iterations, enable_profile, profiles_dir):
                         case["callable"], case["name"], profiles_dir
                     )
                 else:
-                    profile_lss_subprocess(case["path"], case["name"], profiles_dir)
+                    profile_lss_subprocess(
+                        case["path"],
+                        case["name"],
+                        profiles_dir,
+                        glob_pattern=case.get("glob_pattern"),
+                    )
 
         return results
 
 
-def build_run_payload(sizes, iterations, enable_profile, profiles_dir):
+def build_run_payload(
+    sizes,
+    iterations,
+    enable_profile,
+    profiles_dir,
+    path=None,
+    sequence_pattern=None,
+    glob_pattern=None,
+):
     branch = detect_git_branch()
     commit = detect_git_sha()
     actual_profiles_dir = profiles_dir
@@ -289,17 +368,29 @@ def build_run_payload(sizes, iterations, enable_profile, profiles_dir):
         iterations=iterations,
         enable_profile=enable_profile,
         profiles_dir=actual_profiles_dir,
+        path=path,
+        sequence_pattern=sequence_pattern,
+        glob_pattern=glob_pattern,
     )
 
     return {
         "kind": "benchmark",
         "branch": branch,
         "commit": commit,
+        "repo_root": str(REPO_ROOT),
+        "lib_root": str(LIB_ROOT),
+        "script_path": str(SCRIPT_PATH),
+        "python_executable": sys.executable,
+        "pyseq_file": getattr(pyseq, "__file__", None),
+        "pyseq_seq_file": getattr(pyseq_seq, "__file__", None),
         "python": platform.python_version(),
         "platform": platform.platform(),
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
         "sizes": sizes,
         "iterations": iterations,
+        "path": str(Path(path).resolve()) if path else None,
+        "sequence_pattern": sequence_pattern,
+        "glob_pattern": glob_pattern,
         "profiled": enable_profile,
         "profiles_dir": str(actual_profiles_dir) if actual_profiles_dir else None,
         "benchmarks": benchmarks,
@@ -328,10 +419,22 @@ def build_comparison(baseline, candidate):
         "baseline": {
             "branch": baseline.get("branch"),
             "commit": baseline.get("commit"),
+            "repo_root": baseline.get("repo_root"),
+            "lib_root": baseline.get("lib_root"),
+            "script_path": baseline.get("script_path"),
+            "python_executable": baseline.get("python_executable"),
+            "pyseq_file": baseline.get("pyseq_file"),
+            "pyseq_seq_file": baseline.get("pyseq_seq_file"),
         },
         "candidate": {
             "branch": candidate.get("branch"),
             "commit": candidate.get("commit"),
+            "repo_root": candidate.get("repo_root"),
+            "lib_root": candidate.get("lib_root"),
+            "script_path": candidate.get("script_path"),
+            "python_executable": candidate.get("python_executable"),
+            "pyseq_file": candidate.get("pyseq_file"),
+            "pyseq_seq_file": candidate.get("pyseq_seq_file"),
         },
         "benchmarks": comparisons,
         "summary": {
@@ -346,9 +449,22 @@ def write_run_summary(payload, stream):
     print("# pyseq benchmarks", file=stream)
     print("", file=stream)
     print(
-        f"Branch: `{payload['branch']}`  Commit: `{payload['commit']}`  Sizes: `{','.join(str(size) for size in payload['sizes'])}`  Iterations: `{payload['iterations']}`",
+        f"Branch: `{payload['branch']}`  Commit: `{payload['commit']}`  Sizes: `{','.join(str(size) for size in payload['sizes']) if payload['sizes'] else 'custom'}`  Iterations: `{payload['iterations']}`",
         file=stream,
     )
+    print(f"Repo: `{payload['repo_root']}`", file=stream)
+    print(f"Lib: `{payload['lib_root']}`", file=stream)
+    print(f"Python: `{payload['python_executable']}`", file=stream)
+    if payload.get("pyseq_file"):
+        print(f"PySeq: `{payload['pyseq_file']}`", file=stream)
+    if payload.get("pyseq_seq_file"):
+        print(f"PySeq seq: `{payload['pyseq_seq_file']}`", file=stream)
+    if payload.get("path"):
+        print(f"Path: `{payload['path']}`", file=stream)
+    if payload.get("glob_pattern"):
+        print(f"Glob: `{payload['glob_pattern']}`", file=stream)
+    if payload.get("sequence_pattern"):
+        print(f"Sequence pattern: `{payload['sequence_pattern']}`", file=stream)
     if payload["profiled"] and payload["profiles_dir"]:
         print(f"Profiles: `{payload['profiles_dir']}`", file=stream)
     print("", file=stream)
@@ -368,6 +484,30 @@ def write_compare_summary(payload, stream):
         f"Baseline: `{payload['baseline']['branch']}` `{payload['baseline']['commit']}`  Candidate: `{payload['candidate']['branch']}` `{payload['candidate']['commit']}`",
         file=stream,
     )
+    if payload["baseline"].get("lib_root") or payload["candidate"].get("lib_root"):
+        print(
+            f"Baseline lib: `{payload['baseline'].get('lib_root')}`  Candidate lib: `{payload['candidate'].get('lib_root')}`",
+            file=stream,
+        )
+    if payload["baseline"].get("python_executable") or payload["candidate"].get(
+        "python_executable"
+    ):
+        print(
+            f"Baseline python: `{payload['baseline'].get('python_executable')}`  Candidate python: `{payload['candidate'].get('python_executable')}`",
+            file=stream,
+        )
+    if payload["baseline"].get("pyseq_file") or payload["candidate"].get("pyseq_file"):
+        print(
+            f"Baseline pyseq: `{payload['baseline'].get('pyseq_file')}`  Candidate pyseq: `{payload['candidate'].get('pyseq_file')}`",
+            file=stream,
+        )
+    if payload["baseline"].get("pyseq_seq_file") or payload["candidate"].get(
+        "pyseq_seq_file"
+    ):
+        print(
+            f"Baseline pyseq.seq: `{payload['baseline'].get('pyseq_seq_file')}`  Candidate pyseq.seq: `{payload['candidate'].get('pyseq_seq_file')}`",
+            file=stream,
+        )
     print("", file=stream)
     print(
         "| Benchmark | Baseline Median (s) | Candidate Median (s) | Delta (s) | Delta (%) |",
@@ -419,6 +559,19 @@ def main():
         "--profiles-dir",
         help="Directory for generated .pstats and text profile summaries",
     )
+    parser.add_argument(
+        "--path",
+        help="Benchmark an existing directory instead of synthetic datasets",
+    )
+    parser.add_argument(
+        "--glob",
+        dest="glob_pattern",
+        help="Optional glob pattern for lss and file list filtering when using --path",
+    )
+    parser.add_argument(
+        "--sequence-pattern",
+        help="Optional compressed sequence pattern for resolve_sequence when using --path",
+    )
     args = parser.parse_args()
 
     if args.compare:
@@ -431,7 +584,11 @@ def main():
         write_compare_summary(payload, sys.stdout)
         return
 
-    sizes = args.sizes or (FULL_SIZES if args.full else DEFAULT_SIZES)
+    sizes = (
+        None
+        if args.path
+        else (args.sizes or (FULL_SIZES if args.full else DEFAULT_SIZES))
+    )
     iterations = args.iterations or (
         FULL_ITERATIONS if args.full else DEFAULT_ITERATIONS
     )
@@ -441,6 +598,9 @@ def main():
         iterations=iterations,
         enable_profile=not args.no_profile,
         profiles_dir=profiles_dir,
+        path=args.path,
+        sequence_pattern=args.sequence_pattern,
+        glob_pattern=args.glob_pattern,
     )
 
     if args.json_path:

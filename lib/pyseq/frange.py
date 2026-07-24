@@ -5,34 +5,19 @@
 
 """Frame range parsing and formatting helpers."""
 
-import re
 from typing import List, Optional, Tuple
 
-from pyseq.config import range_join
-
-
-FRAME_RANGE_SEGMENT_RE = re.compile(
-    r"^\s*(?P<start>-?\d+)(?:\s*-\s*(?P<end>-?\d+)(?:\s*x\s*(?P<step>\d+))?)?\s*$"
-)
-FRAME_RANGE_TEXT_RE = re.compile(
-    r"-?\d+(?:\s*-\s*-?\d+(?:\s*x\s*\d+)?)?(?:\s*,\s*-?\d+(?:\s*-\s*-?\d+(?:\s*x\s*\d+)?)?)*"
-)
-SERIALIZED_RANGE_RE = re.compile(
-    rf"\[[^\]]+\]|\s+(?:{FRAME_RANGE_TEXT_RE.pattern})\s*$"
-)
-EMBEDDED_RANGE_RE = re.compile(
-    rf"^(?P<head>.+?)(?P<range>\[(?:[^\]]+)\]|{FRAME_RANGE_TEXT_RE.pattern})(?P<tail>\.[^/\s]+)$"
-)
+from pyseq import config
 
 
 def has_serialized_range(text: str) -> bool:
     """Return True when text includes explicit serialized frame range syntax."""
-    return bool(SERIALIZED_RANGE_RE.search(text))
+    return bool(config.serialized_range_re.search(text))
 
 
 def split_embedded_frame_range(text: str) -> Optional[Tuple[str, str, str]]:
     """Split `head<range>tail` strings like `plate.2-4.exr` into components."""
-    match = EMBEDDED_RANGE_RE.match(text)
+    match = config.embedded_range_re.match(text)
     if not match:
         return None
     return match.group("head"), match.group("range"), match.group("tail")
@@ -53,7 +38,7 @@ def parse_frame_range(range_text: str) -> List[int]:
         segment = segment.strip()
         if not segment:
             raise ValueError(f"Invalid frame range syntax: {range_text}")
-        match = FRAME_RANGE_SEGMENT_RE.match(segment)
+        match = config.frame_range_segment_re.match(segment)
         if not match:
             raise ValueError(f"Invalid frame range syntax: {segment}")
 
@@ -61,11 +46,20 @@ def parse_frame_range(range_text: str) -> List[int]:
         end = match.group("end")
         step = match.group("step")
 
+        if start < 0 and not config.allow_negative_frames():
+            raise ValueError(
+                "Negative frame ranges require PYSEQ_ALLOW_NEGATIVE_FRAMES=1"
+            )
+
         if end is None:
             frames.append(start)
             continue
 
         end = int(end)
+        if end < 0 and not config.allow_negative_frames():
+            raise ValueError(
+                "Negative frame ranges require PYSEQ_ALLOW_NEGATIVE_FRAMES=1"
+            )
         step = int(step) if step is not None else 1
         if step <= 0:
             raise ValueError(f"Frame step must be positive: {segment}")
@@ -139,7 +133,7 @@ def format_frame_range_explicit(
         else:
             frange.append(f"{start}-{end}")
 
-    body = range_join.join(frange)
+    body = config.range_join.join(frange)
     return f"[{body}]" if pad_with_brackets else body
 
 

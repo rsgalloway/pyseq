@@ -39,12 +39,9 @@ import warnings
 from typing import Optional
 
 import pyseq
+from pyseq.cli import cli_catch_keyboard_interrupt
+from pyseq import config
 from pyseq.config import range_join
-from pyseq.frange import (
-    has_serialized_range,
-    parse_frame_range,
-    split_embedded_frame_range,
-)
 
 
 def deprecated(func):
@@ -64,20 +61,6 @@ def deprecated(func):
     return inner
 
 
-def cli_catch_keyboard_interrupt(func):
-    """Return exit code 1 instead of a traceback on Ctrl-C."""
-
-    @functools.wraps(func)
-    def inner(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except KeyboardInterrupt:
-            print("stopping...", file=sys.stderr)
-            return 1
-
-    return inner
-
-
 def _natural_key(x: str):
     """Splits a string into characters and digits.
 
@@ -85,29 +68,6 @@ def _natural_key(x: str):
     :return: A list of characters and digits.
     """
     return [int(c) if c.isdigit() else c.lower() for c in re.split(r"(\d+)", x)]
-
-
-def _ext_key(x: str):
-    """Similar to `_natural_key` except this one uses the file extension at
-    the head of split string.  This fixes issues with files that are named
-    similar but with different file extensions:
-
-    This example:
-
-        file.001.jpg
-        file.001.tiff
-        file.002.jpg
-        file.002.tiff
-
-    Would get properly sorted into:
-
-        file.001.jpg
-        file.002.jpg
-        file.001.tiff
-        file.002.tiff
-    """
-    name, ext = os.path.splitext(x)
-    return [ext] + _natural_key(name)
 
 
 def is_compressed_format_string(s: str) -> bool:
@@ -132,12 +92,13 @@ def natural_sort(items: list):
     return sorted(items, key=_natural_key)
 
 
-def resolve_sequence(sequence_string: str):
+def resolve_sequence(sequence_string: str, include_negative: bool = False):
     """Given a compressed sequence string like 'file.%04d.png' or
     '/path/to/file.%04d.png', return a `Sequence` object of matching files on
     disk.
 
     :param sequence_string: The compressed sequence string to be uncompressed.
+    :param include_negative: When True, also scan for signed padded frames.
     :return: A pyseq.Sequence object of matching files.
     """
 
@@ -153,28 +114,30 @@ def resolve_sequence(sequence_string: str):
     padding = match.group(1)
     if padding:
         pad = int(padding)
-        positive_glob = filename.replace(f"%0{pad}d", "?" * pad)
-        negative_glob = filename.replace(f"%0{pad}d", "-" + ("?" * pad))
-        regex_pattern = re.escape(filename).replace(
-            f"%0{pad}d", r"-?\d{" + str(pad) + r"}"
+        frame_token = f"%0{pad}d"
+        positive_glob = filename.replace(frame_token, "?" * pad)
+        negative_glob = filename.replace(frame_token, "-" + ("?" * pad))
+        frame_pattern = (
+            r"-?\d{" + str(pad) + r"}" if include_negative else r"\d{" + str(pad) + r"}"
         )
+        regex_pattern = re.escape(filename).replace(frame_token, frame_pattern)
     else:
         positive_glob = filename.replace("%d", "*")
         negative_glob = None
-        regex_pattern = re.escape(filename).replace("%d", r"-?\d+")
+        frame_pattern = r"-?\d+" if include_negative else r"\d+"
+        regex_pattern = re.escape(filename).replace("%d", frame_pattern)
 
-    # Keep globbing narrow for padded sequences, including signed variants.
-    glob_patterns = [os.path.join(directory, positive_glob)]
-    if negative_glob and negative_glob != positive_glob:
-        glob_patterns.append(os.path.join(directory, negative_glob))
-
-    candidate_files = []
-    seen = set()
-    for glob_pattern in glob_patterns:
-        for candidate in glob.glob(glob_pattern):
-            if candidate not in seen:
-                seen.add(candidate)
-                candidate_files.append(candidate)
+    candidate_files = glob.glob(os.path.join(directory, positive_glob))
+    if include_negative and negative_glob and negative_glob != positive_glob:
+        negative_files = glob.glob(os.path.join(directory, negative_glob))
+        if candidate_files:
+            candidate_files.extend(
+                candidate
+                for candidate in negative_files
+                if candidate not in candidate_files
+            )
+        else:
+            candidate_files = negative_files
 
     # filter using regex (because glob pattern is wide)
     regex = re.compile(f"^{regex_pattern}$")
@@ -228,6 +191,12 @@ def subset_sequence(seq, frames):
 
 def parse_explicit_sequence_string(reference: str):
     """Parse a serialized sequence string, including embedded range syntax."""
+    from pyseq.frange import (
+        has_serialized_range,
+        parse_frame_range,
+        split_embedded_frame_range,
+    )
+
     dirname = os.path.dirname(reference) or "."
     basename = os.path.basename(reference)
     has_explicit_range = has_serialized_range(basename)
@@ -304,7 +273,13 @@ def resolve_sequence_reference(reference: str):
                     requested_seq.tail(),
                 ),
             )
-            full_seq = resolve_sequence(pattern)
+            full_seq = resolve_sequence(
+                pattern,
+                include_negative=(
+                    config.allow_negative_frames()
+                    and any(frame < 0 for frame in requested_seq.frames())
+                ),
+            )
         else:
             sequences = pyseq.get_sequences(os.listdir(dirname))
             candidates = [

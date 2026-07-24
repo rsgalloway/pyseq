@@ -119,7 +119,13 @@ render.%04d.exr 1001-1010x3
 
 ## Parse Signed Serialized Frame Ranges
 
-Serialized range strings may include signed frame numbers:
+Signed frame ranges are opt-in. Enable them first:
+
+```bash
+export PYSEQ_ALLOW_NEGATIVE_FRAMES=1
+```
+
+Then serialized range strings may include signed frame numbers:
 
 ```python
 from pyseq import uncompress

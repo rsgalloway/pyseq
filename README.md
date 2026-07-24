@@ -104,7 +104,14 @@ Supported serialized range forms include:
 - `1001-1100x2`
 - `1001-1100x10, 1200, 1300-1320x5`
 - `10-1x3`
-- `-10--1x3`
+- `-10--1x3` with `PYSEQ_ALLOW_NEGATIVE_FRAMES=1`
+
+Negative frame ranges are opt-in so the default filename discovery path stays
+fast and unopinionated. Enable them with:
+
+```bash
+export PYSEQ_ALLOW_NEGATIVE_FRAMES=1
+```
 
 ## Production Usage
 

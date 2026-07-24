@@ -39,7 +39,7 @@ import sys
 
 import pyseq
 from pyseq import config
-from pyseq.util import cli_catch_keyboard_interrupt
+from pyseq.cli import cli_catch_keyboard_interrupt
 
 
 def get_tree_tokens():
