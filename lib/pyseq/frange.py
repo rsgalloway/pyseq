@@ -5,19 +5,25 @@
 
 """Frame range parsing and formatting helpers."""
 
+import re
 from typing import List, Optional, Tuple
 
 from pyseq import config
 
+frame_range_segment_re = re.compile(config.DEFAULT_FRAME_RANGE_SEGMENT_PATTERN)
+frame_range_text_re = re.compile(config.DEFAULT_FRAME_RANGE_TEXT_PATTERN)
+serialized_range_re = re.compile(config.DEFAULT_SERIALIZED_RANGE_PATTERN)
+embedded_range_re = re.compile(config.DEFAULT_EMBEDDED_RANGE_PATTERN)
+
 
 def has_serialized_range(text: str) -> bool:
     """Return True when text includes explicit serialized frame range syntax."""
-    return bool(config.serialized_range_re.search(text))
+    return bool(serialized_range_re.search(text))
 
 
 def split_embedded_frame_range(text: str) -> Optional[Tuple[str, str, str]]:
     """Split `head<range>tail` strings like `plate.2-4.exr` into components."""
-    match = config.embedded_range_re.match(text)
+    match = embedded_range_re.match(text)
     if not match:
         return None
     return match.group("head"), match.group("range"), match.group("tail")
@@ -38,7 +44,7 @@ def parse_frame_range(range_text: str) -> List[int]:
         segment = segment.strip()
         if not segment:
             raise ValueError(f"Invalid frame range syntax: {range_text}")
-        match = config.frame_range_segment_re.match(segment)
+        match = frame_range_segment_re.match(segment)
         if not match:
             raise ValueError(f"Invalid frame range syntax: {segment}")
 

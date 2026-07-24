@@ -19,6 +19,7 @@ Used in visual effects, animation, and post-production pipelines.
 [Production Usage](#production-usage) |
 [Command-Line Tools](#command-line-tools) |
 [Docs](#docs) |
+[Contributing](#contributing) |
 [Testing](#testing)
 
 ## Installation
@@ -144,6 +145,10 @@ Additional documentation is available in the [docs](docs/) folder:
 - [Setup and Distribution](docs/setup-and-distribution.md)
 - [Formatting Reference](docs/formatting.md)
 - [Frame Patterns](docs/frame-patterns.md)
+
+## Contributing
+
+Contributor guidance lives in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Testing
 

@@ -70,11 +70,6 @@ DEFAULT_SERIALIZED_RANGE_PATTERN = (
 )
 DEFAULT_EMBEDDED_RANGE_PATTERN = rf"^(?P<head>.+?)(?P<range>\[(?:[^\]]+)\]|{DEFAULT_FRAME_RANGE_TEXT_PATTERN})(?P<tail>\.[^/\s]+)$"
 
-frame_range_segment_re = re.compile(DEFAULT_FRAME_RANGE_SEGMENT_PATTERN)
-frame_range_text_re = re.compile(DEFAULT_FRAME_RANGE_TEXT_PATTERN)
-serialized_range_re = re.compile(DEFAULT_SERIALIZED_RANGE_PATTERN)
-embedded_range_re = re.compile(DEFAULT_EMBEDDED_RANGE_PATTERN)
-
 
 def allow_negative_frames() -> bool:
     """Return True when explicit negative frame syntax is enabled."""

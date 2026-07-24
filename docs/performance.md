@@ -148,7 +148,7 @@ For pull requests it:
 - compares the two JSON result sets
 - uploads both result sets and profile artifacts
 - posts a sticky pull request comment with the comparison summary
-- fails the workflow if any benchmark regresses by more than `5%` and `0.010s`
+- fails the workflow if any benchmark regresses by more than `3%` and `0.005s`
 
 On pull requests, `benchmark-pr` is the authoritative check. The separate
 `benchmark-branch` job is only for non-PR runs such as scheduled or manual
@@ -157,6 +157,13 @@ benchmark collection, so seeing it skipped on a pull request is expected.
 The pull request suite uses synthetic datasets only, so it is best treated as
 a regression guardrail. For more realistic validation, keep using local
 `--path` runs against representative production-style directories.
+
+Current benchmark policy:
+
+- keep every benchmark delta visible in the PR comment
+- fail CI only when a regression exceeds both `3%` and `0.005s`
+- treat repeated small regressions in the same hotspot as a reason to profile
+  and optimize before they accumulate over time
 
 ## Result Format
 

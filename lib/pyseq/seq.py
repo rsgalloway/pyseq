@@ -36,9 +36,6 @@ Contains the main pyseq classes and functions.
 import functools
 import os
 import re
-import traceback
-import warnings
-from ast import literal_eval
 from collections import deque
 from glob import glob, iglob
 from typing import List, Callable, Union
@@ -865,6 +862,9 @@ class Sequence(list):
 
                 shutil.move(oldName, newName)
             except Exception as err:
+                import traceback
+                import warnings
+
                 warnings.warn(
                     "%s during reIndex %s -> %s: \n%s"
                     % (
@@ -1088,6 +1088,8 @@ def uncompress(seq_string: str, fmt: str = global_format):
 
     if not match:
         return
+
+    from ast import literal_eval
 
     try:
         pad = match.group("p")
