@@ -8,6 +8,10 @@ on:
       - reopened
       - ready_for_review
       - converted_to_draft
+    paths:
+      - "lib/pyseq/**"
+      - "scripts/benchmark.py"
+      - ".github/workflows/benchmarks.yml"
   workflow_dispatch:
     inputs:
       profile:

@@ -143,12 +143,16 @@ on one GitHub-hosted runner.
 For pull requests it:
 
 - checks out the candidate branch
-- checks out the pull request base commit in a sibling worktree
+- checks out the pull request base commit in a separate `baseline/` tree
 - runs the same benchmark script revision against both trees
 - compares the two JSON result sets
 - uploads both result sets and profile artifacts
 - posts a sticky pull request comment with the comparison summary
-- fails the workflow if any benchmark regresses by more than `5%`
+- fails the workflow if any benchmark regresses by more than `5%` and `0.010s`
+
+On pull requests, `benchmark-pr` is the authoritative check. The separate
+`benchmark-branch` job is only for non-PR runs such as scheduled or manual
+benchmark collection, so seeing it skipped on a pull request is expected.
 
 The pull request suite uses synthetic datasets only, so it is best treated as
 a regression guardrail. For more realistic validation, keep using local
