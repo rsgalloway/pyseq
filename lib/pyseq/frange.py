@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2011-2025, Ryan Galloway (ryan@rsgalloway.com)
+# Copyright (c) 2011-2026, Ryan Galloway (ryan@rsgalloway.com)
 #
 
 """Frame range parsing and formatting helpers."""

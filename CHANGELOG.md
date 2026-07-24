@@ -9,9 +9,8 @@ CHANGELOG
 * Refactors explicit range parsing and formatting onto shared helpers to keep the syntax rules consistent
 * Expands regression coverage for stepped ranges, negative frame handling, CLI tools, and performance-sensitive paths
 * Adds benchmark tooling, benchmark documentation, and pull request regression checks for performance-sensitive changes
-* Tightens CI benchmark regression thresholds to `3%` and `0.005s`, while still publishing full benchmark deltas in pull request comments
+* Sets CI benchmark regression thresholds to `3%` and `0.005s`, while still publishing full benchmark deltas in pull request comments
 * Reduces `lss` startup overhead by deferring non-critical imports and moving extended frame-range regex compilation off the default import path
-* Documents the performance policy and contributor workflow in the README, performance guide, and contributing guide
 
 ## 0.9.2
 

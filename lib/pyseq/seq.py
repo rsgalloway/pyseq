@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2011-2025, Ryan Galloway (ryan@rsgalloway.com)
+# Copyright (c) 2011-2026, Ryan Galloway (ryan@rsgalloway.com)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -30,7 +30,7 @@
 # -----------------------------------------------------------------------------
 
 __doc__ = """
-Contains the main pyseq classes and functions.
+Core sequence types and parsing/formatting helpers.
 """
 
 import functools
@@ -100,15 +100,19 @@ def _parse_frame_range(range_text: str) -> List[int]:
 
 def padsize(item, frame):
     """
-    Determines the pad size for a given Item. Return value may depend on
-    whether strict padding is enabled or not.
+    Determine the pad size for a given Item.
+
+    The return value may depend on whether strict padding is enabled.
 
     For example: the file item.001.exr will have a pad size of 3, and the
     file test.001001.exr will have a pad size of 6.
 
     :param item: Item object.
-    :param frame: the frame number as a string.
-    :returns: the size of the frame pad as an int.
+    Signed frames use the digit width only; the leading ``-`` does not
+    contribute to the padding width.
+
+    :param frame: The frame number token as a string.
+    :returns: The size of the frame pad as an int.
     """
 
     # strict: frame size (%d) must match between frames (default)
@@ -1002,7 +1006,7 @@ def diff(f1: Union[str, Item], f2: Union[str, Item]):
 
 
 def uncompress(seq_string: str, fmt: str = global_format):
-    """Basic uncompression or deserialization of a compressed sequence string.
+    """Deserialize a compressed sequence string into a Sequence.
 
     For example:
 
@@ -1027,9 +1031,14 @@ def uncompress(seq_string: str, fmt: str = global_format):
     >>> len(seq)
     100
 
+    >>> seq = pyseq.uncompress('render.%04d.exr 1001-1010x3', fmt='%h%p%t %x')
+    >>> print(seq.frames())
+    [1001, 1004, 1007, 1010]
+
     :param seq_string: Compressed sequence string.
     :param fmt: Format of sequence string.
-    :return: :class:`.Sequence` instance.
+    :return: :class:`.Sequence` instance, or ``None`` when the string does not
+        match ``fmt``.
     """
 
     dirname = os.path.dirname(seq_string)
