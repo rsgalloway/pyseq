@@ -40,6 +40,7 @@ DEFAULT_ITERATIONS = 5
 FULL_ITERATIONS = 7
 EXTRA_FILES_FACTOR = 0.1
 PROFILE_TOP_FUNCTIONS = 25
+DEFAULT_SCENARIOS = ["contiguous", "mixed"]
 
 
 def median(values):
@@ -58,6 +59,10 @@ def pct_delta(new_value, old_value):
 
 def parse_sizes(value):
     return [int(part.strip()) for part in value.split(",") if part.strip()]
+
+
+def parse_csv_list(value):
+    return [part.strip() for part in value.split(",") if part.strip()]
 
 
 def detect_git_branch():
@@ -125,8 +130,8 @@ def benchmark_call(func, iterations, warmups=1):
     }
 
 
-def create_dataset(root, size, extra_files_factor=EXTRA_FILES_FACTOR):
-    dataset = root / f"size_{size}"
+def create_contiguous_dataset(root, size, extra_files_factor=EXTRA_FILES_FACTOR):
+    dataset = root / f"contiguous_{size}"
     dataset.mkdir(parents=True, exist_ok=True)
 
     for frame in range(1, size + 1):
@@ -139,6 +144,61 @@ def create_dataset(root, size, extra_files_factor=EXTRA_FILES_FACTOR):
     return {
         "path": dataset,
         "sequence_pattern": str(dataset / "renderA.%08d.exr"),
+        "file_names": sorted(os.listdir(dataset)),
+    }
+
+
+def _partition_count(total, parts):
+    if parts <= 0:
+        return []
+    base, remainder = divmod(total, parts)
+    return [base + (1 if index < remainder else 0) for index in range(parts)]
+
+
+def create_mixed_dataset(root, size, extra_files_factor=EXTRA_FILES_FACTOR):
+    dataset = root / f"mixed_{size}"
+    dataset.mkdir(parents=True, exist_ok=True)
+
+    primary_count = max(1, int(size * 0.75))
+    secondary_count = max(1, int(size * 0.08))
+    tertiary_count = max(1, int(size * 0.04))
+    quaternary_count = max(1, int(size * 0.04))
+
+    gap_stride = max(50, size // 12 or 1)
+    segment_lengths = _partition_count(primary_count, 9)
+    frame = 1
+    for segment_length in segment_lengths:
+        for _ in range(segment_length):
+            (dataset / f"base.{frame:08d}.png").touch()
+            frame += 1
+        frame += gap_stride
+
+    secondary_start = 1001
+    tertiary_start = 1001
+    quaternary_start = 1001
+    for offset in range(secondary_count):
+        (
+            dataset / f"big_buck_bunny_1080p_h264.{secondary_start + offset:08d}.png"
+        ).touch()
+    for offset in range(tertiary_count):
+        (
+            dataset
+            / f"big_buck_bunny_1080p_h264_test.{tertiary_start + offset:08d}.png"
+        ).touch()
+    for offset in range(quaternary_count):
+        (dataset / f"test.{quaternary_start + offset:08d}.png").touch()
+
+    extra_count = max(1, int(size * extra_files_factor))
+    for index in range(extra_count):
+        (dataset / f"notes_{index:08d}.txt").touch()
+
+    for tile in range(max(2, size // 2000 + 1)):
+        for frame in range(101, 111):
+            (dataset / f"bnc01_TinkSO_tx_{tile}_ty_{tile}.{frame:04d}.tif").touch()
+
+    return {
+        "path": dataset,
+        "sequence_pattern": str(dataset / "base.%08d.png"),
         "file_names": sorted(os.listdir(dataset)),
     }
 
@@ -158,6 +218,14 @@ def create_existing_dataset(path, sequence_pattern=None, glob_pattern=None):
         "sequence_pattern": sequence_pattern,
         "file_names": file_names,
     }
+
+
+def create_dataset(root, size, scenario):
+    if scenario == "contiguous":
+        return create_contiguous_dataset(root, size)
+    if scenario == "mixed":
+        return create_mixed_dataset(root, size)
+    raise ValueError(f"Unknown benchmark scenario: {scenario}")
 
 
 def run_lss(path, glob_pattern=None):
@@ -240,7 +308,13 @@ def _path_stem(path):
 
 
 @contextmanager
-def build_benchmarks(sizes=None, path=None, sequence_pattern=None, glob_pattern=None):
+def build_benchmarks(
+    sizes=None,
+    scenarios=None,
+    path=None,
+    sequence_pattern=None,
+    glob_pattern=None,
+):
     with tempfile.TemporaryDirectory() as tmpdir:
         cases = []
         fixtures = []
@@ -258,9 +332,11 @@ def build_benchmarks(sizes=None, path=None, sequence_pattern=None, glob_pattern=
             )
         else:
             root = Path(tmpdir)
+            selected_scenarios = scenarios or DEFAULT_SCENARIOS
             for size in sizes:
-                fixture = create_dataset(root, size)
-                fixtures.append({"label": str(size), **fixture})
+                for scenario in selected_scenarios:
+                    fixture = create_dataset(root, size, scenario)
+                    fixtures.append({"label": f"{scenario}_{size}", **fixture})
 
         for fixture in fixtures:
             dataset_path = fixture["path"]
@@ -313,6 +389,7 @@ def build_benchmarks(sizes=None, path=None, sequence_pattern=None, glob_pattern=
 
 def run_benchmarks(
     sizes,
+    scenarios,
     iterations,
     enable_profile,
     profiles_dir,
@@ -322,6 +399,7 @@ def run_benchmarks(
 ):
     with build_benchmarks(
         sizes=sizes,
+        scenarios=scenarios,
         path=path,
         sequence_pattern=sequence_pattern,
         glob_pattern=glob_pattern,
@@ -350,6 +428,7 @@ def run_benchmarks(
 
 def build_run_payload(
     sizes,
+    scenarios,
     iterations,
     enable_profile,
     profiles_dir,
@@ -365,6 +444,7 @@ def build_run_payload(
 
     benchmarks = run_benchmarks(
         sizes=sizes,
+        scenarios=scenarios,
         iterations=iterations,
         enable_profile=enable_profile,
         profiles_dir=actual_profiles_dir,
@@ -387,6 +467,7 @@ def build_run_payload(
         "platform": platform.platform(),
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
         "sizes": sizes,
+        "scenarios": scenarios,
         "iterations": iterations,
         "path": str(Path(path).resolve()) if path else None,
         "sequence_pattern": sequence_pattern,
@@ -441,8 +522,22 @@ def build_comparison(baseline, candidate):
             "median_delta_pct": median(deltas),
             "max_regression_pct": max(deltas) if deltas else 0.0,
             "max_improvement_pct": min(deltas) if deltas else 0.0,
+            "benchmark_count": len(comparisons),
         },
     }
+
+
+def enforce_regression_threshold(payload, threshold_pct):
+    regressions = [
+        row for row in payload["benchmarks"] if row["delta_pct"] > threshold_pct
+    ]
+    if regressions:
+        worst = max(regressions, key=lambda row: row["delta_pct"])
+        raise SystemExit(
+            "Regression threshold exceeded: "
+            f"{len(regressions)} benchmark(s) slower than +{threshold_pct:.2f}% "
+            f"(worst: {worst['benchmark']} at {worst['delta_pct']:+.2f}%)"
+        )
 
 
 def write_run_summary(payload, stream):
@@ -455,6 +550,11 @@ def write_run_summary(payload, stream):
     print(f"Repo: `{payload['repo_root']}`", file=stream)
     print(f"Lib: `{payload['lib_root']}`", file=stream)
     print(f"Python: `{payload['python_executable']}`", file=stream)
+    if payload.get("scenarios"):
+        print(
+            f"Scenarios: `{','.join(payload['scenarios'])}`",
+            file=stream,
+        )
     if payload.get("pyseq_file"):
         print(f"PySeq: `{payload['pyseq_file']}`", file=stream)
     if payload.get("pyseq_seq_file"):
@@ -508,6 +608,13 @@ def write_compare_summary(payload, stream):
             f"Baseline pyseq.seq: `{payload['baseline'].get('pyseq_seq_file')}`  Candidate pyseq.seq: `{payload['candidate'].get('pyseq_seq_file')}`",
             file=stream,
         )
+    print(
+        "Summary: "
+        f"`{payload['summary']['benchmark_count']}` benchmarks  "
+        f"median delta `{payload['summary']['median_delta_pct']:+.2f}%`  "
+        f"max regression `{payload['summary']['max_regression_pct']:+.2f}%`",
+        file=stream,
+    )
     print("", file=stream)
     print(
         "| Benchmark | Baseline Median (s) | Candidate Median (s) | Delta (s) | Delta (%) |",
@@ -547,6 +654,11 @@ def main():
         help="Comma-separated dataset sizes, for example: 100,1000,10000,50000",
     )
     parser.add_argument(
+        "--scenarios",
+        type=parse_csv_list,
+        help="Comma-separated synthetic scenarios, for example: contiguous,mixed",
+    )
+    parser.add_argument(
         "--iterations", type=int, help="Override timing iteration count"
     )
     parser.add_argument("--json", dest="json_path", help="Write JSON output to a file")
@@ -572,6 +684,11 @@ def main():
         "--sequence-pattern",
         help="Optional compressed sequence pattern for resolve_sequence when using --path",
     )
+    parser.add_argument(
+        "--fail-on-regression-pct",
+        type=float,
+        help="Exit non-zero when any compared benchmark regresses by more than this percentage",
+    )
     args = parser.parse_args()
 
     if args.compare:
@@ -582,6 +699,8 @@ def main():
         if args.json_path:
             dump_json(payload, args.json_path)
         write_compare_summary(payload, sys.stdout)
+        if args.fail_on_regression_pct is not None:
+            enforce_regression_threshold(payload, args.fail_on_regression_pct)
         return
 
     sizes = (
@@ -589,12 +708,14 @@ def main():
         if args.path
         else (args.sizes or (FULL_SIZES if args.full else DEFAULT_SIZES))
     )
+    scenarios = None if args.path else (args.scenarios or DEFAULT_SCENARIOS)
     iterations = args.iterations or (
         FULL_ITERATIONS if args.full else DEFAULT_ITERATIONS
     )
     profiles_dir = Path(args.profiles_dir) if args.profiles_dir else None
     payload = build_run_payload(
         sizes=sizes,
+        scenarios=scenarios,
         iterations=iterations,
         enable_profile=not args.no_profile,
         profiles_dir=profiles_dir,

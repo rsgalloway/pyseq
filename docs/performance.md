@@ -24,6 +24,7 @@ Simple examples:
 python scripts/benchmark.py
 python scripts/benchmark.py --full
 python scripts/benchmark.py --json /tmp/pyseq-main.json
+python scripts/benchmark.py --scenarios contiguous,mixed
 python scripts/benchmark.py --path /project/shot/frames --iterations 5
 python scripts/benchmark.py --path /project/shot/frames --glob "*.exr" --iterations 5
 python scripts/benchmark.py --compare /tmp/pyseq-main.json /tmp/pyseq-feature.json
@@ -36,6 +37,12 @@ What it measures:
 - `resolve_sequence(...)` against a padded on-disk sequence
 - `lss` end-to-end subprocess runtime on the same synthetic dataset
 
+Synthetic scenarios:
+
+- `contiguous`: one large primary sequence with light non-sequence noise
+- `mixed`: a more realistic directory with a dominant gapped sequence,
+  several neighboring sequences, and unrelated files
+
 When using `--path`, the runner benchmarks an existing directory instead of a
 synthetic dataset. This is useful for validating results against real-world
 sequence layouts that may not be modeled well by generated fixtures.
@@ -45,10 +52,16 @@ Default synthetic dataset sizes:
 - default: `100`, `1000`, `10000`
 - `--full`: `100`, `1000`, `10000`, `50000`
 
+Default synthetic scenarios:
+
+- `contiguous`
+- `mixed`
+
 You can override dataset sizes or iteration count:
 
 ```bash
 python scripts/benchmark.py --sizes 100,1000,10000,50000 --iterations 7
+python scripts/benchmark.py --sizes 1000,10000 --scenarios mixed --iterations 7
 ```
 
 ## Local A/B Comparison
@@ -119,6 +132,27 @@ Useful options:
 
 - `--no-profile` to skip profiling entirely
 - `--profiles-dir <path>` to choose a different output directory
+- `--scenarios <list>` to choose synthetic directory shapes
+- `--fail-on-regression-pct <value>` to turn a compare run into a CI gate
+
+## CI Automation
+
+The GitHub Actions benchmark workflow runs pull request comparisons in one job
+on one GitHub-hosted runner.
+
+For pull requests it:
+
+- checks out the candidate branch
+- checks out the pull request base commit in a sibling worktree
+- runs the same benchmark script revision against both trees
+- compares the two JSON result sets
+- uploads both result sets and profile artifacts
+- posts a sticky pull request comment with the comparison summary
+- fails the workflow if any benchmark regresses by more than `5%`
+
+The pull request suite uses synthetic datasets only, so it is best treated as
+a regression guardrail. For more realistic validation, keep using local
+`--path` runs against representative production-style directories.
 
 ## Result Format
 
@@ -160,6 +194,7 @@ Example run payload:
   "profiles_dir": "tmp/benchmarks/profiles/20260721T000000Z-feat-example-abc1234",
   "python": "3.11.x",
   "repo_root": "/path/to/pyseq",
+  "scenarios": ["contiguous", "mixed"],
   "script_path": "/path/to/pyseq/scripts/benchmark.py",
   "sizes": [100, 1000, 10000],
   "timestamp_utc": "2026-07-21T00:00:00+00:00"
@@ -175,6 +210,7 @@ Field notes:
 - `branch` and `commit` make branch-to-branch comparisons easier to track.
 - `repo_root`, `lib_root`, `script_path`, and `python_executable` show
   exactly which source tree and interpreter were used.
+- `scenarios` records which synthetic directory shapes were exercised.
 - `pyseq_file` and `pyseq_seq_file` confirm which imported package files were
   actually exercised.
 - `profiles_dir` points to the profile output location for that run.
