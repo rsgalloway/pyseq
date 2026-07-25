@@ -9,6 +9,7 @@ import argparse
 import re
 import shutil
 from pathlib import Path
+from typing import Optional
 
 LINK_PATTERNS = (
     (r"\(README\.md\)", "(index.html)"),
@@ -52,42 +53,281 @@ def write_site_config(output_dir: Path):
     """Write a minimal Jekyll config file."""
     config = """title: pyseq
 description: Python library for numbered file sequences
-theme: minima
 markdown: kramdown
 permalink: pretty
 """
     (output_dir / "_config.yml").write_text(config, encoding="utf-8")
 
 
-def write_benchmarks_page(
-    output_dir: Path,
-    benchmark_summary: Path = None,
-    benchmark_json: Path = None,
-):
-    """Create a latest benchmark report page and copy JSON artifacts."""
-    benchmarks_dir = output_dir / "benchmarks"
-    benchmarks_dir.mkdir(parents=True, exist_ok=True)
+def write_layout(output_dir: Path):
+    """Write the shared Jekyll layout used by the generated docs site."""
+    layout_dir = output_dir / "_layouts"
+    layout_dir.mkdir(parents=True, exist_ok=True)
+    template = """<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% if page.title %}{{ page.title }} | {% endif %}{{ site.title }}</title>
+    <meta name="description" content="{{ site.description }}">
+    <link rel="stylesheet" href="{{ '/assets/site.css' | relative_url }}">
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="site-header">
+        <a class="site-brand" href="{{ '/' | relative_url }}">{{ site.title }}</a>
+        <nav class="site-nav">
+          <a href="{{ '/' | relative_url }}">Home</a>
+          <a href="{{ '/docs/cli-tools/' | relative_url }}">CLI Tools</a>
+          <a href="{{ '/docs/examples/' | relative_url }}">Examples</a>
+          <a href="{{ '/docs/formatting/' | relative_url }}">Formatting</a>
+          <a href="{{ '/docs/frame-patterns/' | relative_url }}">Frame Patterns</a>
+          <a href="{{ '/docs/performance/' | relative_url }}">Performance</a>
+          <a href="{{ '/docs/setup-and-distribution/' | relative_url }}">Setup</a>
+          <a href="https://github.com/rsgalloway/pyseq">GitHub</a>
+          <a href="https://pypi.org/project/pyseq/">PyPI</a>
+        </nav>
+      </header>
+      <main class="site-main">
+        {{ content }}
+      </main>
+    </div>
+  </body>
+</html>
+"""
+    (layout_dir / "default.html").write_text(template, encoding="utf-8")
 
-    sections = [
-        "# Latest Benchmarks",
-        "",
-        "This page is generated automatically from the benchmark workflows.",
-        "",
-    ]
+
+def write_stylesheet(output_dir: Path):
+    """Write a minimal light stylesheet for the generated docs site."""
+    assets_dir = output_dir / "assets"
+    assets_dir.mkdir(parents=True, exist_ok=True)
+    css = """:root {
+  --bg: #f7fafc;
+  --panel: #ffffff;
+  --border: #d9e2ec;
+  --text: #102033;
+  --muted: #516172;
+  --accent: #0fba74;
+  --accent-dark: #0b7f55;
+  --code: #f3f6f9;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background:
+    radial-gradient(circle at top, rgba(15,186,116,0.08), transparent 32%),
+    linear-gradient(180deg, #fcfefe 0%, #f4f8fb 100%);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.7;
+}
+
+a {
+  color: var(--accent-dark);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--accent);
+}
+
+.site-shell {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 24px 24px 72px;
+}
+
+.site-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 36px;
+}
+
+.site-brand {
+  color: var(--text);
+  font-size: 0.98rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.site-nav a {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.site-nav a:hover {
+  color: var(--text);
+}
+
+.site-main {
+  background: transparent;
+}
+
+.site-main h1:first-child,
+.site-main p:first-child img {
+  margin-top: 0;
+}
+
+h1, h2, h3 {
+  color: var(--text);
+  line-height: 1.15;
+}
+
+h1 {
+  font-size: 2.7rem;
+  margin: 0 0 1rem;
+}
+
+h2 {
+  font-size: 1.5rem;
+  margin-top: 2.5rem;
+}
+
+h3 {
+  font-size: 1.08rem;
+  margin-top: 1.5rem;
+}
+
+p, li {
+  font-size: 1.02rem;
+}
+
+code, pre {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
+code {
+  background: var(--code);
+  border: 1px solid #e4ebf2;
+  border-radius: 8px;
+  padding: 0.12rem 0.4rem;
+}
+
+pre {
+  background: #f8fbfd;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow-x: auto;
+  padding: 18px 20px;
+}
+
+pre code {
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+blockquote {
+  border-left: 4px solid #b8c6d6;
+  color: var(--muted);
+  margin: 1.5rem 0;
+  padding-left: 1rem;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th, td {
+  border: 1px solid var(--border);
+  padding: 0.7rem 0.8rem;
+  text-align: left;
+}
+
+th {
+  background: #f2f6fa;
+}
+
+@media (max-width: 720px) {
+  .site-shell {
+    padding: 18px 16px 56px;
+  }
+
+  .site-header {
+    align-items: flex-start;
+    margin-bottom: 28px;
+  }
+
+  .site-nav {
+    gap: 12px;
+  }
+
+  h1 {
+    font-size: 2.15rem;
+  }
+}
+"""
+    (assets_dir / "site.css").write_text(css, encoding="utf-8")
+
+
+def append_benchmark_section(
+    content: str,
+    benchmark_summary: Optional[Path] = None,
+    benchmark_json: Optional[Path] = None,
+) -> str:
+    """Append the latest benchmark summary to the performance document."""
+    sections = [content.rstrip(), "", "## Latest Benchmarks", ""]
 
     if benchmark_summary and benchmark_summary.exists():
-        sections.extend([benchmark_summary.read_text(encoding="utf-8").strip(), ""])
+        sections.extend(
+            [
+                "This section is generated automatically by the docs publishing workflow,",
+                "which runs `scripts/benchmark.py` on the current `master` branch before",
+                "building the Pages site.",
+                "",
+                benchmark_summary.read_text(encoding="utf-8").strip(),
+                "",
+            ]
+        )
+    else:
+        sections.extend(
+            [
+                "This section is generated automatically by the docs publishing workflow",
+                "when benchmark artifacts are available.",
+                "",
+            ]
+        )
 
-    downloads = []
     if benchmark_json and benchmark_json.exists():
-        shutil.copy2(benchmark_json, benchmarks_dir / "benchmark.json")
-        downloads.append("- [Benchmark JSON](benchmark.json)")
+        sections.extend(["### Downloads", "", "- [Benchmark JSON](../assets/benchmark.json)", ""])
 
-    if downloads:
-        sections.extend(["## Downloads", "", *downloads, ""])
+    return "\n".join(sections).rstrip() + "\n"
 
-    page = wrap_markdown("\n".join(sections).rstrip() + "\n", "Latest Benchmarks")
-    (benchmarks_dir / "index.md").write_text(page, encoding="utf-8")
+
+def copy_docs_assets(docs_dir: Path, output_dir: Path):
+    """Copy docs assets to both root assets/ and docs/assets/ for relative links."""
+    assets_src = docs_dir / "assets"
+    if not assets_src.exists():
+        return
+
+    root_assets = output_dir / "assets"
+    docs_assets = output_dir / "docs" / "assets"
+    root_assets.mkdir(parents=True, exist_ok=True)
+    docs_assets.mkdir(parents=True, exist_ok=True)
+
+    for src in assets_src.iterdir():
+        if src.is_file():
+            shutil.copy2(src, root_assets / src.name)
+            shutil.copy2(src, docs_assets / src.name)
 
 
 def build_site(args):
@@ -99,33 +339,44 @@ def build_site(args):
     output_dir.mkdir(parents=True, exist_ok=True)
 
     write_site_config(output_dir)
+    write_layout(output_dir)
+    write_stylesheet(output_dir)
 
-    # Home page from the repository README.
-    write_markdown_page(repo_root / "README.md", output_dir / "index.md", "pyseq")
+    # Home page from docs/index.md.
+    write_markdown_page(repo_root / "docs" / "index.md", output_dir / "index.md", "pyseq")
+
+    benchmark_summary = Path(args.benchmark_summary) if args.benchmark_summary else None
+    benchmark_json = Path(args.benchmark_json) if args.benchmark_json else None
 
     # Docs pages.
     docs_dir = repo_root / "docs"
     for src in docs_dir.glob("*.md"):
+        if src.name == "index.md":
+            continue
         if src.name == "README.md":
             dst = output_dir / "docs" / "index.md"
             fallback = "Docs"
         else:
             dst = output_dir / "docs" / src.name
             fallback = src.stem.replace("-", " ").title()
-        write_markdown_page(src, dst, fallback)
+        if src.name == "performance.md":
+            content = src.read_text(encoding="utf-8")
+            content = append_benchmark_section(content, benchmark_summary, benchmark_json)
+            content = rewrite_links(content)
+            title = extract_title(content, fallback)
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            dst.write_text(wrap_markdown(content, title), encoding="utf-8")
+        else:
+            write_markdown_page(src, dst, fallback)
 
-    if (docs_dir / "assets").exists():
-        shutil.copytree(docs_dir / "assets", output_dir / "docs" / "assets")
+    copy_docs_assets(docs_dir, output_dir)
+
+    if benchmark_json and benchmark_json.exists():
+        shutil.copy2(benchmark_json, output_dir / "assets" / "benchmark.json")
 
     cname = repo_root / "CNAME"
     if cname.exists():
         shutil.copy2(cname, output_dir / "CNAME")
-
-    write_benchmarks_page(
-        output_dir,
-        benchmark_summary=Path(args.benchmark_summary) if args.benchmark_summary else None,
-        benchmark_json=Path(args.benchmark_json) if args.benchmark_json else None,
-    )
 
 
 def main():
