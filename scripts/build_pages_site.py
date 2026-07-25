@@ -103,14 +103,14 @@ def write_stylesheet(output_dir: Path):
     assets_dir = output_dir / "assets"
     assets_dir.mkdir(parents=True, exist_ok=True)
     css = """:root {
-  --bg: #f7fafc;
+  --bg: #ffffff;
   --panel: #ffffff;
   --border: #d9e2ec;
   --text: #102033;
   --muted: #516172;
   --accent: #0fba74;
   --accent-dark: #0b7f55;
-  --code: #f3f6f9;
+  --code: #f4f8fb;
 }
 
 * { box-sizing: border-box; }
@@ -118,9 +118,7 @@ def write_stylesheet(output_dir: Path):
 html, body {
   margin: 0;
   padding: 0;
-  background:
-    radial-gradient(circle at top, rgba(15,186,116,0.08), transparent 32%),
-    linear-gradient(180deg, #fcfefe 0%, #f4f8fb 100%);
+  background: var(--bg);
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   line-height: 1.7;
@@ -217,7 +215,7 @@ code {
 }
 
 pre {
-  background: #f8fbfd;
+  background: var(--code);
   border: 1px solid var(--border);
   border-radius: 16px;
   overflow-x: auto;
