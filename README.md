@@ -3,7 +3,7 @@
 # PySeq
 
 [![PyPI](https://img.shields.io/pypi/v/pyseq.svg)](https://pypi.org/project/pyseq/)
-[![CI](https://github.com/rsgalloway/pyseq/actions/workflows/tests.yml/badge.svg)](https://github.com/rsgalloway/pyseq/actions/workflows/tests.yml)
+[![CI](https://github.com/rsgalloway/pyseq/actions/workflows/tests.yml/badge.svg?branch=master)](https://github.com/rsgalloway/pyseq/actions/workflows/tests.yml)
 [![License](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](LICENSE)
 
 PySeq is a Python library for detecting, parsing, and formatting numbered file
