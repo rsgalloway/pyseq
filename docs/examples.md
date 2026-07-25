@@ -99,6 +99,53 @@ comp.1001.exr
 comp.1005.exr
 ```
 
+## Parse a Stepped Sequence String
+
+```python
+from pyseq import uncompress
+
+seq = uncompress("render.%04d.exr 1001-1010x3", fmt="%h%p%t %x")
+
+print(seq.frames())
+print(seq.format("%h%p%t %x"))
+```
+
+Expected output:
+
+```text
+[1001, 1004, 1007, 1010]
+render.%04d.exr 1001-1010x3
+```
+
+## Parse Signed Serialized Frame Ranges
+
+Signed frame ranges are opt-in. Enable them first:
+
+```bash
+export PYSEQ_ALLOW_NEGATIVE_FRAMES=1
+```
+
+Then serialized range strings may include signed frame numbers:
+
+```python
+from pyseq import uncompress
+
+seq = uncompress("render.%04d.exr -10--1x3", fmt="%h%p%t %x")
+
+print(seq.frames())
+print(seq.format("%x"))
+```
+
+Expected output:
+
+```text
+[-10, -7, -4, -1]
+-10--1x3
+```
+
+Signed frame ranges also work with on-disk filename patterns such as
+`render.-0010.exr` when resolving or discovering sequences.
+
 ## Resolve a Sequence Pattern on Disk
 
 `resolve_sequence` looks up files on disk from a compressed sequence pattern and

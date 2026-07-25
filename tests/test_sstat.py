@@ -33,14 +33,15 @@ __doc__ = """
 Contains tests for the sstat module.
 """
 
+import json
 import os
 import subprocess
 import tempfile
-import json
+
 import pytest
+from conftest import get_installed_command
 
 import pyseq
-from conftest import get_installed_command
 from pyseq.sstat import json_sstat
 
 sstat_bin = get_installed_command("sstat")

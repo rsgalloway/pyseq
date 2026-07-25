@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2011-2025, Ryan Galloway (ryan@rsgalloway.com)
+# Copyright (c) 2011-2026, Ryan Galloway (ryan@rsgalloway.com)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -30,27 +30,18 @@
 # -----------------------------------------------------------------------------
 
 __doc__ = """
-Contains the main pyseq classes and functions.
+Core sequence types and parsing/formatting helpers.
 """
 
 import functools
 import os
 import re
-import traceback
-import warnings
 from collections import deque
 from glob import glob, iglob
-from typing import List, Callable, Union
+from typing import Callable, List, Union
 
 from pyseq import config
-from pyseq.util import _ext_key
-from pyseq.config import (
-    default_format,
-    format_re,
-    global_format,
-    range_join,
-    strict_pad,
-)
+from pyseq.config import default_format, format_re, global_format, range_join, strict_pad
 
 
 class SequenceError(Exception):
@@ -65,28 +56,71 @@ class FormatError(Exception):
     pass
 
 
+def _frame_width(frame: str) -> int:
+    """Return the digit width of a frame token, excluding any sign."""
+    return len(frame[1:] if frame.startswith("-") else frame)
+
+
+def _natural_key(x: str):
+    """Split a string into characters and digits for natural sorting."""
+    return [int(c) if c.isdigit() else c.lower() for c in re.split(r"(\d+)", x)]
+
+
+def _ext_key(x: str):
+    """Sort by extension first, then natural order of the basename."""
+    name, ext = os.path.splitext(x)
+    return [ext] + _natural_key(name)
+
+
+# Import frame-range helpers lazily so default pyseq/lss imports do not pay
+# frange regex compilation costs unless range parsing/formatting is used.
+def _format_frame_range_explicit(frames: List[int], pad_with_brackets: bool = True) -> str:
+    from pyseq.frange import format_frame_range_explicit
+
+    return format_frame_range_explicit(frames, pad_with_brackets=pad_with_brackets)
+
+
+def _format_frame_range_stepped(frames: List[int]) -> str:
+    from pyseq.frange import format_frame_range_stepped
+
+    return format_frame_range_stepped(frames)
+
+
+def _parse_frame_range(range_text: str) -> List[int]:
+    from pyseq.frange import parse_frame_range
+
+    return parse_frame_range(range_text)
+
+
 def padsize(item, frame):
     """
-    Determines the pad size for a given Item. Return value may depend on
-    whether strict padding is enabled or not.
+    Determine the pad size for a given Item.
+
+    The return value may depend on whether strict padding is enabled.
 
     For example: the file item.001.exr will have a pad size of 3, and the
     file test.001001.exr will have a pad size of 6.
 
     :param item: Item object.
-    :param frame: the frame number as a string.
-    :returns: the size of the frame pad as an int.
+    Signed frames use the digit width only; the leading ``-`` does not
+    contribute to the padding width.
+
+    :param frame: The frame number token as a string.
+    :returns: The size of the frame pad as an int.
     """
 
     # strict: frame size (%d) must match between frames (default)
     # for example: test.09.jpg, test.10.jpg, test.11.jpg
+    width = _frame_width(frame)
+    digits = frame[1:] if frame.startswith("-") else frame
+
     if strict_pad:
-        return item.pad or len(frame)
+        return item.pad or width
 
     # not strict: frame size can change between frames
     # for example: test.9.jpg, test.10.jpg, test.11.jpg
     else:
-        return item.pad or len(frame) if frame.startswith("0") else 0
+        return item.pad or width if digits.startswith("0") else 0
 
 
 class Item(str):
@@ -102,17 +136,18 @@ class Item(str):
         """
         super(Item, self).__init__()
         self.item = item
-        self.__path = getattr(item, "path", None)
-        if self.__path is None:
+        if isinstance(item, Item):
+            self.__path = item.path
+        else:
             self.__path = str(item)
         self.__filename = os.path.basename(self.__path)
         self.__number_matches = []
-        self.__parts = config.frames_re.split(self.name)
+        self.__parts = config.frames_re.split(self.__filename)
         self.__stat = None
 
         # modified by self.is_sibling()
         self.frame = None
-        self.head = self.name
+        self.head = self.__filename
         self.tail = ""
         self.pad = None
 
@@ -332,6 +367,11 @@ class Item(str):
         return is_sibling
 
 
+def _ensure_item(item: Union[Item, str, os.PathLike]) -> Item:
+    """Return the original Item or wrap path-like input in an Item."""
+    return item if isinstance(item, Item) else Item(item)
+
+
 class Sequence(list):
     """Extends list class with methods that handle item sequentialness.
 
@@ -362,13 +402,13 @@ class Sequence(list):
         """
         # otherwise Sequence consumes the list
         items = deque(items[::])
-        super(Sequence, self).__init__([Item(items.popleft())])
+        super(Sequence, self).__init__([_ensure_item(items.popleft())])
         self.__missing = []
         self.__dirty = False
         self.__frames = None
 
         while items:
-            f = Item(items.popleft())
+            f = _ensure_item(items.popleft())
             try:
                 self.append(f)
             except SequenceError:
@@ -385,13 +425,14 @@ class Sequence(list):
             "e": self.end,
             "f": self.frames,
             "m": self.missing,
-            "M": functools.partial(self._get_framerange, self.missing(), missing=True),
+            "M": lambda: self._get_framerange(self.missing(), missing=True),
             "d": lambda *x: self.size,
             "H": lambda *x: self.human,
             "D": self.directory,
             "p": self._get_padding,
-            "r": functools.partial(self._get_framerange, self.frames(), missing=False),
-            "R": functools.partial(self._get_framerange, self.frames(), missing=True),
+            "r": lambda: self._get_framerange(self.frames(), missing=False),
+            "R": lambda: self._get_framerange(self.frames(), missing=True),
+            "x": lambda: _format_frame_range_stepped(self.frames()),
             "h": self.head,
             "t": self.tail,
         }
@@ -514,6 +555,8 @@ class Sequence(list):
         +-----------+--------------------------------------+
         | ``%R``    | explicit broken range, [1-10, 15-20] |
         +-----------+--------------------------------------+
+        | ``%x``    | stepped explicit range, 1-10x2, 20   |
+        +-----------+--------------------------------------+
         | ``%d``    | disk usage                           |
         +-----------+--------------------------------------+
         | ``%H``    | disk usage (human readable)          |
@@ -539,6 +582,7 @@ class Sequence(list):
             "p": "s",
             "r": "s",
             "R": "s",
+            "x": "s",
             "d": "s",
             "H": "s",
             "D": "s",
@@ -698,9 +742,7 @@ class Sequence(list):
 
         for anchor in anchors:
             if anchor.is_sibling(item):
-                return item.name.startswith(canonical_head) and item.name.endswith(
-                    canonical_tail
-                )
+                return item.name.startswith(canonical_head) and item.name.endswith(canonical_tail)
 
         return False
 
@@ -799,8 +841,7 @@ class Sequence(list):
 
         if offset > 0:
             gen = (
-                (image, frame)
-                for (image, frame) in zip(reversed(self), reversed(self.frames()))
+                (image, frame) for (image, frame) in zip(reversed(self), reversed(self.frames()))
             )
         else:
             gen = ((image, frame) for (image, frame) in zip(self, self.frames()))
@@ -816,6 +857,9 @@ class Sequence(list):
 
                 shutil.move(oldName, newName)
             except Exception as err:
+                import traceback
+                import warnings
+
                 warnings.warn(
                     "%s during reIndex %s -> %s: \n%s"
                     % (
@@ -852,9 +896,6 @@ class Sequence(list):
         :return: Formatted frame range string.
         """
 
-        frange = []
-        start = ""
-        end = ""
         if not missing:
             if frames:
                 return "%s-%s" % (self.start(), self.end())
@@ -864,28 +905,22 @@ class Sequence(list):
         if not frames:
             return ""
 
-        for i in range(0, len(frames)):
-            frame = frames[i]
+        frange = []
+        expanded = []
+        saw_ranges = False
+        for frame in frames:
             if isinstance(frame, range):
+                saw_ranges = True
                 if frame.start != frame.stop:
                     frange.append("%s-%s" % (frame.start, frame.stop - 1))
                 continue
-            prev = frames[i - 1]
-            if i != 0 and frame != prev + 1:
-                if start != end:
-                    frange.append("%s-%s" % (str(start), str(end)))
-                elif start == end:
-                    frange.append(str(start))
-                start = end = frame
-                continue
-            if start == "" or int(start) > frame:
-                start = frame
-            if end == "" or int(end) < frame:
-                end = frame
-        if start == end:
-            frange.append(str(start))
-        else:
-            frange.append("%s-%s" % (str(start), str(end)))
+            expanded.append(frame)
+
+        explicit = _format_frame_range_explicit(expanded, pad_with_brackets=False)
+        if explicit:
+            frange.extend(explicit.split(range_join))
+        if saw_ranges:
+            frange.append("")
         return "[%s]" % range_join.join(frange)
 
     def _get_frames(self):
@@ -946,7 +981,7 @@ def diff(f1: Union[str, Item], f2: Union[str, Item]):
     if len(f1.number_matches) == len(f2.number_matches):
         for m1, m2 in zip(f1.number_matches, f2.number_matches):
             if (m1.start() == m2.start()) and (m1.group() != m2.group()):
-                if strict_pad is True and (len(m1.group()) != len(m2.group())):
+                if strict_pad is True and (_frame_width(m1.group()) != _frame_width(m2.group())):
                     continue
                 d.append(
                     {
@@ -960,7 +995,7 @@ def diff(f1: Union[str, Item], f2: Union[str, Item]):
 
 
 def uncompress(seq_string: str, fmt: str = global_format):
-    """Basic uncompression or deserialization of a compressed sequence string.
+    """Deserialize a compressed sequence string into a Sequence.
 
     For example:
 
@@ -985,9 +1020,14 @@ def uncompress(seq_string: str, fmt: str = global_format):
     >>> len(seq)
     100
 
+    >>> seq = pyseq.uncompress('render.%04d.exr 1001-1010x3', fmt='%h%p%t %x')
+    >>> print(seq.frames())
+    [1001, 1004, 1007, 1010]
+
     :param seq_string: Compressed sequence string.
     :param fmt: Format of sequence string.
-    :return: :class:`.Sequence` instance.
+    :return: :class:`.Sequence` instance, or ``None`` when the string does not
+        match ``fmt``.
     """
 
     dirname = os.path.dirname(seq_string)
@@ -998,14 +1038,25 @@ def uncompress(seq_string: str, fmt: str = global_format):
     name = os.path.basename(seq_string)
 
     # map of directives to regex
+    allow_negative = config.allow_negative_frames()
+    range_pattern = (
+        r"-?\d+\s*-\s*-?\d+(?:\s*x\s*\d+)?" if allow_negative else r"\d+\s*-\s*\d+(?:\s*x\s*\d+)?"
+    )
+    explicit_pattern = (
+        r"-?\d+(?:\s*-\s*-?\d+(?:\s*x\s*\d+)?)?(?:\s*,\s*-?\d+(?:\s*-\s*-?\d+(?:\s*x\s*\d+)?)?)*"
+        if allow_negative
+        else r"\d+(?:\s*-\s*\d+(?:\s*x\s*\d+)?)?(?:\s*,\s*\d+(?:\s*-\s*\d+(?:\s*x\s*\d+)?)?)*"
+    )
+
     remap = {
         "s": r"\d+",
         "e": r"\d+",
         "l": r"\d+",
         "h": r"(.+)?",
         "t": r"(\S+)?",
-        "r": r"\d+-\d+",
-        "R": r"\[[\d\s?\-%s?]+\]" % re.escape(range_join),
+        "r": range_pattern,
+        "R": r"\[[^\]]+\]",
+        "x": explicit_pattern,
         "p": r"%\d+d",
         "m": r"\[.*\]",
         "f": r"\[.*\]",
@@ -1025,13 +1076,15 @@ def uncompress(seq_string: str, fmt: str = global_format):
     regex = re.compile(fmt)
     match = regex.match(name)
 
-    frames = []
+    frame_values = []
     missing = []
     s = None
     e = None
 
     if not match:
         return
+
+    from ast import literal_eval
 
     try:
         pad = match.group("p")
@@ -1041,71 +1094,78 @@ def uncompress(seq_string: str, fmt: str = global_format):
 
     try:
         R = match.group("R")
-        R = R[1:-1]
-        number_groups = R.split(range_join)
-        pad_len = 0
-        for number_group in number_groups:
-            if "-" in number_group:
-                splits = number_group.split("-")
-                pad_len = max(pad_len, len(splits[0]), len(splits[1]))
-                start = int(splits[0])
-                end = int(splits[1])
-                frames.extend(range(start, end + 1))
-
-            else:
-                end = int(number_group)
-                pad_len = max(pad_len, len(number_group))
-                frames.append(end)
+        frame_values = _parse_frame_range(R)
+        pad_len = max((len(str(abs(frame))) for frame in frame_values), default=0)
         if pad == "%d" and pad_len != 0:
             pad = "%0" + str(pad_len) + "d"
 
     except IndexError:
         try:
             r = match.group("r")
-            s, e = r.split("-")
-            frames = range(int(s), int(e) + 1)
+            frame_values = _parse_frame_range(r)
+            if frame_values:
+                s = frame_values[0]
+                e = frame_values[-1]
 
         except IndexError:
-            s = match.group("s")
-            e = match.group("e")
+            try:
+                x = match.group("x")
+                frame_values = _parse_frame_range(x)
+            except IndexError:
+                s = match.group("s")
+                e = match.group("e")
+                if s is not None and e is not None:
+                    frame_values = _parse_frame_range(f"{s}-{e}")
 
     try:
-        frames = eval(match.group("f"))
+        frame_values = literal_eval(match.group("f"))
 
     except IndexError:
         pass
 
     try:
-        missing = eval(match.group("m"))
+        missing = literal_eval(match.group("m"))
 
     except IndexError:
         pass
 
     items = []
+    emitted_frames = []
+    head = match.groupdict().get("h", "")
+    tail = match.groupdict().get("t", "")
+    item_pad = 0 if pad == "%d" else int(re.search(r"\d+", pad).group())
     if missing:
-        for i in range(int(s), int(e) + 1):
+        for i in _parse_frame_range(f"{s}-{e}"):
             if i in missing:
                 continue
-            f = pad % i
-            name = "%s%s%s" % (
-                match.groupdict().get("h", ""),
-                f,
-                match.groupdict().get("t", ""),
-            )
-            items.append(Item(os.path.join(dirname, name)))
+            f = ("-" if i < 0 else "") + (pad % abs(i))
+            name = "%s%s%s" % (head, f, tail)
+            item = Item(os.path.join(dirname, name))
+            item.frame = i
+            item.head = head
+            item.tail = tail
+            item.pad = item_pad
+            items.append(item)
+            emitted_frames.append(i)
 
     else:
-        for i in frames:
-            f = pad % i
-            name = "%s%s%s" % (
-                match.groupdict().get("h", ""),
-                f,
-                match.groupdict().get("t", ""),
-            )
-            items.append(Item(os.path.join(dirname, name)))
+        for i in frame_values:
+            f = ("-" if i < 0 else "") + (pad % abs(i))
+            name = "%s%s%s" % (head, f, tail)
+            item = Item(os.path.join(dirname, name))
+            item.frame = i
+            item.head = head
+            item.tail = tail
+            item.pad = item_pad
+            items.append(item)
+            emitted_frames.append(i)
 
     seqs = get_sequences(items)
     if seqs:
+        if emitted_frames:
+            seq = seqs[0]
+            seq._Sequence__frames = sorted(emitted_frames)
+            seq._Sequence__missing = None
         return seqs[0]
     return seqs
 
@@ -1157,6 +1217,9 @@ def get_sequences(source: str, frame_pattern: str = config.PYSEQ_FRAME_PATTERN):
 
     if isinstance(source, list):
         items = sorted(source, key=lambda x: str(x))
+        if items and isinstance(items[0], Item):
+            for item in items:
+                item._Item__parts = config.frames_re.split(item.name)
 
     elif isinstance(source, str):
         if os.path.isdir(source):
@@ -1171,7 +1234,7 @@ def get_sequences(source: str, frame_pattern: str = config.PYSEQ_FRAME_PATTERN):
 
     # organize the items into sequences
     while items:
-        item = Item(items.popleft())
+        item = _ensure_item(items.popleft())
         found = False
         for seq in reversed(seqs):
             if seq.includes(item):

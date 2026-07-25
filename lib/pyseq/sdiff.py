@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2011-2025, Ryan Galloway (ryan@rsgalloway.com)
+# Copyright (c) 2011-2026, Ryan Galloway (ryan@rsgalloway.com)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -38,7 +38,7 @@ import json
 import sys
 
 import pyseq
-from pyseq.util import cli_catch_keyboard_interrupt
+from pyseq.cli import cli_catch_keyboard_interrupt
 from pyseq.util import resolve_sequence
 
 
@@ -58,7 +58,7 @@ def diff_sequences(
     def intval(val):
         try:
             return int(val)
-        except:
+        except (TypeError, ValueError):
             return None
 
     diff = {

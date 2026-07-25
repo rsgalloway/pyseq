@@ -36,13 +36,24 @@ Contains tests for the srm CLI and sremove module.
 import os
 import subprocess
 import tempfile
+
 import pytest
+from conftest import get_installed_command
 
 import pyseq
-from conftest import get_installed_command
 from pyseq.sremove import remove_sequence
 
 srm_bin = get_installed_command("srm")
+
+
+def _signed_frame_name(frame):
+    return f"{frame:05d}" if frame < 0 else f"{frame:04d}"
+
+
+def _negative_env():
+    env = os.environ.copy()
+    env["PYSEQ_ALLOW_NEGATIVE_FRAMES"] = "1"
+    return env
 
 
 @pytest.fixture
@@ -147,3 +158,24 @@ def test_srm_cli_embedded_range(tmp_path):
     assert os.path.exists(tmp_path / "plate.0005.rgb")
     for i in range(2, 5):
         assert not os.path.exists(tmp_path / f"plate.{i:04d}.rgb")
+
+
+def test_srm_cli_negative_sequence_string(tmp_path):
+    """Serialized negative frame ranges should resolve before removal."""
+    for frame in range(-2, 2):
+        (tmp_path / f"negA.{_signed_frame_name(frame)}.exr").write_text("dummy frame")
+
+    src = str(tmp_path / "negA.%04d.exr") + " -2-0"
+
+    result = subprocess.run(
+        [srm_bin, src],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        env=_negative_env(),
+    )
+
+    assert result.returncode == 0, result.stderr
+    for frame in range(-2, 1):
+        assert not os.path.exists(tmp_path / f"negA.{_signed_frame_name(frame)}.exr")
+    assert os.path.exists(tmp_path / "negA.0001.exr")

@@ -36,13 +36,24 @@ Contains tests for the smv console command and smove module.
 import os
 import subprocess
 import tempfile
+
 import pytest
+from conftest import get_installed_command
 
 import pyseq
-from conftest import get_installed_command
 from pyseq.smove import move_sequence
 
 smv_bin = get_installed_command("smv")
+
+
+def _signed_frame_name(frame):
+    return f"{frame:05d}" if frame < 0 else f"{frame:04d}"
+
+
+def _negative_env():
+    env = os.environ.copy()
+    env["PYSEQ_ALLOW_NEGATIVE_FRAMES"] = "1"
+    return env
 
 
 @pytest.fixture
@@ -245,3 +256,27 @@ def test_smv_cli_embedded_range_source_and_dest(tmp_path):
     assert os.path.exists(tmp_path / "plate.0005.rgb")
     for i in range(2, 5):
         assert not os.path.exists(tmp_path / f"plate.{i:04d}.rgb")
+
+
+def test_smv_cli_negative_sequence_string_source_and_dest(tmp_path):
+    """Serialized negative frame ranges should resolve before moving."""
+    for frame in range(-2, 2):
+        (tmp_path / f"negA.{_signed_frame_name(frame)}.exr").write_text("dummy frame")
+
+    src = str(tmp_path / "negA.%04d.exr") + " -2-0"
+    dest = str(tmp_path / "negB.%04d.exr") + " 100-102"
+
+    result = subprocess.run(
+        [smv_bin, src, dest],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        env=_negative_env(),
+    )
+
+    assert result.returncode == 0, result.stderr
+    for frame in range(100, 103):
+        assert os.path.exists(tmp_path / f"negB.{frame:04d}.exr")
+    for frame in range(-2, 1):
+        assert not os.path.exists(tmp_path / f"negA.{_signed_frame_name(frame)}.exr")
+    assert os.path.exists(tmp_path / "negA.0001.exr")

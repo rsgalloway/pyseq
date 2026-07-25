@@ -3,6 +3,12 @@
 Use `${PYSEQ_FRAME_PATTERN}` to define custom regular expressions for
 identifying frame numbers.
 
+Signed frame numbers such as `render.-0010.exr` are opt-in. Enable them with:
+
+```bash
+export PYSEQ_ALLOW_NEGATIVE_FRAMES=1
+```
+
 ## Example
 
 If frames are always preceded by an underscore:
@@ -35,4 +41,7 @@ PYSEQ_FRAME_PATTERN: \.\d+\.
 
 # frame numbers start with an underscore, e.g. file_v1_1001.exr
 PYSEQ_FRAME_PATTERN: _\d+
+
+# allow signed frame numbers in explicit ranges and filename discovery
+PYSEQ_ALLOW_NEGATIVE_FRAMES: ${PYSEQ_ALLOW_NEGATIVE_FRAMES:=0}
 ```

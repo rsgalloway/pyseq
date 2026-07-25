@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2011-2025, Ryan Galloway (ryan@rsgalloway.com)
+# Copyright (c) 2011-2026, Ryan Galloway (ryan@rsgalloway.com)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -49,13 +49,38 @@ PYSEQ_STRICT_PAD = os.getenv("PYSEQ_STRICT_PAD", 0)
 PYSEQ_NOT_STRICT = os.getenv("PYSEQ_NOT_STRICT", 1)
 strict_pad = int(PYSEQ_STRICT_PAD) == 1 or int(PYSEQ_NOT_STRICT) == 0
 
-# regex pattern for matching all numbers in a filename
-digits_re = re.compile(r"\d+")
-
 # regex pattern for matching frame numbers only
-# the default is \d+ for maximum compatibility
+# pyseq intentionally stays permissive here and lets sibling/diff logic decide
+# whether matching numeric tokens represent the sequence frame component.
 DEFAULT_FRAME_PATTERN = r"\d+"
+DEFAULT_SIGNED_FRAME_PATTERN = r"(?:(?<=^)|(?<=[._]))-\d+|\d+"
+
+# regex pattern for matching all numeric sequence tokens in a filename
+digits_re = re.compile(DEFAULT_FRAME_PATTERN)
 PYSEQ_FRAME_PATTERN = os.getenv("PYSEQ_FRAME_PATTERN", DEFAULT_FRAME_PATTERN)
+PYSEQ_ALLOW_NEGATIVE_FRAMES = os.getenv("PYSEQ_ALLOW_NEGATIVE_FRAMES", "0")
+
+# regex patterns for explicit frame-range syntax parsing/formatting
+DEFAULT_FRAME_RANGE_SEGMENT_PATTERN = (
+    r"^\s*(?P<start>-?\d+)(?:\s*-\s*(?P<end>-?\d+)(?:\s*x\s*(?P<step>\d+))?)?\s*$"
+)
+DEFAULT_FRAME_RANGE_TEXT_PATTERN = (
+    r"-?\d+(?:\s*-\s*-?\d+(?:\s*x\s*\d+)?)?(?:\s*,\s*-?\d+(?:\s*-\s*-?\d+(?:\s*x\s*\d+)?)?)*"
+)
+DEFAULT_SERIALIZED_RANGE_PATTERN = rf"\[[^\]]+\]|\s+(?:{DEFAULT_FRAME_RANGE_TEXT_PATTERN})\s*$"
+DEFAULT_EMBEDDED_RANGE_PATTERN = rf"^(?P<head>.+?)(?P<range>\[(?:[^\]]+)\]|{DEFAULT_FRAME_RANGE_TEXT_PATTERN})(?P<tail>\.[^/\s]+)$"
+
+
+def allow_negative_frames() -> bool:
+    """Return True when explicit negative frame syntax is enabled."""
+    return os.getenv("PYSEQ_ALLOW_NEGATIVE_FRAMES", PYSEQ_ALLOW_NEGATIVE_FRAMES) == "1"
+
+
+def get_effective_frame_pattern(pattern: str = DEFAULT_FRAME_PATTERN) -> str:
+    """Return the configured frame pattern, promoting the default when needed."""
+    if allow_negative_frames() and pattern == DEFAULT_FRAME_PATTERN:
+        return DEFAULT_SIGNED_FRAME_PATTERN
+    return pattern
 
 
 def set_frame_pattern(pattern: str = DEFAULT_FRAME_PATTERN):
@@ -65,13 +90,18 @@ def set_frame_pattern(pattern: str = DEFAULT_FRAME_PATTERN):
     :param pattern: The regex pattern to use for matching frame numbers.
     """
     global frames_re
+    global digits_re
     global PYSEQ_FRAME_PATTERN
     PYSEQ_FRAME_PATTERN = pattern
     try:
-        frames_re = re.compile(pattern)
+        compiled = re.compile(get_effective_frame_pattern(pattern))
+        frames_re = compiled
+        digits_re = compiled
     except Exception as e:
         print("Error: Invalid regex pattern: %s" % e)
-        frames_re = re.compile(DEFAULT_FRAME_PATTERN)
+        fallback = re.compile(DEFAULT_FRAME_PATTERN)
+        frames_re = fallback
+        digits_re = fallback
 
 
 # set the default frame pattern

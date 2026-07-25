@@ -1,0 +1,244 @@
+name: benchmarks
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+      - converted_to_draft
+    paths:
+      - "lib/pyseq/**"
+      - "scripts/benchmark.py"
+      - ".github/workflows/benchmarks.yml"
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: Benchmark profile to run
+        required: false
+        default: smoke
+        type: choice
+        options:
+          - smoke
+          - full
+  schedule:
+    - cron: "0 9 * * 1"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  benchmark-pr:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Check out candidate branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install package dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install -e ".[dev]"
+
+      - name: Check out baseline branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: baseline
+
+      - name: Run baseline benchmarks
+        working-directory: baseline
+        run: |
+          mkdir -p scripts
+          cp "$GITHUB_WORKSPACE/scripts/benchmark.py" scripts/benchmark.py
+          python scripts/benchmark.py --scenarios contiguous,mixed --json baseline-benchmark.json > baseline-benchmark.md
+
+      - name: Run candidate benchmarks
+        run: |
+          python scripts/benchmark.py --scenarios contiguous,mixed --json candidate-benchmark.json > candidate-benchmark.md
+
+      - name: Compare benchmark runs
+        id: compare
+        if: success() || hashFiles('baseline/baseline-benchmark.json', 'candidate-benchmark.json') != ''
+        run: |
+          set +e
+          python scripts/benchmark.py \
+            --compare baseline/baseline-benchmark.json candidate-benchmark.json \
+            --json benchmark-compare.json \
+            --fail-on-regression-pct 3 \
+            --fail-on-regression-s 0.005 > benchmark-compare.md
+          status=$?
+          echo "exit_code=$status" >> "$GITHUB_OUTPUT"
+          if [ "$status" -eq 0 ]; then
+            echo "threshold_exceeded=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "threshold_exceeded=true" >> "$GITHUB_OUTPUT"
+          fi
+          exit 0
+
+      - name: Write benchmark summaries
+        if: always()
+        shell: bash
+        run: |
+          {
+            if [ -f candidate-benchmark.md ]; then
+              echo "## Candidate benchmark"
+              cat candidate-benchmark.md
+              echo
+            fi
+            if [ -f baseline/baseline-benchmark.md ]; then
+              echo "## Baseline benchmark"
+              cat baseline/baseline-benchmark.md
+              echo
+            fi
+            if [ -f benchmark-compare.md ]; then
+              echo "## Comparison"
+              cat benchmark-compare.md
+            else
+              echo "## Comparison"
+              echo "Benchmark comparison did not run to completion."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Post pull request benchmark comment
+        if: always() && hashFiles('benchmark-compare.md') != ''
+        uses: actions/github-script@v7
+        env:
+          BENCHMARK_COMPARE_PATH: benchmark-compare.md
+          BENCHMARK_THRESHOLD_EXCEEDED: ${{ steps.compare.outputs.threshold_exceeded }}
+        with:
+          script: |
+            const fs = require("fs");
+            const marker = "<!-- pyseq-benchmark-comment -->";
+            const compare = fs.readFileSync(process.env.BENCHMARK_COMPARE_PATH, "utf8");
+            const failed = process.env.BENCHMARK_THRESHOLD_EXCEEDED === "true";
+            const header = failed
+              ? "## Benchmark Regression Alert"
+              : "## Benchmark Comparison";
+            const status = failed
+              ? "_Regression guard exceeded the +3.00% and +0.005s thresholds._"
+              : "_No benchmark exceeded the +3.00% and +0.005s regression thresholds._";
+            const body = `${marker}\n${header}\n\n${status}\n\n${compare}`;
+
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number,
+              per_page: 100,
+            });
+
+            const existing = comments.find((comment) => comment.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body,
+              });
+            }
+
+      - name: Upload benchmark artifacts
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p benchmark-artifacts/baseline
+          if [ -f baseline/baseline-benchmark.json ]; then
+            cp baseline/baseline-benchmark.json benchmark-artifacts/baseline/
+          fi
+          if [ -f baseline/baseline-benchmark.md ]; then
+            cp baseline/baseline-benchmark.md benchmark-artifacts/baseline/
+          fi
+          if [ -d baseline/tmp/benchmarks/profiles ]; then
+            mkdir -p benchmark-artifacts/baseline/tmp/benchmarks
+            cp -R baseline/tmp/benchmarks/profiles benchmark-artifacts/baseline/tmp/benchmarks/
+          fi
+
+      - name: Publish benchmark artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results-pr-${{ github.event.pull_request.number }}
+          path: |
+            candidate-benchmark.json
+            candidate-benchmark.md
+            benchmark-compare.json
+            benchmark-compare.md
+            tmp/benchmarks/profiles
+            benchmark-artifacts/baseline
+          if-no-files-found: warn
+
+      - name: Enforce regression threshold
+        if: always() && steps.compare.outputs.threshold_exceeded == 'true'
+        run: |
+          echo "Benchmark regression exceeded the +3.00% and +0.005s thresholds."
+          exit 1
+
+  benchmark-branch:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install package
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install -e ".[dev]"
+
+      - name: Select profile
+        id: profile
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "value=${{ inputs.profile }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "value=full" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=smoke" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run benchmarks
+        run: |
+          if [ "${{ steps.profile.outputs.value }}" = "full" ]; then
+            python scripts/benchmark.py --full --json benchmark.json > benchmark.md
+          else
+            python scripts/benchmark.py --json benchmark.json > benchmark.md
+          fi
+
+      - name: Write benchmark summary
+        run: |
+          cat benchmark.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload benchmark artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results-${{ steps.profile.outputs.value }}
+          path: |
+            benchmark.json
+            benchmark.md
+            tmp/benchmarks/profiles

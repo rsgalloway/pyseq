@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2011-2025, Ryan Galloway (ryan@rsgalloway.com)
+# Copyright (c) 2011-2026, Ryan Galloway (ryan@rsgalloway.com)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -33,18 +33,15 @@ __doc__ = """
 Contains the main smove functions for the pyseq module.
 """
 
-import sys
-import os
 import argparse
+import os
 import shutil
+import sys
 from typing import Optional
 
 import pyseq
-from pyseq.util import (
-    cli_catch_keyboard_interrupt,
-    parse_destination_reference,
-    resolve_sequence_reference,
-)
+from pyseq.cli import cli_catch_keyboard_interrupt
+from pyseq.util import parse_destination_reference, resolve_sequence_reference
 
 
 def move_sequence(
@@ -149,17 +146,11 @@ def main():
             dest_spec = parse_destination_reference(dest, seq)
 
             if len(sources) > 1 and dest_spec["kind"] != "directory":
-                raise ValueError(
-                    "destination must be a directory when moving multiple sources"
-                )
+                raise ValueError("destination must be a directory when moving multiple sources")
 
             rename = dest_spec["rename"]
             pad = args.pad if dest_spec["kind"] == "directory" else dest_spec["pad"]
-            renumber = (
-                args.renumber
-                if dest_spec["kind"] == "directory"
-                else dest_spec["renumber"]
-            )
+            renumber = args.renumber if dest_spec["kind"] == "directory" else dest_spec["renumber"]
             dest_dir = dest_spec["dest_dir"]
 
             move_sequence(

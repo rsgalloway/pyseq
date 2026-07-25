@@ -19,6 +19,7 @@ Used in visual effects, animation, and post-production pipelines.
 [Production Usage](#production-usage) |
 [Command-Line Tools](#command-line-tools) |
 [Docs](#docs) |
+[Contributing](#contributing) |
 [Testing](#testing)
 
 ## Installation
@@ -87,6 +88,32 @@ Deserialize a compressed sequence string:
 1001 012_vb_110_v001.%04d.png [1-1001]
 ```
 
+Extended serialized range syntax is also supported for uncompression and
+sequence reference parsing:
+
+```python
+>>> s = uncompress('render.%04d.exr 1001-1010x3', fmt='%h%p%t %x')
+>>> print(s.frames())
+[1001, 1004, 1007, 1010]
+>>> print(s.format('%h%p%t %x'))
+render.%04d.exr 1001-1010x3
+```
+
+Supported serialized range forms include:
+
+- `1001-1100`
+- `1001-1100x2`
+- `1001-1100x10, 1200, 1300-1320x5`
+- `10-1x3`
+- `-10--1x3` with `PYSEQ_ALLOW_NEGATIVE_FRAMES=1`
+
+Negative frame ranges are opt-in so the default filename discovery path stays
+fast and unopinionated. Enable them with:
+
+```bash
+export PYSEQ_ALLOW_NEGATIVE_FRAMES=1
+```
+
 ## Production Usage
 
 pyseq has been used for many years in production visual effects and animation
@@ -118,6 +145,10 @@ Additional documentation is available in the [docs](docs/) folder:
 - [Setup and Distribution](docs/setup-and-distribution.md)
 - [Formatting Reference](docs/formatting.md)
 - [Frame Patterns](docs/frame-patterns.md)
+
+## Contributing
+
+Contributor guidance lives in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Testing
 

@@ -34,18 +34,21 @@ Contains tests for the pyseq package.
 """
 
 import os
-import re
 import random
-import unittest
+import re
 import subprocess
 import sys
-import time
+import tempfile
+import unittest
+from contextlib import contextmanager
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from conftest import get_installed_command
-from pyseq import Item, Sequence, diff, uncompress, get_sequences
-from pyseq import SequenceError
+
+from pyseq import Item, Sequence, SequenceError, config, diff, get_sequences
 from pyseq import seq as pyseq
+from pyseq import uncompress
+from pyseq.util import resolve_sequence_reference
 
 pyseq.default_format = "%h%r%t"
 
@@ -53,6 +56,21 @@ pyseq.default_format = "%h%r%t"
 def assert_read_only_attribute_error(message):
     valid_snippets = ("can't set attribute", "has no setter")
     assert any(snippet in message for snippet in valid_snippets), message
+
+
+@contextmanager
+def enable_negative_frames():
+    previous = os.environ.get("PYSEQ_ALLOW_NEGATIVE_FRAMES")
+    os.environ["PYSEQ_ALLOW_NEGATIVE_FRAMES"] = "1"
+    config.set_frame_pattern(config.PYSEQ_FRAME_PATTERN)
+    try:
+        yield
+    finally:
+        if previous is None:
+            os.environ.pop("PYSEQ_ALLOW_NEGATIVE_FRAMES", None)
+        else:
+            os.environ["PYSEQ_ALLOW_NEGATIVE_FRAMES"] = previous
+        config.set_frame_pattern(config.PYSEQ_FRAME_PATTERN)
 
 
 class ItemTestCase(unittest.TestCase):
@@ -153,6 +171,13 @@ class ItemTestCase(unittest.TestCase):
         """testing if the is_sibling() is working properly"""
         item1 = Item("/mnt/S/Some/Path/to/a/file/with/numbers/file.0010.exr")
         item2 = Item("/mnt/S/Some/Path/to/a/file/with/numbers/file.0101.exr")
+
+        self.assertTrue(item1.is_sibling(item2))
+        self.assertTrue(item2.is_sibling(item1))
+
+    def test_is_sibling_method_with_negative_frames(self):
+        item1 = Item("render.-0002.exr")
+        item2 = Item("render.-0001.exr")
 
         self.assertTrue(item1.is_sibling(item2))
         self.assertTrue(item2.is_sibling(item1))
@@ -512,6 +537,36 @@ class HelperFunctionsTestCase(unittest.TestCase):
 
         self.assertEqual(96, len(seq8))
 
+    def test_uncompress_extended_range_with_step(self):
+        seq = uncompress("render.%04d.exr 1001-1010x3", fmt="%h%p%t %x")
+        self.assertEqual(seq.frames(), [1001, 1004, 1007, 1010])
+        self.assertEqual(seq.format("%x"), "1001-1010x3")
+
+    def test_uncompress_extended_range_negative_frames(self):
+        with enable_negative_frames():
+            seq = uncompress("render.%04d.exr -10--1x3", fmt="%h%p%t %x")
+            self.assertEqual(seq.frames(), [-10, -7, -4, -1])
+            self.assertEqual(seq.format("%h%p%t %x"), "render.%04d.exr -10--1x3")
+
+    def test_uncompress_extended_range_descending(self):
+        seq = uncompress("render.%04d.exr 10-1x3", fmt="%h%p%t %x")
+        self.assertEqual(seq.frames(), [1, 4, 7, 10])
+        self.assertEqual(
+            [(item.name, item.frame) for item in seq],
+            [
+                ("render.0001.exr", 1),
+                ("render.0004.exr", 4),
+                ("render.0007.exr", 7),
+                ("render.0010.exr", 10),
+            ],
+        )
+        self.assertEqual(seq.format("%x"), "1-10x3")
+
+    def test_format_extended_range_multiple_segments(self):
+        seq = uncompress("render.%04d.exr 1-10x3, 20-30x5, 42", fmt="%h%p%t %x")
+        self.assertEqual(seq.frames(), [1, 4, 7, 10, 20, 25, 30, 42])
+        self.assertEqual(seq.format("%x"), "1-10x3,20-30x5,42")
+
     def test_get_sequences_is_working_properly_1(self):
         """testing if get_sequences is working properly"""
         seqs = get_sequences("./files/")
@@ -534,6 +589,7 @@ class HelperFunctionsTestCase(unittest.TestCase):
             "fileA.1-3.jpg",
             "fileA.1-3.png",
             "file_02.tif",
+            "negA.-2-1.exr",
             "z1_001_v1.1-4.png",
             "z1_002_v1.1-4.png",
             "z1_002_v2.1-4.png",
@@ -560,15 +616,118 @@ class HelperFunctionsTestCase(unittest.TestCase):
         for seq, expected_result in zip(seqs, expected_results):
             self.assertEqual(expected_result, seq.format("%h%p%t %r"))
 
+    def test_resolve_sequence_reference_with_stepped_serialized_range(self):
+        pyseq.strict_pad = False
+        reference = "./tests/files/stepA.%04d.exr 1001-1010x3"
+        seq, dirname = resolve_sequence_reference(reference)
+
+        self.assertEqual(dirname, "./tests/files")
+        self.assertEqual(seq.frames(), [1001, 1004, 1007, 1010])
+        self.assertEqual(seq.format("%h%p%t %x"), "stepA.%d.exr 1001-1010x3")
+
+    def test_resolve_sequence_reference_with_stepped_embedded_range(self):
+        pyseq.strict_pad = False
+        reference = "./tests/files/stepA.1001-1010x3.exr"
+        seq, dirname = resolve_sequence_reference(reference)
+
+        self.assertEqual(dirname, "./tests/files")
+        self.assertEqual(seq.frames(), [1001, 1004, 1007, 1010])
+        self.assertEqual(seq.format("%h%p%t %x"), "stepA.%d.exr 1001-1010x3")
+
+    def test_resolve_sequence_reference_with_descending_serialized_range(self):
+        pyseq.strict_pad = False
+        reference = "./tests/files/stepA.%04d.exr 1010-1001x3"
+        seq, dirname = resolve_sequence_reference(reference)
+
+        self.assertEqual(dirname, "./tests/files")
+        self.assertEqual(seq.frames(), [1001, 1004, 1007, 1010])
+        self.assertEqual(
+            [(item.name, item.frame) for item in seq],
+            [
+                ("stepA.1001.exr", 1001),
+                ("stepA.1004.exr", 1004),
+                ("stepA.1007.exr", 1007),
+                ("stepA.1010.exr", 1010),
+            ],
+        )
+
+    def test_resolve_sequence_reference_with_descending_embedded_range(self):
+        pyseq.strict_pad = False
+        reference = "./tests/files/stepA.1010-1001x3.exr"
+        seq, dirname = resolve_sequence_reference(reference)
+
+        self.assertEqual(dirname, "./tests/files")
+        self.assertEqual(seq.frames(), [1001, 1004, 1007, 1010])
+        self.assertEqual(
+            [(item.name, item.frame) for item in seq],
+            [
+                ("stepA.1001.exr", 1001),
+                ("stepA.1004.exr", 1004),
+                ("stepA.1007.exr", 1007),
+                ("stepA.1010.exr", 1010),
+            ],
+        )
+
+    def test_get_sequences_with_negative_filenames(self):
+        with enable_negative_frames():
+            pyseq.strict_pad = True
+            seq = get_sequences(
+                [
+                    "render.-0002.exr",
+                    "render.-0001.exr",
+                    "render.0000.exr",
+                    "render.0001.exr",
+                ]
+            )[0]
+
+            self.assertEqual(seq.frames(), [-2, -1, 0, 1])
+            self.assertEqual(seq.format("%h%p%t %x"), "render.%04d.exr -2-1")
+
+    def test_get_sequences_with_negative_fixture_files(self):
+        with enable_negative_frames():
+            pyseq.strict_pad = True
+            seq = get_sequences("./tests/files/negA*")[0]
+
+            self.assertEqual(str(seq), "negA.-2-1.exr")
+            self.assertEqual(seq.frames(), [-2, -1, 0, 1])
+            self.assertEqual(seq.format("%h%p%t %x"), "negA.%04d.exr -2-1")
+
+    def test_resolve_sequence_reference_with_negative_filenames(self):
+        with enable_negative_frames():
+            pyseq.strict_pad = True
+            with tempfile.TemporaryDirectory() as tmpdir:
+                for frame in (-2, -1, 0, 1):
+                    if frame < 0:
+                        frame_text = f"-{abs(frame):04d}"
+                    else:
+                        frame_text = f"{frame:04d}"
+                    with open(os.path.join(tmpdir, f"render.{frame_text}.exr"), "w") as handle:
+                        handle.write("dummy frame")
+
+                seq, dirname = resolve_sequence_reference(
+                    os.path.join(tmpdir, "render.%04d.exr -2-1")
+                )
+
+                self.assertEqual(dirname, tmpdir)
+                self.assertEqual(seq.frames(), [-2, -1, 0, 1])
+                self.assertEqual(seq.format("%h%p%t %x"), "render.%04d.exr -2-1")
+
+    def test_resolve_sequence_reference_with_negative_fixture_files(self):
+        with enable_negative_frames():
+            pyseq.strict_pad = True
+            seq, dirname = resolve_sequence_reference("./tests/files/negA.%04d.exr -2-1")
+
+            self.assertEqual(dirname, "./tests/files")
+            self.assertEqual(seq.frames(), [-2, -1, 0, 1])
+            self.assertEqual(seq.format("%h%p%t %x"), "negA.%04d.exr -2-1")
+
 
 class LSSTestCase(unittest.TestCase):
     """Tests lss command"""
 
     def run_command(self, *args):
         """a simple wrapper for subprocess.Popen"""
-        process = subprocess.Popen(
-            args, stdout=subprocess.PIPE, universal_newlines=True
-        )
+        process = subprocess.Popen(args, stdout=subprocess.PIPE, universal_newlines=True)
         stdout, _ = process.communicate()
         return stdout
 
@@ -585,47 +744,33 @@ class LSSTestCase(unittest.TestCase):
         result = self.run_command(self.lss, test_files)
 
         self.assertEqual(
-            """  10 012_vb_110_v001.%04d.png [1-10]
-  10 012_vb_110_v002.%04d.png [1-10]
-   7 a.%03d.tga [1-3, 10, 12-14]
-   1 alpha.txt 
-   5 bnc01_TinkSO_tx_0_ty_0.%04d.tif [101-105]
-   5 bnc01_TinkSO_tx_0_ty_1.%04d.tif [101-105]
-   5 bnc01_TinkSO_tx_1_ty_0.%04d.tif [101-105]
-   5 bnc01_TinkSO_tx_1_ty_1.%04d.tif [101-105]
-   4 file.%02d.tif [1-2, 98-99]
-   1 file.info.03.rgb 
-   3 file01.%03d.j2k [1-2, 4]
-   4 file01_%04d.rgb [40-43]
-   4 file02_%04d.rgb [44-47]
-   4 file%d.03.rgb [1-4]
-   3 fileA.%04d.jpg [1-3]
-   3 fileA.%04d.png [1-3]
-   1 file_02.tif 
-   4 z1_001_v1.%d.png [1-4]
-   4 z1_002_v1.%d.png [1-4]
-   4 z1_002_v2.%d.png [9-12]
-""",
+            (
+                "  10 012_vb_110_v001.%04d.png [1-10]\n"
+                "  10 012_vb_110_v002.%04d.png [1-10]\n"
+                "   7 a.%03d.tga [1-3, 10, 12-14]\n"
+                "   1 alpha.txt \n"
+                "   5 bnc01_TinkSO_tx_0_ty_0.%04d.tif [101-105]\n"
+                "   5 bnc01_TinkSO_tx_0_ty_1.%04d.tif [101-105]\n"
+                "   5 bnc01_TinkSO_tx_1_ty_0.%04d.tif [101-105]\n"
+                "   5 bnc01_TinkSO_tx_1_ty_1.%04d.tif [101-105]\n"
+                "   4 file.%02d.tif [1-2, 98-99]\n"
+                "   1 file.info.03.rgb \n"
+                "   3 file01.%03d.j2k [1-2, 4]\n"
+                "   4 file01_%04d.rgb [40-43]\n"
+                "   4 file02_%04d.rgb [44-47]\n"
+                "   4 file%d.03.rgb [1-4]\n"
+                "   3 fileA.%04d.jpg [1-3]\n"
+                "   3 fileA.%04d.png [1-3]\n"
+                "   1 file_02.tif \n"
+                "   2 negA.-%04d.exr [1-2]\n"
+                "   2 negA.%04d.exr [0-1]\n"
+                "   4 stepA.%d.exr [1001, 1004, 1007, 1010]\n"
+                "   4 z1_001_v1.%d.png [1-4]\n"
+                "   4 z1_002_v1.%d.png [1-4]\n"
+                "   4 z1_002_v2.%d.png [9-12]\n"
+            ),
             result,
         )
-
-
-class PerformanceTests(unittest.TestCase):
-    """tests the performance of pyseq"""
-
-    def test_performance_1(self):
-        """tests performance for single 10k frame sequence"""
-        files = ["file.%03d.jpg" % i for i in range(1, 10000)]
-        s = time.time()
-        seq = Sequence(files)
-        e = time.time()
-        total_time = e - s
-        print("time taken to create sequence: %s" % (total_time))
-        self.assertEqual(str(seq), "file.1-9999.jpg")
-        self.assertEqual(len(seq), 9999)
-        # Keep a loose upper bound so this stays meaningful without flaking on
-        # slower CI runners or across Python versions.
-        self.assertLess(total_time, 0.5)
 
 
 class TestIssues(unittest.TestCase):
@@ -795,9 +940,7 @@ class TestIssues(unittest.TestCase):
         self.assertTrue(len(missing), 5000000)
         self.assertEqual(missing[0][0], 100000001)
         self.assertEqual(missing[0][-1], 499999999)
-        self.assertEqual(
-            seqs[0].format(), "   2 image-%09d-2048x2048.jpg [100000000, 500000000]"
-        )
+        self.assertEqual(seqs[0].format(), "   2 image-%09d-2048x2048.jpg [100000000, 500000000]")
         self.assertEqual(seqs[0].format("%M"), "[100000001-499999999, ]")
 
         # high missing frame count test 3 (from the issue)
@@ -901,9 +1044,7 @@ class TestIssues(unittest.TestCase):
         ]
 
         # test using default frame pattern
-        seqs1 = pyseq.get_sequences(
-            filenames, frame_pattern=config.DEFAULT_FRAME_PATTERN
-        )
+        seqs1 = pyseq.get_sequences(filenames, frame_pattern=config.DEFAULT_FRAME_PATTERN)
         self.assertEqual(len(seqs1), 1)
 
         # test if a new file in the sequence is included

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2011-2025, Ryan Galloway (ryan@rsgalloway.com)
+# Copyright (c) 2011-2026, Ryan Galloway (ryan@rsgalloway.com)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -41,8 +41,8 @@ from typing import Any, Optional
 
 from pyseq import __version__, get_sequences
 from pyseq import seq as pyseq
-from pyseq.util import cli_catch_keyboard_interrupt
 from pyseq import walk
+from pyseq.cli import cli_catch_keyboard_interrupt
 
 
 def tree(source: str, level: Optional[int], seq_format: str):

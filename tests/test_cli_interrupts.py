@@ -48,9 +48,7 @@ def test_copy_move_cli_main_handles_keyboard_interrupt(
 
 def test_srm_cli_main_handles_keyboard_interrupt(monkeypatch, capsys, tmp_path):
     monkeypatch.chdir(tmp_path)
-    monkeypatch.setattr(
-        sremove, "resolve_sequence_reference", _raise_keyboard_interrupt
-    )
+    monkeypatch.setattr(sremove, "resolve_sequence_reference", _raise_keyboard_interrupt)
     monkeypatch.setattr("sys.argv", ["srm", "a.%04d.exr"])
 
     assert sremove.main() == 1

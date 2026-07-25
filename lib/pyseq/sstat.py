@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2011-2025, Ryan Galloway (ryan@rsgalloway.com)
+# Copyright (c) 2011-2026, Ryan Galloway (ryan@rsgalloway.com)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -40,7 +40,7 @@ import os
 import sys
 
 import pyseq
-from pyseq.util import cli_catch_keyboard_interrupt
+from pyseq.cli import cli_catch_keyboard_interrupt
 from pyseq.util import resolve_sequence
 
 
@@ -79,9 +79,7 @@ def print_sstat(seq: pyseq.Sequence):
         return f"{format_time(t1)}.. {format_time(t2)}"
 
     print(f"Sequence: {str(seq)}")
-    print(
-        f"Size:     {seq.format('%H'):>8}    Frames: {seq.format('%l'):>5}    Padding: {seq.pad}"
-    )
+    print(f"Size:     {seq.format('%H'):>8}    Frames: {seq.format('%l'):>5}    Padding: {seq.pad}")
     missing = seq.format("%M")
     print(f"Missing:  {missing if missing else 'none'}")
     print(f"Head:     {seq.head()}")
