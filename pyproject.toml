@@ -62,8 +62,8 @@ sstat = "pyseq.sstat:main"
 stree = "pyseq.stree:main"
 
 [project.urls]
-Homepage = "https://github.com/rsgalloway/pyseq"
-Documentation = "https://github.com/rsgalloway/pyseq/tree/main/docs"
+Homepage = "https://pyseq.dev"
+Documentation = "https://pyseq.dev"
 Repository = "https://github.com/rsgalloway/pyseq"
 Issues = "https://github.com/rsgalloway/pyseq/issues"
 
