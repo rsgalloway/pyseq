@@ -1,26 +1,38 @@
-![pyseq logo](docs/assets/logo.png)
+<p align="center">
+  <img src="docs/assets/logo.png" alt="pyseq" width="350">
+</p>
 
-# PySeq
+<p align="center">
+  <a href="https://pypi.org/project/pyseq/">
+    <img src="https://img.shields.io/pypi/v/pyseq.svg?color=blue" alt="PyPI">
+  </a>
+  <a href="https://github.com/rsgalloway/pyseq/actions/workflows/tests.yml">
+    <img src="https://github.com/rsgalloway/pyseq/actions/workflows/tests.yml/badge.svg?branch=master" alt="CI">
+  </a>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/license-BSD--3--Clause-blue.svg" alt="License">
+  </a>
+</p>
 
-[![PyPI](https://img.shields.io/pypi/v/pyseq.svg)](https://pypi.org/project/pyseq/)
-[![CI](https://github.com/rsgalloway/pyseq/actions/workflows/tests.yml/badge.svg?branch=master)](https://github.com/rsgalloway/pyseq/actions/workflows/tests.yml)
-[![License](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](LICENSE)
+<p align="center">
+  <a href="#installation">Installation</a> |
+  <a href="#quick-examples">Quick Examples</a> |
+  <a href="#production-usage">Production Usage</a> |
+  <a href="#command-line-tools">Command-Line Tools</a> |
+  <a href="#docs">Docs</a> |
+  <a href="#contributing">Contributing</a> |
+  <a href="#testing">Testing</a>
+</p>
 
-PySeq is a Python library for detecting, parsing, and formatting numbered file
+pyseq is a Python library for discovering, parsing, and manipulating numbered file
 sequences such as `fileA.0001.png`, `fileA.0002.png`, and
-`fileA.0003.png`. It groups matching filenames into a compact sequence form
-like `fileA.1-3.png`, regardless of where the frame number appears in the
-name.
+`fileA.0003.png`. It groups matching filenames into compact sequence representations regardless of where the frame number appears in the filename.
 
-Used in visual effects, animation, and post-production pipelines.
+## Recognition
 
-[Installation](#installation) |
-[Quick Examples](#quick-examples) |
-[Production Usage](#production-usage) |
-[Command-Line Tools](#command-line-tools) |
-[Docs](#docs) |
-[Contributing](#contributing) |
-[Testing](#testing)
+- Listed in the Awesome CG / VFX Pipeline project.
+- Packaged in the Debian repositories as `python3-pyseq`.
+- Used in production visual effects and animation pipelines for many years.
 
 ## Installation
 
@@ -32,7 +44,7 @@ $ pip install -U pyseq
 
 OS packages are also available for some distributions:
 
-- Ubuntu 26.04 LTS (`resolute`) from `universe`:
+- Ubuntu 26.04 LTS (`universe`):
 
 ```bash
 sudo apt install python3-pyseq
@@ -61,6 +73,7 @@ Find grouped sequences from Python:
 Compress a list of filenames into a sequence:
 
 ```python
+>>> from pyseq import Sequence
 >>> s = Sequence(['file.0001.jpg', 'file.0002.jpg', 'file.0003.jpg'])
 >>> print(s)
 file.1-3.jpg
@@ -81,6 +94,7 @@ $ lss tests/files/z1*
 Deserialize a compressed sequence string:
 
 ```python
+>>> from pyseq import uncompress
 >>> s = uncompress('./tests/012_vb_110_v001.%04d.png 1-1001', fmt='%h%p%t %r')
 >>> len(s)
 1001
@@ -92,6 +106,7 @@ Extended serialized range syntax is also supported for uncompression and
 sequence reference parsing:
 
 ```python
+>>> from pyseq import uncompress
 >>> s = uncompress('render.%04d.exr 1001-1010x3', fmt='%h%p%t %x')
 >>> print(s.frames())
 [1001, 1004, 1007, 1010]
@@ -145,6 +160,7 @@ Additional documentation is available in the [docs](docs/) folder:
 - [Setup and Distribution](docs/setup-and-distribution.md)
 - [Formatting Reference](docs/formatting.md)
 - [Frame Patterns](docs/frame-patterns.md)
+- [Performance](docs/performance.md)
 
 ## Contributing
 
