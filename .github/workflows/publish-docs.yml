@@ -79,10 +79,17 @@ jobs:
       - name: Verify published inventory
         run: test -f _site/objects.inv
 
+      - name: Prepare artifact name
+        id: artifact_name
+        shell: bash
+        run: |
+          safe_ref=$(printf '%s' "${GITHUB_REF_NAME}" | tr '/\\:*?\"<>|\r\n' '-')
+          echo "value=docs-site-${safe_ref}" >> "$GITHUB_OUTPUT"
+
       - name: Upload downloadable site artifact
         uses: actions/upload-artifact@v4
         with:
-          name: docs-site-${{ github.ref_name }}
+          name: ${{ steps.artifact_name.outputs.value }}
           path: _site
 
       - name: Upload Pages artifact
