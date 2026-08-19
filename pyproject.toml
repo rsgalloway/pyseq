@@ -40,7 +40,21 @@ classifiers = [
 authors = [
   { name = "Ryan Galloway", email = "ryan@rsgalloway.com" },
 ]
-optional-dependencies = { dev = ["pytest", "flake8==7.1.1", "mccabe==0.7.0", "isort==5.13.2", "black==24.8.0"], test = ["pytest"] }
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+  "flake8==7.1.1",
+  "mccabe==0.7.0",
+  "isort==5.13.2",
+  "black==24.8.0",
+]
+docs = [
+  "Sphinx>=8,<9",
+]
+test = [
+  "pytest",
+]
 
 [tool.isort]
 profile = "black"

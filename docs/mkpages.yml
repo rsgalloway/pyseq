@@ -1,0 +1,17 @@
+title: pyseq
+description: Python library for numbered file sequences.
+navigation:
+  - label: Home
+    href: /
+  - label: Usage
+    href: /docs/cli-tools/
+  - label: Examples
+    href: /docs/examples/
+  - label: Formatting
+    href: /docs/formatting/
+  - label: Performance
+    href: /docs/performance/
+  - label: API
+    href: /api/
+  - label: GitHub
+    href: https://github.com/rsgalloway/pyseq

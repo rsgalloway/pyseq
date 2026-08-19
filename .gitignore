@@ -15,3 +15,4 @@ default.env
 .codex
 .agents/
 .pytest_cache/
+.mkpages/

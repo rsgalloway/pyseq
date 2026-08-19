@@ -14,4 +14,5 @@ Available guides:
 
 If you are evaluating pyseq for pipeline use, start with the examples guide and
 then review the CLI reference for the sequence-aware utilities included with
-the package.
+the package. For generated Python API details, see the [Sphinx API
+reference](/api/).
