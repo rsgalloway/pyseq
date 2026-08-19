@@ -38,7 +38,7 @@ def append_benchmark_section(
         sections.extend(
             [
                 "This section is generated automatically by the docs publishing workflow,",
-                "which runs `scripts/benchmark.py` on the current `master` branch before",
+                "which runs `scripts/benchmark.py` for the current workflow ref before",
                 "building the Pages site.",
                 "",
                 benchmark_summary.read_text(encoding="utf-8").strip(),
