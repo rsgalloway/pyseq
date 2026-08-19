@@ -1,5 +1,5 @@
 <p align="left">
-  <img src="assets/logo.png" alt="pyseq logo" width="640">
+  <img src="assets/logo.png" alt="pyseq logo" width="400">
 </p>
 
 pyseq is a **Python library for detecting, parsing, and formatting numbered
@@ -127,7 +127,8 @@ Expected output:
 
 ## Learn More
 
-- [PySeq Docs](README.md): docs overview
+- [API Reference](/api/): generated Python module reference
+- [PySeq Docs](/docs/): docs overview
 - [Examples](examples.md): Python and CLI usage patterns
 - [CLI Tools Reference](cli-tools.md): bundled sequence-aware utilities
 - [Formatting Reference](formatting.md): supported format directives

@@ -101,10 +101,10 @@ def padsize(item, frame):
     For example: the file item.001.exr will have a pad size of 3, and the
     file test.001001.exr will have a pad size of 6.
 
-    :param item: Item object.
     Signed frames use the digit width only; the leading ``-`` does not
     contribute to the padding width.
 
+    :param item: Item object.
     :param frame: The frame number token as a string.
     :returns: The size of the frame pad as an int.
     """
@@ -777,6 +777,7 @@ class Sequence(list):
         :param item: pyseq.Item object.
         :param check_membership: Check if `item` is a member. Can be useful if
             membership is checked prior to appending.
+        
         :exc:`SequenceError` raised if item is not a sequence member.
         """
 

@@ -3,6 +3,8 @@
 This guide expands on the examples in the main [README](../README.md) and
 shows a few common ways pyseq is used in production scripts and tools.
 
+For the generated Python API reference, see [Sphinx API reference](/api/).
+
 ## Parse a List of Frames into a Sequence
 
 ```python
