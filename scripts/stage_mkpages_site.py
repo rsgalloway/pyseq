@@ -111,7 +111,9 @@ def main() -> None:
     stage_site(
         Path(args.repo_root).resolve(),
         Path(args.output).resolve(),
-        benchmark_summary=Path(args.benchmark_summary).resolve() if args.benchmark_summary else None,
+        benchmark_summary=(
+            Path(args.benchmark_summary).resolve() if args.benchmark_summary else None
+        ),
         benchmark_json=Path(args.benchmark_json).resolve() if args.benchmark_json else None,
     )
 

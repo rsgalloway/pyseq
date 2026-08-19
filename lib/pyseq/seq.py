@@ -777,7 +777,7 @@ class Sequence(list):
         :param item: pyseq.Item object.
         :param check_membership: Check if `item` is a member. Can be useful if
             membership is checked prior to appending.
-        
+
         :exc:`SequenceError` raised if item is not a sequence member.
         """
 
